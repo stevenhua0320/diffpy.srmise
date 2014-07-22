@@ -13,11 +13,11 @@ def run(plot=True):
     # Initialize extraction object from existing SrMise trial.
     ppe = PDFPeakExtraction()
     ppe.read("C60.srmise")
-    
+
     # Prep for multimodel selection using this extraction object.
     ms = MultimodelSelection()
     ms.setppe(ppe)
-    
+
     # Define the values of dg to assume in order to generate multiple models.
     # For the purpose of illustration we'll use 10 evenly-spaced values of dg
     # where 1% < dg < 5% of max gr value.
@@ -41,7 +41,7 @@ def run(plot=True):
 
     # Perform peak extraction for each of the assumed uncertainties.
     ms.run(dgs)
-    
+
     # Evaluate and save AIC for all models using Nyquist sampling.
     # The file "ps.dat" saves the results of extraction, the
     # file "ms.dat" saves the AIC values of each model when evaluated

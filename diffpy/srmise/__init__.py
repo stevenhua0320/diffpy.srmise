@@ -14,5 +14,3 @@
 """Tools for peak extraction from PDF."""
 
 from diffpy.srmise.version import __version__
-
-__id__ = "$Id: __init__.py 44 2014-07-12 21:10:58Z luke $"

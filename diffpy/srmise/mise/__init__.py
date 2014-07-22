@@ -11,9 +11,7 @@
 #
 ##############################################################################
 
-__id__ = "$Id: __init__.py 44 2014-07-12 21:10:58Z luke $"
-
-__all__ = ["basefunction", "miseerrors", "miselog", "dataclusters", 
+__all__ = ["basefunction", "miseerrors", "miselog", "dataclusters",
            "modelcluster", "modelparts", "pdfpeakextraction",
            "peakextraction", "peakstability", "multimodelselection"]
 

@@ -17,7 +17,6 @@ Classes
 ModelPart: Superclass of Peak and Baseline
 ModelParts: Collection (list) of ModelPart instances.
 """
-__id__ = "$Id: modelparts.py 44 2014-07-12 21:10:58Z luke $"
 
 import numpy as np
 from scipy.optimize import leastsq
@@ -38,7 +37,7 @@ __oldleastsqbehavior__ = (pr.parse_version(__spv__) < pr.parse_version('0.8.0'))
 
 class ModelParts(list):
     """A collection of ModelPart instances.
-    
+
     Methods
     -------
     copy: Return deep copy
@@ -51,16 +50,16 @@ class ModelParts(list):
     value: Return value of model
     unpack_freepars: Return sequence containing value of all free parameters
     """
-    
+
     def __init__(self, *args, **kwds):
         list.__init__(self, *args, **kwds)
-        
+
     def fit(self, r, y, y_error, range=None, ntrials=0, cov=None):
         """Chi-square fit of all free parameters to given data.
-        
+
         There must be at least as many free parameters as data points.
         Fitting is performed with the MINPACK leastsq() routine exposed by scipy.
-        
+
         Parameters
         r - Sequence of r values over which to fit
         y - Sequence of y values over which to fit
@@ -79,12 +78,12 @@ class ModelParts(list):
             #emsg = "Cannot fit model with no free parameters."
             #raise MiseFitError(emsg)
             return
-            
+
         if range == None:
             range = slice(None)
-            
+
         args = (r, y, y_error, range)
-        
+
         if miselog.liveplots:
             plt.figure(1)
             plt.ioff()
@@ -98,7 +97,7 @@ class ModelParts(list):
             #plt.legend() #This isn't ready for primetime yet.
             plt.ion()
             #plt.draw()
-        
+
         try:
             f = leastsq(
                 self.residual,               # minimize this function
@@ -127,7 +126,7 @@ class ModelParts(list):
             emsg = "Unexpected error in modelparts.fit().  Original exception:\n" +\
                    traceback.format_exc() + "End original exception."
             raise MiseFitError(emsg)
-        
+
 #        if np.isnan(f[0]).any():
 #            emsg = "One or more parameters became NaN or inf during fit."
 #            raise MiseFitError(emsg)
@@ -137,9 +136,9 @@ class ModelParts(list):
         if __oldleastsqbehavior__ and len(freepars) == 1:
             # leastsq returns a scalar when there is only one parameter
             result = np.array([result])
-            
+
         self.pack_freepars(result)
-        
+
         if miselog.liveplots:
             plt.draw()
             plt.ioff()
@@ -154,17 +153,17 @@ class ModelParts(list):
             plt.draw()
 
             if miselog.wait:
-                print "Press 'Enter' to continue...", 
+                print "Press 'Enter' to continue...",
                 raw_input()
-        
+
         if f[4] not in (1,2,3,4):
             emsg = "Fit did not succeed -- " + str(f[3])
             raise MiseFitError(emsg)
-        
+
         # clean up parameters
         for p in self:
                 p.pars = p.owner().transform_parameters(p.pars, in_format="internal", out_format="internal")
-            
+
         # Supply estimated covariance matrix if requested.
         # The precise relationship between f[1] and estimated covariance matrix is a little unclear from
         # the documentation of leastsq.  This is the interpretation given by scipy.optimize.curve_fit,
@@ -174,7 +173,7 @@ class ModelParts(list):
             fvec = f[2]["fvec"]
             dof = len(r) - len(freepars)
             cov.setcovariance(self, pcov*np.sum(fvec**2)/dof)
-            
+
         return
 #### Notes on the fit f
 # f[0] = solution
@@ -193,7 +192,7 @@ class ModelParts(list):
 
     def npars(self, count_fixed=True):
         """Return total number of parameters in all parts.
-        
+
         Parameters
         count_fixed - Boolean which determines if fixed parameters are
                       are included in the count.
@@ -202,7 +201,7 @@ class ModelParts(list):
         for p in self:
             n+=p.npars(count_fixed=count_fixed)
         return n
-            
+
     def pack_freepars(self, freepars):
         """Update parameters with values from sequence of freepars."""
         if np.isnan(freepars).any():
@@ -211,10 +210,10 @@ class ModelParts(list):
         freeidx = 0
         for p in self:
             freeidx += p.update(freepars[freeidx:])
-    
+
     def residual(self, freepars, r, y_expected, y_error, range=None):
         """Calculate residual of all parameters.
-        
+
         Parameters
         freepars - sequence of free parameters
         r - the input domain
@@ -234,7 +233,7 @@ class ModelParts(list):
 
     def residual_jacobian(self, freepars, r, y_expected, y_error, range=None):
         """Calculate the Jacobian of freepars.
-        
+
         Parameters
         freepars - sequence of free parameters
         r - the input domain
@@ -246,7 +245,7 @@ class ModelParts(list):
         if len(freepars) == 0:
             raise ValueError("Argument freepars has length 0.  The Jacobian "
                              "is only defined with >=1 free parameters.")
-        
+
         self.pack_freepars(freepars)
         tempJac=[]
         for p in self:
@@ -260,10 +259,10 @@ class ModelParts(list):
             return jac[:,range]/y_error[range]
         except TypeError:
             return jac/y_error
-        
+
     def value(self, r, range=None):
         """Calculate total value of all parts over range.
-        
+
         Parameters
         r - the input domain
         range - Slice object specifying region of r and y over which to fit.
@@ -279,45 +278,45 @@ class ModelParts(list):
         #To check: ravel() sometimes returns a reference and othertimes a copy.
         #          Do I need to use flatten() instead?
         return np.concatenate([p.compress() for p in self]).ravel()
-    
+
     def covariance(self, format="internal", **kwds):
         """Return estimated covariance matrix of the model.
-        
+
         The covariance matrix may be given in terms of any parameterization
         defined by the formats for each individual ModelPart.
-        
+
         Parameters
         format - The format ("internal" by default) to use for all ModelParts.
                  This may be overridden for specific peaks as shown below.
-        
+
         Keywords
         f0 - The format of the 0th ModelPart
         f1 - The format of the 1st ModelPart
         etc.
         """
         formats = [format for p in self]
-            
+
         for k, v in kwds.items():
             try:
                 idx = int(k[1:])
             except ValueError:
                 emsg = "Invalid format keyword '%s'.  They must be specified as 'f0', 'f1', etc." %k
                 raise ValueError(emsg)
-            
+
             formats[int(k[1:])] = v
-        
-        
-        
+
+
+
         return
-        
-    
+
+
     def copy(self):
         """Return deep copy of this ModelParts.
-        
+
         The original and the copy are completely independent, except each
         ModelPart and its copy still reference the same owner."""
         return type(self).__call__([p.copy() for p in self])
-        
+
     def __str__(self):
         """Return string representation of this ModelParts."""
         return ''.join([str(p)+"\n" for p in self])
@@ -325,10 +324,10 @@ class ModelParts(list):
     def __getslice__(self, i, j):
         """Extends list.__getslice__"""
         return self.__class__(list.__getslice__(self, i, j))
-            
+
     def transform(self, in_format="internal", out_format="internal"):
         """Transforms format of parameters in this modelpart.
-        
+
         Parameters
         in_format - The format the parameters are already in.
         out_format - The format the parameters are transformed to.
@@ -343,7 +342,7 @@ class ModelParts(list):
 
 class ModelPart(object):
     """Represents a single part (instance of some function) of a model.
-    
+
     Members
     -------
     pars - Array containing the parameters of this model part
@@ -352,7 +351,7 @@ class ModelPart(object):
     removable - Boolean determining whether or not this model part can be
                 removed during extraction.
     static_owner - Boolean determines if owner can be changed with changeowner()
-    
+
     Methods
     -------
     changeowner - Change the owner of self
@@ -367,10 +366,10 @@ class ModelPart(object):
     value - Return value
     writestr - Return string representation of self
     """
-    
+
     def __init__(self, owner, pars, free=None, removable=True, static_owner=False):
         """Set instance members.
-        
+
         Parameters
         owner - an instance of a BaseFunction subclass
         pars - Sequence of parameters which specify the function explicitly
@@ -379,19 +378,19 @@ class ModelPart(object):
         removable - Boolean determines whether this part can be removed.
         static_owner - Whether or not the part can be changed with
                        changeowner()
-        
+
         Note that free and removable are not mutually exclusive.  If any
         pars are not free but removable=True then the part may be removed, but
         the held parameters for this part will remain unchanged until then.
         """
         self._owner = owner
-        
+
         if len(pars) != owner.npars:
             emsg = "The length of pars must equal the number of parameters "+\
                    "specified by the model part owner."
             raise ValueError(emsg)
         self.pars = np.array(pars[:]) # pars[:] in case pars is a ModelPart
-        
+
         if free is None:
             self.free = np.array([True for p in pars], dtype=bool)
         else:
@@ -400,17 +399,17 @@ class ModelPart(object):
             emsg = "The length of free must be equal to the number of "+\
                    "parameters specified by the model part owner."
             raise ValueError(emsg)
-            
+
         self.removable = removable
         self.static_owner = static_owner
 
     def changeowner(self, owner):
         """Change the owner of this part.
-        
+
         Does not change the parameters associated with this model part. Raises
         MiseStaticOwnerError if this peak has been declared to have a static
         owner, or if the number of parameters is incompatible.
-        
+
         Parameters
         owner - an instance of a BaseFunction subclass
         """
@@ -429,7 +428,7 @@ class ModelPart(object):
 
     def jacobian(self, r, range=None):
         """Return jacobian of this part over r.
-        
+
         Parameters
         r - the input domain
         range - Slice object specifying region of r and y over which to fit.
@@ -443,11 +442,11 @@ class ModelPart(object):
 
     def update(self, freepars):
         """Sequentially update free parameters from freepars.
-        
+
         Parameters
         freepars - sequence of new parameter values.  May contain more
                    parameters than can actually be updated.
-        
+
         Return number of parameters updated from freepars.
         """
         numfree = self.npars(count_fixed=False)
@@ -461,24 +460,24 @@ class ModelPart(object):
 
     def value(self, r, range=None):
         """Return value of peak over r.
-        
+
         Parameters
         r - the input domain
         range - Slice object specifying region of r and y over which to fit.
                 All the data by default.
         """
         return self._owner.value(self, r, range)
-    
+
     def copy(self):
         """Return a deep copy of this ModelPart.
-        
+
         The original and the copy are completely independent, except they both
         reference the same owner."""
         return type(self).__call__(self._owner, self.pars, self.free, self.removable, self.static_owner)
-        
+
     def __getitem__(self, key_or_idx):
         """Return parameter of peak corresponding with key_or_idx.
-        
+
         Parameters
         key_or_idx - An integer index, slice, or key from owner's parameter
                      dictionary.
@@ -487,10 +486,10 @@ class ModelPart(object):
             return self.pars[key_or_idx]
         except ValueError:
             return self.pars[self._owner.parameterdict[key_or_idx]]
-            
+
     def getfree(self, key_or_idx):
         """Return value of free corresponding with key_or_idx.
-        
+
         Parameters
         key_or_idx - An integer index, slice, or key from owner's parameter
                      dictionary."""
@@ -498,10 +497,10 @@ class ModelPart(object):
             return self.free[key_or_idx]
         except ValueError:
             return self.free[self._owner.parameterdict[key_or_idx]]
-            
+
     def setfree(self, key_or_idx, value):
         """Set value of free corresponding with key_or_idx.
-        
+
         Parameters
         key_or_idx - An integer index, slice, or key from owner's parameter
                      dictionary.
@@ -510,14 +509,14 @@ class ModelPart(object):
             self.free[key_or_idx] = value
         except ValueError:
             self.free[self._owner.parameterdict[key_or_idx]] = value
-            
+
     def __len__(self):
         """Return number of parameters, including any fixed ones."""
         return self._owner.npars
 
     def npars(self, count_fixed=True):
         """Return total number of parameters in all parts.
-        
+
         Parameters
         count_fixed - Boolean which determines if fixed parameters are
                       are included in the count."""
@@ -525,11 +524,11 @@ class ModelPart(object):
             return self._owner.npars
         else:
             return (self.free == True).sum()
-        
+
     def __str__(self):
         """Return string representation of ModelPart parameters."""
         return str(self._owner.transform_parameters(self.pars, in_format="internal", out_format="default_output"))
-        
+
     def __eq__(self, other):
         """   """
         if hasattr(other, "_owner"):
@@ -539,16 +538,16 @@ class ModelPart(object):
                     self.removable == other.removable)
         else:
             return False
-                
+
     def __ne__(self, other):
         """   """
         return not self == other
-        
+
     def writestr(self, ownerlist):
         """Return string representation of ModelPart.
-        
+
         The value of owner is determined by its index in ownerlist.
-        
+
         Parameters
         ownerlist - List of owner functions
         """
@@ -557,7 +556,7 @@ class ModelPart(object):
             raise ValueError(emsg)
         lines = []
         lines.append("owner=%s" %repr(ownerlist.index(self._owner)))
-        
+
         #Lists/numpy arrays don't give full representation of long lists
         lines.append("pars=[%s]" %", ".join([repr(p) for p in self.pars]))
         lines.append("free=[%s]" %", ".join([repr(f) for f in self.free]))
@@ -565,16 +564,16 @@ class ModelPart(object):
         lines.append("static_owner=%s" %repr(self.static_owner))
         datastring = "\n".join(lines)+"\n"
         return datastring
-        
+
 # End of class ModelPart
 
 # TODO: Implement caching
 #class _CalculationWrapper(np.ndarray):
 #    """A wrapper for model part calculations (subclassed numpy array)."""
-#    
+#
 #    def __init__(self, in_data, in_startidx, in_stopidx):
 #        """Set instance members data, startidx, and stopidx.
-#        
+#
 #        startidx: first index in data that has been calculated
 #        stopidx: first index in data that has not been calculated
 #        """

@@ -12,8 +12,6 @@
 ##############################################################################
 """plot extracted peaks and comparison to ideal distances (if given)"""
 
-__id__ = "$Id: plot.py 62 2014-07-20 09:38:21Z luke $"
-
 import sys
 import optparse
 
@@ -33,7 +31,7 @@ labeldict = {}
 default_gobs_style = {'color' : 'b', 'linestyle' : '',
         'markeredgecolor' : 'b', 'marker' : 'o',
         'markerfacecolor' : 'none', 'markersize' : 4}
-        
+
 default_gfit_style = {'color' : 'g'}
 default_gind_style = {'facecolor' : 'green', 'alpha' : 0.2}
 default_gres_style = {}
@@ -75,10 +73,10 @@ def comparepositions(ppe, ip=None, **kwds):
     yext_label = kwds.get("yext_label", r'found')
     pmin = kwds.get("pmin", -np.inf)
     pmax = kwds.get("pmax", np.inf)
-    
+
     ep = [p["position"] for p in ppe.model]
     ep = [p for p in ep if p >= pmin and p <= pmax]
-    
+
     if ip is not None:
         xi = np.NaN + np.zeros(3*len(ip))
         xi[0::3] = ip
@@ -86,14 +84,14 @@ def comparepositions(ppe, ip=None, **kwds):
         yi = np.zeros_like(xi) + base
         yi[1::3] += yideal
         plt.plot(xi, yi, 'b', lw=1.5, **ip_style)
-    
+
     xe = np.NaN + np.zeros(3*len(ep))
     xe[0::3] = ep
     xe[1::3] = ep
     ye = np.zeros_like(xe) + base
     ye[1::3] += yext
     plt.plot(xe, ye, 'g', lw=1.5, **ep_style)
-    
+
     if ip is not None:
         yb = (base, base)
         plt.axhline(base, linestyle=":", color="k" )
@@ -102,13 +100,13 @@ def comparepositions(ppe, ip=None, **kwds):
     else:
         ax.yaxis.set_ticks([base+.5*yext])
         ax.yaxis.set_ticklabels([yext_label])
-     
-    # Set ylim explicitly, for case where yext is empty.   
+
+    # Set ylim explicitly, for case where yext is empty.
     if ip is not None:
         plt.ylim(base+yideal, base+yext)
     else:
         plt.ylim(base+yideal, base)
-    
+
     for tick in ax.yaxis.get_major_ticks():
         tick.tick1line.set_markersize(0)
         tick.tick2line.set_markersize(0)
@@ -123,15 +121,15 @@ def comparepositions(ppe, ip=None, **kwds):
 def dgseries(stability, **kwds):
     ax = kwds.get("ax", plt.gca())
     dg_style = kwds.get("dg_style", default_dg_style)
-    
+
     scale = kwds.get("scale", 1.)
-    
+
     dgmin = kwds.get("dgmin", stability.results[0][0])*scale
     dgmax = kwds.get("dgmax", stability.results[-1][0])*scale
-    
+
     pmin = kwds.get("pmin", 0.)
-    pmax = kwds.get("pmax", np.inf)   
-    
+    pmax = kwds.get("pmax", np.inf)
+
     x = []
     y = []
     for dg, peaks, bl, dr in stability.results:
@@ -153,7 +151,7 @@ def labelallsubplots():
                 transform=gca().transAxes, weight='bold')
         rv.append(ht)
     return rv
-    
+
 
 def makeplot(ppe_or_stability, ip=None, **kwds):
     """Plot stuff"""
@@ -166,16 +164,16 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
     ext = ppe.extracted
 
     figdict = {}
-    
+
     # Range along x-axis
     xlo = kwds.get("xlo", ext.r_cluster[0])
     xhi = kwds.get("xhi", ext.r_cluster[-1])
-    
+
     # Range of PDF to display
     # This is deferred until the defaults can be calculated
     # min_gr
     # max_gr
-        
+
     # Define heights and interstitial offsets
     # All values in percent of main axis.
     top_offset = kwds.get("top_offset", 0.)
@@ -186,7 +184,7 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
     databottom_offset = kwds.get("databottom_offset", 3.)
     # <- Residual appears here ->
     bottom_offset = kwds.get("bottom_offset", 3.)
-    
+
     # Style options
     dg_style = kwds.get("dg_style", default_dg_style)
     gobs_style = kwds.get("gobs_style", default_gobs_style)
@@ -195,14 +193,14 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
     gres_style = kwds.get("gres_style", default_gres_style)
     ep_style = kwds.get("ep_style", default_ep_style)
     ip_style = kwds.get("ip_style", default_ip_style)
-    
+
     # Label options
     userxlabel = kwds.get("xlabel", r'r ($\mathrm{\AA}$)')
     userylabel = kwds.get("ylabel", r'G ($\mathrm{\AA^{-2}}$)')
     datalabelx = kwds.get("datalabelx", .04)
     yideal_label = kwds.get("yideal_label", r'ideal')
     yext_label = kwds.get("yext_label", r'found')
-    
+
     # Other options
     datalabel = kwds.get("datalabel", None)
     dgformatstr = kwds.get("dgformatstr", r'$\delta$g=%s')
@@ -215,9 +213,9 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
     mask_residual = kwds.get("mask_residual", False) #-> number
     show_annotation = kwds.get("show_annotation", True)
     scale = kwds.get("scale", 1.) # Apply a global scaling factor to the data
-    
-    
-    
+
+
+
     # Define the various data which will be plotted
     r = ext.r_cluster
     dr = (r[-1]-r[0])/len(r)
@@ -229,10 +227,10 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
     gr_fit_baseline = np.array(ext.valuebl(rfine))*scale
     gr_fit_ind = [gr_fit_baseline + np.array(p.value(rfine))*scale for p in ext.model]
     gr_res = np.array(ext.residual())*scale
-    
+
     if mask_residual:
         gr_res = np.ma.masked_outside(gr_res, -mask_residual, mask_residual)
-    
+
     all_gr = []
     if show_fit: all_gr.append(gr_fit)
     #if show_individual: all_gr.extend([gr_fit_baseline, gr_fit_ind])
@@ -248,38 +246,38 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
     # which are calculated from already scaled quantities.
     min_gr = kwds.get("min_gr", np.min([np.min(gr) for gr in all_gr])/scale)*scale
     max_gr = kwds.get("max_gr", np.max([np.max(gr) for gr in all_gr])/scale)*scale
-    
-    
+
+
     if show_residual:
         min_res = np.min(gr_res)
         max_res = np.max(gr_res)
     else:
         min_res = 0.
         max_res = 0.
-    
+
     # Derive various y limits based on all the offsets
     rel_height = 100. - top_offset - dg_height - cmp_height - datatop_offset - databottom_offset - bottom_offset
     abs_height = 100*((max_gr - min_gr) + (max_res - min_res))/rel_height
-    
+
     yhi = max_gr + (top_offset + dg_height + cmp_height + datatop_offset)*abs_height/100
     ylo = yhi - abs_height
-    
+
     yhi = kwds.get("yhi", yhi)
     ylo = kwds.get("ylo", ylo)
-    
+
     datatop = yhi - (yhi-ylo)*.01*(top_offset + dg_height + cmp_height)
     datalabeltop = 1 - .01*(top_offset + dg_height + cmp_height + datatop_offset)
     resbase = ylo + bottom_offset*abs_height/100 - min_res
-    
+
     resbase = kwds.get("resbase", resbase)
-    
-    
+
+
     fig = kwds.get("figure", plt.gcf())
     ax_data = AA.Subplot(fig, 111)
     fig.add_subplot(ax_data)
     figdict["fig"] = fig
     figdict["data"] = ax_data
-    
+
     # Plot the data, fit, and residual
     plt.plot(rexpand, gr_obs, **gobs_style)
     plt.plot(rfine, gr_fit, **gfit_style)
@@ -289,7 +287,7 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
     if show_residual:
         plt.plot(r, gr_res + resbase, 'r-', **gres_style)
         plt.plot((xlo, xhi), 2*[resbase], 'k:')
-    
+
     # Format ax_data
     plt.xlim(xlo, xhi)
     plt.ylim(ylo, yhi)
@@ -300,12 +298,12 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
     ax_data.yaxis.set_label_position('left')
     ax_data.yaxis.tick_left()
     ax_data.yaxis.set_ticks_position('both')
-    
+
     # Remove labels above where insets begin
     #ax_data.yaxis.set_ticklabels([str(int(loc)) for loc in ax_data.yaxis.get_majorticklocs() if loc < datatop])
     ax_data.yaxis.set_ticks([loc for loc in ax_data.yaxis.get_majorticklocs() if (loc < datatop and loc >= ylo)])
 
-    
+
     # Dataset label
     if datalabel is not None:
         dl = plt.text(datalabelx, datalabeltop, datalabel, ha='left', va='top',
@@ -339,8 +337,8 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
                             bbox_to_anchor=(0., -.01*(top_offset+dg_height), 1, 1),
                             bbox_transform=ax_data.transAxes,
                             borderpad=0)
-                            
-        figdict["cmp"] = ax_cmp    
+
+        figdict["cmp"] = ax_cmp
         plt.axes(ax_cmp)
         comparepositions(ext, ip, ep_style=ep_style, ip_style=ip_style, yideal_label=yideal_label, yext_label=yext_label)
         plt.xlim(xlo, xhi)
@@ -348,7 +346,7 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
 
     # Show how extracted peak positions change as dg is changed
     if dg_height > 0:
-    
+
         ax_dg = inset_axes(ax_data,
                            width="100%",
                            height="%s%%" %dg_height,
@@ -356,7 +354,7 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
                            bbox_to_anchor=(0, -.01*top_offset, 1, 1),
                            bbox_transform=ax_data.transAxes,
                            borderpad=0)
-    
+
         figdict["dg"] = ax_dg
         plt.axes(ax_dg)
         dgkwds = {}
@@ -371,14 +369,14 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
         ax_dg.xaxis.set_major_locator(plt.NullLocator())
         ax_dg.yaxis.set_major_locator(plt.MaxNLocator(3))
         plt.ylabel(r'$\delta$g')
-        
+
     # Annotate the actual dg shown
     if show_annotation:
         dg = np.mean(ext.error_cluster)*scale
         dgstr = dgformatstr %dg
         if "dgformatpost" in kwds: #post-processing on dg annotation
             dgstr = kwds["dgformatpost"](dgstr)
-        
+
         if len(ext.model) > 0:
             xpos = np.mean([xlo, ext.model[0]["position"]]) # OK for now.
         else:
@@ -394,7 +392,7 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
                         xytext=(xpos,ypos), textcoords='data', size=8, color='green',
                         arrowprops=dict(arrowstyle="->",
                                         connectionstyle="angle,angleA=90,angleB=0,rad=10",
-                                        color="green")) 
+                                        color="green"))
 
         elif dg_height > 0:
             # Arrow, and text located somewhere in main plot region
@@ -411,7 +409,7 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
             # Text only in main plot region
             # Must change axes
             pass
-        
+
     plt.draw()
 
     return figdict
@@ -436,10 +434,10 @@ def on_draw(event):
     bbox = bbox.inverse_transformed(ax_main.transAxes)
     bbox = bbox.get_points()
     xpos = np.mean(np.transpose(bbox)[0])
-    
+
     # This, and the whole lastxpos business, is so label is properly
     # updated when using the Agg backend to create a .png. (at least in
-    # matplotlib 1.1.0)  For some reason the invisible label is not set 
+    # matplotlib 1.1.0)  For some reason the invisible label is not set
     # correctly when drawn with that backend unless redrawn at least once.
     # If it is kept visible the whole time this problem doesn't occur.
     # This problem doesn't occur onscreen (TkAgg) or printing PDFs, and
@@ -449,7 +447,7 @@ def on_draw(event):
         plt.draw()
     else:
         _lastxpos = xpos
-        
+
     invisiblelabel.set_visible(False)
     xpos_old = visiblelabel.get_position()[0]
     if abs(xpos - xpos_old) > .001:
@@ -457,30 +455,30 @@ def on_draw(event):
         labeldict[plt.gcf()].set_x(xpos)
         plt.draw()
     return
-    
+
 def readcompare(filename):
     """Returns a list of distances read from filename, otherwise None."""
     from diffpy.srmise.mise.miseerrors import MiseDataFormatError, MiseFileError
-    
+
     # TODO: Make this safer
     try:
         datastring = open(filename,'rb').read()
     except Exception, err:
         raise err
-    
+
     import re
     res = re.search(r'^[^#]', datastring, re.M)
     if res:
         datastring = datastring[res.end():].strip()
 
     distances = []
-    
+
     try:
         for line in datastring.split("\n"):
             distances.append(float(line))
     except (ValueError, IndexError), err:
         print "Could not read distances from '%s'. Ignoring file." %filename
-        
+
     if len(distances) == 0:
         return None
     else:
@@ -496,7 +494,7 @@ def main():
              "the basic SrMise classes.  Can be used to compare peak positions "
              "with those from a list.\n"
              "NOTE: At this time the utility only works with peaks extracted using diffpy.srmise.mise.PDFPeakExtraction.")
-        
+
     parser = optparse.OptionParser(usage=usage, description=descr)
     parser.add_option("--compare", type="string",
             help="Compare extracted distances to distances listed (1/line) in this file.")
@@ -510,13 +508,13 @@ def main():
             help="output format for plot saving")
     parser.allow_interspersed_args = True
     opts, args = parser.parse_args(sys.argv[1:])
-    
-    
+
+
     if len(args) != 1:
         parser.error("Exactly one argument required. \n"+usage)
-        
+
     filename = args[0]
-    
+
     if filename is not None:
         toplot = PDFPeakExtraction()
         try:
@@ -528,7 +526,7 @@ def main():
             except Exception:
                 print "File '%s' is not a .srmise or PeakStability data file." %filename
                 return
-                
+
     if opts.model is not None:
         try:
             toplot.setcurrent(opts.model)

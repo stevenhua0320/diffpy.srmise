@@ -11,8 +11,6 @@
 #
 ##############################################################################
 
-__id__ = "$Id: terminationripples.py 44 2014-07-12 21:10:58Z luke $"
-
 import numpy as np
 import scipy.fftpack as fp
 from diffpy.srmise.mise.peaks.base import PeakFunction
@@ -22,14 +20,14 @@ logger = logging.getLogger("mise.peakextraction")
 
 class TerminationRipples (PeakFunction):
     """Methods for evaluation and parameter estimation of a peak function with termination ripples."""
-    
+
     def __init__(self, base, qmax, extension=4., supersample=5., Cache=None):
         """Peak function which adds termination ripples to existing function.
-        
+
         Unlike other peak functions, TerminationRipples can only be evaluated
         over a uniform grid, or at a single value using an ad hoc uniform grid
         defined by qmax, extension, and supersample.
-        
+
         Parameters
         base: Instance of PeakFunction subclass.
         qmax: Cut-off frequency in reciprocal space.
@@ -52,7 +50,7 @@ class TerminationRipples (PeakFunction):
         metadict["supersample"] = (supersample, repr)
         PeakFunction.__init__(self, parameterdict, formats, default_formats, metadict, base, Cache)
         return
-        
+
     #### Methods required by PeakFunction ####
 
     # TODO: A smart way to convert from the basefunctions estimate to an
@@ -60,26 +58,26 @@ class TerminationRipples (PeakFunction):
     # though.
     def estimate_parameters(self, r, y):
         """Estimate parameters for single peak from data provided.
-        
+
         Uses estimation routine provided by base peak function.
-        
+
         Parameters
         r: (Numpy array) Data along r from which to estimate
         y: (Numpy array) Data along y from which to estimate
-        
+
         Returns Numpy array of parameters in the default internal format.
         Raises MiseEstimationError if parameters cannot be estimated for any
         reason."""
         return self.base.estimate_parameters(r, y)
-        
+
 
     # TODO: Can this be implemented sanely for termination ripples?
     def scale_at(self, pars, x, scale):
         """Change parameters so value(x)->scale*value(x) for the base function.
-        
+
         Does not change position or height of peak's maxima.  Raises
         MiseScalingError if the parameters cannot be scaled.
-        
+
         Parameters
         pars: (Array) Parameters corresponding to a single peak
         x: (float) Position of the border
@@ -88,7 +86,7 @@ class TerminationRipples (PeakFunction):
 
     def _jacobianraw(self, pars, r, free):
         """Return Jacobian of base function with termination ripples.
-           
+
            Parameters
            pars: Sequence of parameters for a single peak
            r: sequence or scalar over which pars is evaluated
@@ -98,7 +96,7 @@ class TerminationRipples (PeakFunction):
 
     def _transform_derivativesraw(self, pars, in_format, out_format):
         """Return gradient matrix for the pars converted from in_format to out_format.
-        
+
            Parameters
            pars: Sequence of parameters
            in_format: A format defined for base peak function
@@ -107,7 +105,7 @@ class TerminationRipples (PeakFunction):
 
     def _transform_parametersraw(self, pars, in_format, out_format):
         """Convert parameter values from in_format to out_format.
-        
+
            Parameters
            pars: Sequence of parameters
            in_format: A format defined for base peak function
@@ -116,7 +114,7 @@ class TerminationRipples (PeakFunction):
 
     def _valueraw(self, pars, r):
         """Return value of base peak function for the given parameters and r values.
-        
+
            pars: Sequence of parameters for a single peak
            r: sequence or scalar over which pars is evaluated"""
         return self.base._valueraw(pars, r)
@@ -125,10 +123,10 @@ class TerminationRipples (PeakFunction):
     # jacobian() and value() are not normally overridden by PeakFunction
     # subclasses, but are here to minimize the effect of edge-effects while
     # introducing termination ripples.
-     
+
     def jacobian(self, peak, r, rng=None):
         """Calculate (rippled) jacobian, possibly restricted by range.
-        
+
         peak: The Peak to be evaluated
         r: sequence or scalar over which peak is evaluated
         rng: Optional slice object restricts which r-values are evaluated.
@@ -139,7 +137,7 @@ class TerminationRipples (PeakFunction):
             raise ValueError("Argument 'peak' must be evaluated by the "
                              "PeakFunction subclass instance with which "
                              "it is associated.")
-                             
+
         # normally r will be a sequence, but also allow single numeric values
         try:
             if len(r) > 1:
@@ -147,7 +145,7 @@ class TerminationRipples (PeakFunction):
             else:
                 # dr is ad hoc if r is a single point
                 dr = 2*np.pi/(self.supersample*self.qmax)
-            
+
             if rng is None:
                 rng = slice(0, len(r))
             rpart = r[rng]
@@ -172,11 +170,11 @@ class TerminationRipples (PeakFunction):
 
 #    def value(self, peak, r, rng=None):
 #        """Calculate (rippled) value of peak, possibly restricted by range.
-#        
+#
 #        This function overrides its counterpart in PeakFunction in order
 #        to minimize the impact of edge-effects from introducing termination
 #        ripples into an existing peak function.
-#        
+#
 #        peak: The Peak to be evaluated
 #        r: sequence or scalar over which peak is evaluated
 #        rng: Optional slice object restricts which r-values are evaluated.
@@ -188,7 +186,7 @@ class TerminationRipples (PeakFunction):
 #            raise ValueError("Argument 'peak' must be evaluated by the "
 #                             "PeakFunction subclass instance with which "
 #                             "it is associated.")
-#        
+#
 #        # normally r will be a sequence, but also allow single numeric values
 #        try:
 #            if len(r) > 1:
@@ -196,7 +194,7 @@ class TerminationRipples (PeakFunction):
 #            else:
 #                # dr is ad hoc if r is a single point
 #                dr = 2*np.pi/(self.supersample*self.qmax)
-#            
+#
 #            if rng is None:
 #                rng = slice(0, len(r))
 #            rpart = r[rng]
@@ -217,11 +215,11 @@ class TerminationRipples (PeakFunction):
 
     def value(self, peak, r, rng=None):
         """Calculate (rippled) value of peak, possibly restricted by range.
-        
+
         This function overrides its counterpart in PeakFunction in order
         to minimize the impact of edge-effects from introducing termination
         ripples into an existing peak function.
-        
+
         peak: The Peak to be evaluated
         r: sequence or scalar over which peak is evaluated
         rng: Optional slice object restricts which r-values are evaluated.
@@ -233,9 +231,9 @@ class TerminationRipples (PeakFunction):
             raise ValueError("Argument 'peak' must be evaluated by the "
                              "PeakFunction subclass instance with which "
                              "it is associated.")
-        
+
         # normally r will be a sequence, but also allow single numeric values
-        
+
         dr_super = 2*np.pi/(self.supersample*self.qmax)
         if np.isscalar(r):
             # dr is ad hoc if r is a single point.
@@ -246,9 +244,9 @@ class TerminationRipples (PeakFunction):
         else:
             if rng is None:
                 rng = slice(0, len(r))
-                
+
             output = r * 0.
-        
+
             # Make sure the actual dr used for finding termination ripples
             # is at least as fine as dr_super, while still calculating the
             # function at precisely the requested points.
@@ -261,29 +259,29 @@ class TerminationRipples (PeakFunction):
             dr = (r[-1]-r[0])/(len(r)-1)
             segments = np.ceil(dr/dr_super)
             dr_segmented = dr/segments
-            
+
             rpart = r[rng]
             if segments > 1:
                 rpart = np.arange(rpart[0], rpart[-1] + dr_segmented/2, dr_segmented)
-                
+
             (ext_r, ext_slice) = self.extend_grid(rpart, dr_segmented)
             value = self._valueraw(peak.pars, ext_r)
             value = self.cut_freq(value, dr_segmented)
             output[rng] = value[ext_slice][::segments]
-            
+
             return output
 
     def getmodule(self):
         return __name__
 
     #### Other methods ####
-    
+
     def cut_freq(self, sequence, delta):
         """Remove high-frequency components from sequence.
-        
+
         This is equivalent to the discrete convolution of a signal with a sinc
         function sin(2*pi*r/qmax)/r.
-        
+
         Parameters
         sequence: (numpy array) The sequence to alter.
         delta: The spacing between elements in sequence."""
@@ -292,13 +290,13 @@ class TerminationRipples (PeakFunction):
         dq = 2*np.pi/((padlen-1)*delta)
         lowidx = int(np.ceil(self.qmax/dq))
         hiidx = padlen+1-lowidx
-        
+
         # Remove hi-frequency components
         padseq[lowidx:hiidx]=0
-        
+
         padseq = fp.ifft(padseq)
         return np.real(padseq[0:len(sequence)])
-        
+
     def extend_grid(self, r, dr):
         """Return (extended r, slice giving original range)."""
         ext = self.extension*2*np.pi/self.qmax
@@ -307,7 +305,7 @@ class TerminationRipples (PeakFunction):
         ext_r = np.concatenate((left_ext, r, right_ext))
         ext_slice = slice(len(left_ext), len(ext_r)-len(right_ext))
         return (ext_r, ext_slice)
-    
+
 #end of class TerminationRipples
 
 # simple test code
@@ -320,31 +318,31 @@ if __name__ == '__main__':
     from diffpy.srmise.mise.peakfunctions.gaussianoverr import GaussianOverR
     from diffpy.srmise.mise.peakfunctions.terminationripples import TerminationRipples
     from diffpy.srmise.mise.peakfunctions.peaks import Peaks
-    
+
     res = .01
     r = np.arange(2,4,res)
     err = np.ones(len(r)) #default unknown errors
     pf1 = GaussianOverR(.7)
     pf2 = TerminationRipples(pf1, 20.)
     evaluator = AICc()
-    
+
     pars = [[3, .2, 10], [3.5, .2, 10]]
     ideal_peaks = Peaks([pf1.createpeak(p, "pwa") for p in pars])
     ripple_peaks = Peaks([pf2.createpeak(p, "pwa") for p in pars])
     y_ideal = ideal_peaks.value(r)
     y_ripple = ripple_peaks.value(r) + .1*randn(len(r))
-    
+
     guesspars = [[2.7, .15, 5], [3.7, .3, 5]]
     guess_peaks = Peaks([pf2.createpeak(p, "pwa") for p in guesspars])
     cluster = ModelCluster(guess_peaks, r, y_ripple, err, None, AICc, [pf2])
-    
+
     qual1 = cluster.quality()
     print qual1.stat
     cluster.fit()
     yfit = cluster.calc()
     qual2 = cluster.quality()
     print qual2.stat
-    
+
     plt.figure(1)
     plt.plot(r, y_ideal, r, y_ripple, r, yfit)
     plt.show()

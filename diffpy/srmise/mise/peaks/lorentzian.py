@@ -11,8 +11,6 @@
 #
 ##############################################################################
 
-__id__ = "$Id: gaussianoverr.py 43 2013-02-08 16:32:04Z luke $"
-
 import numpy as np
 from diffpy.srmise.mise.peaks.base import PeakFunction
 from diffpy.srmise.mise.miseerrors import MiseEstimationError, MiseScalingError, MiseTransformationError
@@ -23,20 +21,20 @@ logger = logging.getLogger("mise.peakextraction")
 
 class GaussianOverR (PeakFunction):
     """Methods for evaluation and parameter estimation of width-limited Gaussian/r.
-    
+
        Allowed formats are
        internal: [position, parameterized width-squared, area]
        pwa: [position, full width at half maximum, area]
        mu_sigma_area: [mu, sigma, area]
-       
+
        The internal parameterization is unconstrained, but are interpreted
        so that the width is between 0 and a user-provided maximum full width
        at half maximum, and the area is positive.
-       
+
        Note that all full width at half maximum values are for the
        corresponding Gaussian.
     """
-    
+
     # Possibly implement cutoff later, but low priority.
     # cutoff=3/np.sqrt(2*np.log(2))
     # cutoff defines a distance = maxwidth*cutoff from the maximum beyond
@@ -51,7 +49,7 @@ class GaussianOverR (PeakFunction):
         metadict = {}
         metadict["maxwidth"] = (maxwidth, repr)
         PeakFunction.__init__(self, parameterdict, formats, default_formats, metadict, None, Cache)
-        
+
         if maxwidth <= 0:
             emsg = "'maxwidth' must be greater than 0."
             raise ValueError(emsg)
@@ -63,51 +61,51 @@ class GaussianOverR (PeakFunction):
 #        self.c2 = self.maxwidth**2/(np.pi**2*np.log(2))
         self.c1 = self.maxwidth*np.sqrt(np.pi/(8*np.log(2)))
         self.c2 = self.maxwidth**2/(8*np.log(2))
-        
+
         #c3 and c4 help with parameter estimation
         self.c3 = .5*np.sqrt(np.pi/np.log(2))
         self.c4 = np.pi/(self.maxwidth*2)
-        
+
         #convert sigma to fwhm: fwhm = 2 sqrt(2 log 2) sigma
         self.sigma2fwhm = 2*np.sqrt(2*np.log(2))
-       
+
         return
-        
+
     #### Methods required by PeakFunction ####
 
     def estimate_parameters(self, r, y):
         """Estimate parameters for single peak from data provided.
-        
+
         Parameters
         r: (Numpy array) Data along r from which to estimate
         y: (Numpy array) Data along y from which to estimate
-        
+
         Returns Numpy array of parameters in the default internal format.
         Raises MiseEstimationError if parameters cannot be estimated for any
         reason."""
         if len(r) != len(y):
             emsg = "Arrays r, y must have equal length."
             raise MiseEstimationError(emsg)
-            
+
         logger.debug("Estimate peak using %s point(s)", len(r))
-        
+
         minpoints_required = 3
-        
+
         # filter out negative points
         usable_idx = [i for i in range(len(y)) if y[i] > 0]
         use_r = r[usable_idx]
         use_y = y[usable_idx]
-        
+
         if len(usable_idx) < minpoints_required:
             emsg = "Not enough data for successful estimation."
             raise MiseEstimationError(emsg)
-        
+
         #### Estimation ####
         guesspars = np.array([0., 0., 0.], dtype=float)
         min_y = use_y.min()
         max_y = use_y.max()
         center = use_r[use_y.argmax()]
-        
+
         if min_y != max_y:
             weights = (use_y-min_y)**2
             guesspars[0] = np.sum(use_r*weights)/sum(weights)
@@ -128,7 +126,7 @@ class GaussianOverR (PeakFunction):
             # the data.
             guesspars[0] = (use_r[0]+use_r[-1])/2
             guesspars[1] = (use_r[-1]-use_r[0])*2/(2*np.log(2)) # cluster width/2=2*sigma
-            
+
         if guesspars[1] > self.maxwidth:
             #account for width-limit
             guesspars[2] = self.c3*max_y*guesspars[0]*self.maxwidth
@@ -136,15 +134,15 @@ class GaussianOverR (PeakFunction):
         else:
             guesspars[2] = self.c3*max_y*guesspars[0]*guesspars[1]
             guesspars[1] = np.arcsin(2*guesspars[1]**2/self.maxwidth**2-1.) #parameterized in terms of sin
-            
+
         return guesspars
 
     def scale_at(self, pars, x, scale):
         """Change parameters so value(x)->scale*value(x).
-        
+
         Does not change position or height of peak's maxima.  Raises
         MiseScalingError if the parameters cannot be scaled.
-        
+
         Parameters
         pars: (Array) Parameters corresponding to a single peak
         x: (float) Position of the border
@@ -152,35 +150,35 @@ class GaussianOverR (PeakFunction):
         if scale <= 0:
             emsg = ''.join(["Cannot scale by ", str(scale), "."])
             raise MiseScalingError(emsg)
-        
+
         if scale == 1:
             return pars
         else:
             ratio = 1/scale # Ugly: Equations orig. solved in terms of ratio
-        
+
         tpars = self.transform_parameters(pars, in_format="internal", out_format="mu_sigma_area")
-        
+
         #solves 1. f(rmax;mu1,sigma1,area1)=f(rmax;mu2,sigma2,area2)
         #       2. f(x;mu1,sigma1,area1)=ratio*f(x;mu1,sigma2,area2)
         #       3. 1/2*(mu1+sqrt(mu1^2+sigma1^2))=1/2*(mu2+sqrt(mu2^2+sigma2^2))=rmax
         # for mu2, sigma2, area2 (with appropriate unit conversions to fwhm at the end).
         # The expression for rmax is the appropriate solution to df/dr=0
         mu1, sigma1, area1 = tpars
-        
+
         # position of the peak maximum
         try:
             rmax = self.max(pars)[0]
         except ValueError, err:
             raise MiseScalingError(str(err))
-        
+
         # lhs of eqn1/eqn2 multiplied by ratio.  Then take the log.
         log_ratio_prime = np.log(ratio)+(x-rmax)*(x-2*mu1+rmax)/(2*sigma1**2)
-        
+
         # the semi-nasty algebra reduces to something nice
         sigma2 = np.sqrt(.5*rmax*(x-rmax)**2/(x-rmax+rmax*log_ratio_prime))
         mu2 = (sigma2**2+rmax**2)/rmax
         area2 = area1*(sigma2/sigma1)*np.exp(-(rmax-mu1)**2/(2*sigma1**2))/np.exp(-(rmax-mu2)**2/(2*sigma2**2))
-        
+
         tpars[0] = mu2
         tpars[1] = sigma2
         tpars[2] = area2
@@ -192,7 +190,7 @@ class GaussianOverR (PeakFunction):
 
     def _jacobianraw(self, pars, r, free):
         """Return Jacobian of width-limited Gaussian/r.
-        
+
            pars: Sequence of parameters for a single width-limited Gaussian
            pars[0]=peak position
            pars[1]=effective width, up to fwhm=maxwidth as par[1] -> inf.
@@ -210,7 +208,7 @@ class GaussianOverR (PeakFunction):
         sin_p = np.sin(pars[1]) + 1.
         p0minusr = pars[0]-r
         exp_p = np.exp(-(p0minusr)**2/(self.c2*sin_p))/(np.abs(r)*self.c1*np.sqrt(sin_p))
-        
+
         if free[0]:
             #derivative with respect to peak position
             jacobian[0] = -2.*exp_p*p0minusr*np.abs(pars[2])/(self.c2*sin_p)
@@ -227,17 +225,17 @@ class GaussianOverR (PeakFunction):
             if pars[2] >= 0:
                 jacobian[2] = exp_p
             else:
-                jacobian[2] = -exp_p   
+                jacobian[2] = -exp_p
         return jacobian
-        
+
     def _transform_derivativesraw(self, pars, in_format, out_format):
         """Return gradient matrix for the pars converted from in_format to out_format.
-        
+
            Parameters
            pars: Sequence of parameters
            in_format: A format defined for this class
            out_format: A format defined for this class
-           
+
            Defined Formats
            internal: [position, parameterized width-squared, area]
            pwa: [position, full width at half maximum, area]
@@ -247,10 +245,10 @@ class GaussianOverR (PeakFunction):
         # Therefore the gradient matrix is the identity matrix with the possible
         # exception of the element at [1,1].
         g = np.identity(self.npars)
-        
+
         if in_format == out_format:
             return
-            
+
         if in_format == "internal":
             if out_format == "pwa":
                 g[1,1] = self.maxwidth/(2*np.sqrt(2))*np.cos(pars[1])/np.sqrt(1+np.sin(pars[1]))
@@ -263,10 +261,10 @@ class GaussianOverR (PeakFunction):
             if out_format == "internal":
                 g[1,1] = 2/np.sqrt(self.maxwidth**2-pars[1]**2)
             elif out_format == "mu_sigma_area":
-                g[1,1] = 1/self.sigma2fwhm 
+                g[1,1] = 1/self.sigma2fwhm
             else:
                 raise ValueError("Argument 'out_format' must be one of %s." \
-                                  % self.parformats)     
+                                  % self.parformats)
         elif in_format == "mu_sigma_area":
             if out_format == "internal":
                 g[1,1] = 2*self.sigma2fwhm/np.sqrt(self.maxwidth**2-(self.sigma2fwhm*pars[1])**2)
@@ -278,33 +276,33 @@ class GaussianOverR (PeakFunction):
         else:
             raise ValueError("Argument 'in_format' must be one of %s." \
                               % self.parformats)
-        
+
         return g
 
     def _transform_parametersraw(self, pars, in_format, out_format):
         """Convert parameter values from in_format to out_format.
-        
+
            Also restores parameters to a preferred range if it permits multiple
            values that correspond to the same physical result.
-        
+
            Parameters
            pars: Sequence of parameters
            in_format: A format defined for this class
            out_format: A format defined for this class
-           
+
            Defined Formats
            internal: [position, parameterized width-squared, area]
            pwa: [position, full width at half maximum, area]
            mu_sigma_area: [mu, sigma, area]
         """
         temp = np.array(pars)
-        
+
         # Do I need to change anything?  The internal parameters may need to be
         # placed into the preferred range, even though their interpretation does
         # not change.
         if in_format == out_format and in_format != "internal":
             return pars
-        
+
         # Convert to intermediate format "internal"
         if in_format == "internal":
             # put the parameter for width in the "physical" quadrant [-pi/2,pi/2],
@@ -329,7 +327,7 @@ class GaussianOverR (PeakFunction):
         else:
             raise ValueError("Argument 'in_format' must be one of %s." \
                               % self.parformats)
-        
+
         # Convert to specified output format from "internal" format.
         if out_format == "internal":
             pass
@@ -344,14 +342,14 @@ class GaussianOverR (PeakFunction):
 
     def _valueraw(self, pars, r):
         """Return value of width-limited Gaussian/r for the given parameters and r values.
-        
+
            pars: Sequence of parameters for a single width-limited Gaussian
            pars[0]=peak position
            pars[1]=effective width, up to fwhm=maxwidth as par[1] -> inf.
                  =tan(pi/2*fwhm/maxwidth)
            pars[2]=multiplicative constant a, equivalent to peak area
            r: sequence or scalar over which pars is evaluated
-        """        
+        """
         return np.abs(pars[2])/(np.abs(r)*self.c1*np.sqrt(np.sin(pars[1])+1.))* \
             np.exp(-(r-pars[0])**2/(self.c2*(np.sin(pars[1])+1.)))
 
@@ -365,21 +363,21 @@ class GaussianOverR (PeakFunction):
         # TODO: Reconsider this behavior
         if len(pars) == 0:
             return None
-        
+
         # Transform parameters for convenience.
         tpars = self.transform_parameters(pars, in_format="internal", out_format="mu_sigma_area")
-        
+
         # The Gaussian/r only has a local maximum under this condition.
         # Physically realistic peaks will always meet this condition, but
         # trying to fit a signal down to r=0 could conceivably lead to issues.
         if tpars[0]**2 <= 4*tpars[1]**2:
             emsg = ''.join(["No local maximum with parameters\n", str(pars)])
             raise ValueError(emsg)
-            
+
         rmax = .5*(tpars[0]+np.sqrt(tpars[0]**2-4*tpars[1]**2))
         ymax = self._valueraw(pars, rmax)
         return np.array([rmax, ymax])
-       
+
 #end of class GaussianOverR
 
 # simple test code
@@ -390,28 +388,28 @@ if __name__ == '__main__':
     from diffpy.srmise.mise.modelevaluators import AICc
     from diffpy.srmise.mise.modelcluster import ModelCluster
     from diffpy.srmise.mise.peaks import Peaks
-    
+
     res = .01
     r = np.arange(2,4,res)
     err = np.ones(len(r)) # default unknown errors
     pf = GaussianOverR(.7)
     evaluator = AICc()
-    
+
     pars = [[3, .2, 10], [3.5, .2, 10]]
     ideal_peaks = Peaks([pf.createpeak(p, "pwa") for p in pars])
     y = ideal_peaks.value(r) + .1*randn(len(r))
-    
+
     guesspars = [[2.7, .15, 5], [3.7, .3, 5]]
     guess_peaks = Peaks([pf.createpeak(p, "pwa") for p in guesspars])
     cluster = ModelCluster(guess_peaks, r, y, err, None, AICc, [pf])
-    
+
     qual1 = cluster.quality()
     print qual1.stat
     cluster.fit()
     yfit = cluster.calc()
     qual2 = cluster.quality()
     print qual2.stat
-    
+
     plt.figure(1)
     plt.plot(r, y, r, yfit)
     plt.show()

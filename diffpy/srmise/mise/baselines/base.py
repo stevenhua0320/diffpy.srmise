@@ -11,8 +11,6 @@
 #
 ##############################################################################
 
-__id__ = "$Id: base.py 44 2014-07-12 21:10:58Z luke $"
-
 import numpy as np
 from diffpy.srmise.mise.miseerrors import *
 from diffpy.srmise.mise.basefunction import BaseFunction
@@ -23,7 +21,7 @@ logger = logging.getLogger("mise.peakextraction")
 
 class BaselineFunction(BaseFunction):
     """Base class for functions which represent some data's baseline term.
-    
+
     Class members
     -------------
     parameterdict: A dictionary mapping string keys to their index in the
@@ -31,12 +29,12 @@ class BaselineFunction(BaseFunction):
                    the default "internal" format.
     parformats: A sequence of strings defining what formats are recognized
                 by a baseline function.
-    default_formats: A dictionary which maps the strings "default_input" and 
+    default_formats: A dictionary which maps the strings "default_input" and
                      "default_output" to strings also appearing in parformats.
                      "default_input"-> format used internally within the class
                      "default_output"-> Default format to use when converting
                                         parameters for outside use.
-    
+
     Class methods (implemented by inheriting classes)
     -------------
     estimate_parameters() (optional)
@@ -44,11 +42,11 @@ class BaselineFunction(BaseFunction):
     _transform_derivativesraw() (optional, supports propagation of uncertainty for different paramaterizations)
     _transform_parametersraw()
     _valueraw()
-    
+
     Class methods
     -------------
     actualize()
-    
+
     Inherited methods
     -------------
     jacobian()
@@ -56,11 +54,11 @@ class BaselineFunction(BaseFunction):
     transform_derivatives()
     transform_parameters()
     """
-    
+
     def __init__(self, parameterdict, parformats, default_formats, metadict, base=None, Cache=None):
         """Set parameterdict defined by subclass
-        
-        parameterdict: A dictionary mapping string keys to their index in a 
+
+        parameterdict: A dictionary mapping string keys to their index in a
                        sequence of parameters for this PeakFunction subclass.
                        The key "position" is required.
         parformats: A sequence strings containing all allowed input/output
@@ -81,22 +79,22 @@ class BaselineFunction(BaseFunction):
 
 
     #### Methods required by BaseFunction ####
-    
+
     def actualize(self, pars, in_format="default_input", free=None, removable=False, static_owner=False):
         converted = self.transform_parameters(pars, in_format, out_format="internal")
         return Baseline(self, converted, free, removable, static_owner)
-        
+
     def getmodule(self):
         return __name__
-        
+
 #end of class BaselineFunction
 
 class Baseline(ModelPart):
     """Represents a baseline associated with a BaselineFunction subclass."""
-    
+
     def __init__(self, owner, pars, free=None, removable=False, static_owner=False):
         """Set instance members.
-        
+
         owner: an instance of a BaselineFunction subclass
         pars: Sequence of parameters which define the baseline
         free: Sequence of Boolean variables.  If False, the corresponding
@@ -104,26 +102,26 @@ class Baseline(ModelPart):
         removable: (False) Boolean determines whether the baseline can be removed.
         static_owner: (False) Whether or not the owner can be changed with
                       changeowner()
-        
+
         Note that free and removable are not mutually exclusive.  If any
         values are not free but removable=True then the entire baseline may be
         may be removed during peak extraction, but the held parameters for the
         baseline will remain unchanged until that point.
         """
         ModelPart.__init__(self, owner, pars, free, removable, static_owner)
-        
+
     @staticmethod
     def factory(baselinestr, ownerlist):
         """Instantiate a Peak from a string.
-        
+
         Parameters:
         baselinestr: string representing Baseline
         ownerlist: List of BaseFunctions that owner is in
         """
         from numpy import array
-        
+
         data = baselinestr.strip().splitlines()
-        
+
         # dictionary of parameters
         pdict = {}
         for d in data:
@@ -137,7 +135,7 @@ class Baseline(ModelPart):
             else:
                 emsg = ("Invalid parameter: %s" %d)
                 raise MiseDataFormatError(emsg)
-        
+
         # Correctly initialize the base function, if one exists.
         idx = pdict["owner"]
         if idx > len(ownerlist):
@@ -146,7 +144,7 @@ class Baseline(ModelPart):
         pdict["owner"] = ownerlist[idx]
 
         return Baseline(**pdict)
-        
+
 # End of class Baseline
 
 # simple test code
@@ -157,13 +155,13 @@ if __name__ == '__main__':
     from diffpy.srmise.mise.modelevaluators import AICc
     from diffpy.srmise.mise.modelcluster import ModelCluster
     from diffpy.srmise.mise.peaks import GaussianOverR
-    
+
     res = .01
     r = np.arange(2,4,res)
     err = np.ones(len(r)) #default unknown errors
     pf = GaussianOverR(.7)
     evaluator = AICc()
-    
+
     pars = [[3, .2, 10], [3.5, .2, 10]]
     ideal_peaks = Peaks([pf.createpeak(p, "pwa") for p in pars])
     y = ideal_peaks.value(r) + .1*randn(len(r))

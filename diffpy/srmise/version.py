@@ -14,8 +14,6 @@
 """Definition of __version__ and __date__ for SrMise.
 """
 
-__id__ = "$Id: version.py 44 2014-07-12 21:10:58Z luke $"
-
 # obtain version information
 from pkg_resources import get_distribution
 __version__ = get_distribution('diffpy.srmise').version

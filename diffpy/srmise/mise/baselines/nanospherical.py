@@ -11,8 +11,6 @@
 #
 ##############################################################################
 
-__id__ = "$Id: nanospherical.py 44 2014-07-12 21:10:58Z luke $"
-
 import numpy as np
 from diffpy.srmise.mise.baselines.base import BaselineFunction
 from diffpy.srmise.mise.miseerrors import MiseEstimationError
@@ -23,24 +21,24 @@ logger = logging.getLogger("mise.peakextraction")
 
 class NanoSpherical (BaselineFunction):
     """Methods for evaluation of baseline of spherical nanoparticle of uniform density.
-    
+
     Allowed formats are
     internal: [scale, radius]
-    
+
     Given nanoparticle radius R, the baseline is -scale*r*(1-(3r)/(4R)+(r^3)/(16*R^3)) in the
-    interval (0, abs(R)), and 0 elsewhere.  Internally, both scale and radius are unconstrained, 
+    interval (0, abs(R)), and 0 elsewhere.  Internally, both scale and radius are unconstrained,
     but negative values are mapped to their physically meaningful positive equivalents.
-    
+
     The expression in parentheses is gamma_0(r) for a sphere.  For a well normalized PDF the
     scale factor is 4*pi*rho_0, where rho_r is the nanoparticle density.
-    
+
     gamma_0(r) Reference:
     Guinier et. al. (1955). Small-angle Scattering from X-rays. New York: John Wiley & Sons, Inc.
     """
-    
+
     def __init__(self, Cache=None):
         """Initialize a spherical nanoparticle baseline.
-        
+
         Parameters
         Cache - A class (not instance) which implements caching of BaseFunction
                evaluations.
@@ -51,16 +49,16 @@ class NanoSpherical (BaselineFunction):
         default_formats = {'default_input':'internal', 'default_output':'internal'}
         metadict = {}
         BaselineFunction.__init__(self, parameterdict, formats, default_formats, metadict, None, Cache)
-        
+
     #### Methods required by BaselineFunction ####
 
 #    def estimate_parameters(self, r, y):
 #        """Estimate parameters for spherical baseline. (Not implemented!)
-#        
+#
 #        Parameters
 #        r - array along r from which to estimate
 #        y - array along y from which to estimate
-#        
+#
 #        Returns Numpy array of parameters in the default internal format.
 #        Raises NotImplementedError if estimation is not implemented for this
 #        degree, or MiseEstimationError if parameters cannot be estimated for
@@ -72,7 +70,7 @@ class NanoSpherical (BaselineFunction):
 
     def _jacobianraw(self, pars, r, free):
         """Return the Jacobian of the spherical baseline.
-        
+
         Parameters
         pars - Sequence of parameters for a spherical baseline
                pars[0] = scale
@@ -90,7 +88,7 @@ class NanoSpherical (BaselineFunction):
         jacobian = [None for p in range(self.npars)]
         if (free == False).sum() == self.npars:
             return jacobian
-            
+
         if np.isscalar(r):
             if r <= 0. or r >= 2.*pars[1]:
                 if free[0]: jacobian[0] = 0.
@@ -107,10 +105,10 @@ class NanoSpherical (BaselineFunction):
                 jacobian[1] = np.zeros(len(r))
                 jacobian[1][s] = self._jacobianrawradius(pars, r[s])
         return jacobian
-        
+
     def _jacobianrawscale(self, pars, r):
         """Return partial Jacobian wrt scale without bounds checking.
-        
+
         Parameters
         pars - Sequence of parameters for a spherical baseline
                pars[0] = scale
@@ -125,10 +123,10 @@ class NanoSpherical (BaselineFunction):
         # be fine.
         sign = np.sign(pars[1])
         return -sign*r*(1-(3./4.)*rdivR+(1./16.)*rdivR**3)
-        
+
     def _jacobianrawradius(self, pars, r):
         """Return partial Jacobian wrt radius without bounds checking.
-        
+
         Parameters
         pars - Sequence of parameters for a spherical baseline
                pars[0] = scale
@@ -144,17 +142,17 @@ class NanoSpherical (BaselineFunction):
 
     def _transform_parametersraw(self, pars, in_format, out_format):
         """Convert parameter values from in_format to out_format.
-        
+
         Parameters
         pars - Sequence of parameters
         in_format - A format defined for this class
         out_format - A format defined for this class
-           
+
         Defined Formats
         internal - [scale, radius]
         """
         temp = np.array(pars)
-        
+
         # Convert to intermediate format "internal"
         if in_format == "internal":
             # Map both scale and radius to their positive equivalents
@@ -163,7 +161,7 @@ class NanoSpherical (BaselineFunction):
         else:
             raise ValueError("Argument 'in_format' must be one of %s." \
                               % self.parformats)
-        
+
         # Convert to specified output format from "internal" format.
         if out_format == "internal":
             pass
@@ -174,9 +172,9 @@ class NanoSpherical (BaselineFunction):
 
     def _valueraw(self, pars, r):
         """Return value of spherical baseline for the given parameters and r values.
-        
+
         Outside the interval [0, radius] the baseline is 0.
-        
+
         Parameters
         pars - Sequence of parameters for a spherical baseline
                pars[0] = scale
@@ -196,10 +194,10 @@ class NanoSpherical (BaselineFunction):
             s = self._getdomain(pars, r)
             out[s] = self._valueraw2(pars, r[s])
             return out
-        
+
     def _valueraw2(self, pars, r):
         """Return value of spherical baseline without bounds checking for given parameters and r values.
-        
+
         Parameters
         pars - Sequence of parameters for a spherical baseline
                pars[0] = scale
@@ -210,16 +208,16 @@ class NanoSpherical (BaselineFunction):
         R = np.abs(pars[1])
         rdivR = r/R
         return -s*r*(1-(3./4.)*rdivR+(1./16.)*rdivR**3)
-        
+
     def _getdomain(self, pars, r):
         """Return slice object for which r > 0 and r < twice the radius"""
         low = r.searchsorted(0., side='right')
         high = r.searchsorted(2.*pars[1], side='left')
         return slice(low, high)
-        
+
     def getmodule(self):
         return __name__
-       
+
 #end of class NanoSpherical
 
 # simple test code

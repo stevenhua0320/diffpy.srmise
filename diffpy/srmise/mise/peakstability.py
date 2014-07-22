@@ -11,9 +11,6 @@
 #
 ##############################################################################
 
-__id__ = "$Id: peakstability.py 55 2014-07-18 10:44:37Z luke $"
-
-
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -28,7 +25,7 @@ from diffpy.srmise.mise import ModelCluster
 # 4) Really ugly kluge to allow FromSequence to pickle.
 class PeakStability:
     """Utility to test robustness of peaks.
-    
+
     results: [error scalar, model, bl, dr]
     ppe: a PDFPeakExtraction instance """
 
@@ -36,7 +33,7 @@ class PeakStability:
         self.results = []
         self.ppe = None
         self.current = None
-        
+
     def setppe(self, ppe):
         self.ppe = ppe
 
@@ -51,7 +48,7 @@ class PeakStability:
             (self.results, ppestr) = pickle.load(in_s)
             self.ppe = PDFPeakExtraction()
             self.ppe.readstr(ppestr)
-            
+
             # Ugly kluge for the baseline, since FromSequence
             # can't pickle.
             for r in self.results:
@@ -65,9 +62,9 @@ class PeakStability:
                         r[2] = bl.owner().actualize(in_format="internal", **kwds)
         finally:
             in_s.close()
-            
+
         self.setcurrent(0)
-        
+
     def save(self, filename):
         try:
            import cPickle as pickle
@@ -77,7 +74,7 @@ class PeakStability:
         try:
             # Write to the stream
             outstr = self.ppe.writestr()
-            
+
             # ugly kluge to let FromSequence pickle
             # (it stores xyrepr() in metadict)
             results2 = []
@@ -90,7 +87,7 @@ class PeakStability:
             pickle.dump([results2, outstr], out_s)
         finally:
             out_s.close()
-        
+
     def plotseries(self, style='o', **kwds):
         plt.figure()
         plt.ioff()
@@ -100,7 +97,7 @@ class PeakStability:
             plt.plot(peakpos, es, style, **kwds)
         plt.ion()
         plt.draw()
-            
+
     def plot(self, **kwds):
         """Plot the current model.  Keywords passed to pyplot.plot()"""
         plt.clf()
@@ -110,7 +107,7 @@ class PeakStability:
                      "Uncertainty: %6.3f. Peaks: %i.\n"
                      "Quality: %6.3f.  Chi-square: %6.3f"
                      %(self.current+1, len(self.results), self.ppe.effective_dy[0], len(self.ppe.extracted.model), q.stat, q.chisq))
-    
+
     def setcurrent(self, idx):
         """Make the idxth model the active one."""
         self.current = idx
@@ -121,18 +118,18 @@ class PeakStability:
             self.ppe.extracted = ModelCluster(result[1], result[2], r, y, dy, None, self.ppe.error_method, self.ppe.pf)
         else:
             self.ppe.clearcalc()
-        
+
     def animate(self, results=None, step=False, **kwds):
         """Show animation of extracted peaks from first to last.
-        
+
         Parameters:
         step - Require keypress to show next plot
         results - The indices of results to show
-        
+
         Keywords passed to pyplot.plot()"""
         if results is None:
             results = range(len(self.results))
-            
+
         oldcurrent = self.current
         self.setcurrent(0)
         plt.ion()
@@ -146,12 +143,12 @@ class PeakStability:
             plt.draw()
             if step:
                 raw_input()
-            
+
         self.setcurrent(oldcurrent)
-            
+
     def run(self, err, savecovs=False):
         """err is sequence of uncertainties to run at.
-        
+
         If savecovs is True, return the covariance matrix for each final fit."""
         self.results = []
         covs = []
@@ -165,7 +162,7 @@ class PeakStability:
                 self.ppe.extract()
             dr = (self.ppe.extracted.r_cluster[-1]-self.ppe.extracted.r_cluster[0])/(len(self.ppe.extracted.r_cluster)-1)
             self.results.append([e, self.ppe.extracted.model, self.ppe.extracted.baseline, dr])
-            
+
         for e, r, bl, dr in self.results:
             print "---- Results for uncertainty %s ----" %e
             print r

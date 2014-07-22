@@ -11,8 +11,6 @@
 #
 ##############################################################################
 
-__id__ = "$Id: pdfpeakextraction.py 55 2014-07-18 10:44:37Z luke $"
-
 import numpy as np
 import os.path
 import re
@@ -32,7 +30,7 @@ from diffpy.srmise.mise import miselog
 
 class PDFPeakExtraction(PeakExtraction):
     """Class for peak extraction of peaks from the PDF.
-    
+
     Data members in addition to those from PeakExtraction
     filename: Source PDF file
     nyquist: Whether or not to fit final model at Nyquist sampling rate
@@ -47,14 +45,14 @@ class PDFPeakExtraction(PeakExtraction):
            to True when Nyquist is True.
     supersample: Make sure data is supersampled by at least this factor
                  above Nyquist sampling before starting extraction.
-                 
+
     Note that resampling the PDF does not properly propagate the corresponding
     uncertainties, which are merely interpolated (and possibly scaled, see above).
     Further, all uncertainties are treated as statistically independent, but above
     the Nyquist rate the uncertainties of nearby points are highly correlated.
     The most trustworthy results are therefore obtained by providing data sampled
     at the Nyquist rate with correctly propagated uncertainties.
-    
+
     In some cases the number of free parameters of the best model found may
     exceed the number of independent points in the PDF.  This is frequently
     true when the PDF is oversampled and/or the reported uncertainties in the
@@ -71,10 +69,10 @@ class PDFPeakExtraction(PeakExtraction):
 
     def loadpdf(self, pdf):
         """Load dataset.
-        
+
         Parameters
         pdf: A PDFDataSet object, or the name of a file readable by one.
-        
+
         """
         self.clear()
         if isinstance(pdf, PDFDataSet):
@@ -86,7 +84,7 @@ class PDFPeakExtraction(PeakExtraction):
         self.setdata(d.robs, d.Gobs, d.drobs, d.dGobs)
         self.qmax_reportedbypdf = d.qmax
         return
-        
+
     def setdata(self, x, y, dx=None, dy=None):
         """Set data."""
         PeakExtraction.setdata(self, x, y, dx, dy)
@@ -109,10 +107,10 @@ class PDFPeakExtraction(PeakExtraction):
 
     def setvars(self, quiet=False, **kwds):
         """Set one or more extraction variables.
-        
+
         Variables
         quiet: [False] Log changes quietly.
-        
+
         Keywords
         cres: The clustering resolution, must be > 0.
         effective_dy: The uncertainties actually used during extraction
@@ -138,7 +136,7 @@ class PDFPeakExtraction(PeakExtraction):
     def defaultvars(self, *args):
         """Set default values."""
         nargs = list(args)
-        
+
         # qmax preference: fromdata, then reported, then 0.
         if self.qmax is None or "qmax" in args:
             if self.qmax_fromdata is not None:
@@ -148,7 +146,7 @@ class PDFPeakExtraction(PeakExtraction):
             else:
                 self.qmax = 0.
             if "qmax" in args: nargs.remove("qmax")
-            
+
         # nyquist
         if self.nyquist is None or "nyquist" in args:
             if self.qmax > 0:
@@ -156,7 +154,7 @@ class PDFPeakExtraction(PeakExtraction):
             else:
                 self.nyquist = False
             if "nyquist" in args: nargs.remove("nyquist")
-        
+
         # scale
         if self.scale is None or "scale" in args:
             if self.nyquist:
@@ -164,23 +162,23 @@ class PDFPeakExtraction(PeakExtraction):
             else:
                 self.scale = False
             if "scale" in args: nargs.remove("scale")
-            
+
         # supersample
         if self.supersample is None or "supersample" in args:
             self.supersample = 4.
             if "supersample" in args: nargs.remove("supersample")
-        
+
         # Override defaults from PeakExtraction
         if self.cres is None or "cres" in args:
             if self.qmax > 0:
                 self.cres = np.pi/self.qmax
                 if "cres" in args: nargs.remove("cres")
-            
+
         if self.pf is None or "pf" in args:
             from diffpy.srmise.mise.peaks import GaussianOverR
             self.pf = [GaussianOverR(.7)]
             if "pf" in args: nargs.remove("pf")
-        
+
         if self.baseline is None or "baseline" in args:
             from diffpy.srmise.mise.baselines import Polynomial
             bl = Polynomial(degree = 1)
@@ -192,40 +190,40 @@ class PDFPeakExtraction(PeakExtraction):
                 epars = np.array([])
             self.baseline = bl.actualize(epars, "internal")
             if "baseline" in args: nargs.remove("baseline")
-        
+
         # Enable "dg" as alias for "effective_dy"
         if "dg" in args and "effective_dy" not in args:
             nargs.add("effective_dy")
-        
+
         # Set other defaults
         PeakExtraction.defaultvars(self, *nargs)
 
     def resampledata(self, dr):
         """Return (x, y, error in x, effective error in y) resampled by interval dr.
-        
+
         Uses values of self.x, self.y, self.dx, self.effective_dy.  The range is
         constrained by self.rng.
-        
+
         The effective error may be scaled if class member scale is True.
-        
+
         The method for 'resampling' the uncertainties is interpolation, since insufficient
         information exists in a PDFPeakExtraction object to propogate them correctly on the
         new grid.
-        
+
         Parameters
         dr: The sampling interval"""
         self.defaultvars() # Find correct range if necessary.
-        
+
         if self.qmax == 0:
             logger.warning("Resampling when qmax=0.  Information may be lost!")
         else:
             dr_nyquist = np.pi/self.qmax
             if dr > dr_nyquist:
                 logger.warning("Resampling at %s, below Nyquist rate of %s.  Information will be lost!" %(dr, dr_nyquist))
-        
+
         r = np.arange(max(self.x[0], self.rng[0]), min(self.x[-1], self.rng[1]), dr)
         y = resample(self.x, self.y, r)
-        
+
         # TODO: Use a justified way to "resample" the uncertainties.
         # Even semi-justified would improve this ugly hack.
         if self.dx is None:
@@ -235,13 +233,13 @@ class PDFPeakExtraction(PeakExtraction):
         y_error = self.errorscale(dr)*np.interp(r, self.x, self.effective_dy)
 
         return (r, y, r_error, y_error)
-        
+
     def errorscale(self, dr):
         """Return proper scale of uncertainties.
-        
+
         Always returns 1 unless qmax > 0, Nyquist sampling
         is enabled, and scale is True.
-        
+
         Parameters
         dr: The sampling interval"""
         if self.qmax > 0 and self.nyquist and self.scale:
@@ -257,21 +255,21 @@ class PDFPeakExtraction(PeakExtraction):
         # can be carefully controlled this way as well.  Furthermore, it continues to
         # expose extract_single without change. (Could also implement a keyword system
         # here to control certain values.)
-        
+
         # TODO: Add extraction variables for how I control resampling.  Add these to
         # newvar, clean, defaultvar, etc.  In most cases the default are just fine.
-        
+
         self.clearcalc()
-        
+
         tracer = miselog.tracer
         tracer.pushc()
-        
+
         # Make sure all required extraction variables have some value
         self.defaultvars()
-        
+
         # Determine grid spacing
         dr_raw = (self.x[-1]-self.x[0])/(len(self.x)-1)
-        
+
         logger.info("Extract using qmax=%s", self.qmax)
 
         if self.qmax > 0:
@@ -286,7 +284,7 @@ class PDFPeakExtraction(PeakExtraction):
         else:
             # Do I actually need this?
             dr_nyquist = dr_raw # not actually Nyquist sampling, natch
-        
+
         # Define grids
         rngslice = self.getrangeslice()
         if self.qmax == 0:
@@ -303,15 +301,15 @@ class PDFPeakExtraction(PeakExtraction):
                 r1 = self.x[rngslice]
                 y1 = self.y[rngslice]
                 y_error1 = self.errorscale(dr_raw)*self.effective_dy[rngslice]
-        
+
         # Set up initial extraction
         pe = PeakExtraction()
         pe.setdata(r1, y1, None, None)
-        
+
         msg = ["Performing initial peak extraction",
                "----------------------------------"]
         logger.info("\n".join(msg))
-        
+
         pe.setvars(cres=self.cres, pf=self.pf, effective_dy = y_error1,
                    baseline=self.baseline, error_method=self.error_method,
                    initial_peaks=self.initial_peaks)
@@ -323,18 +321,18 @@ class PDFPeakExtraction(PeakExtraction):
 
         # Prune model with termination ripples
         if self.qmax > 0:
-        
+
             msg = ["Model after initial extraction.",
                    "%s",
                    "\n",
                    "-----------------------------",
                    "Adding termination ripples."]
-                   
+
             logger.info("\n".join(msg),
                         ext)
-            
+
             from diffpy.srmise.mise.peaks import TerminationRipples
-            
+
             owners = list(set([p.owner() for p in ext.model]))
             tfuncs={}
             for o in owners:
@@ -351,15 +349,15 @@ class PDFPeakExtraction(PeakExtraction):
                         p.changeowner(tfuncs[p.owner()])
                 except MiseStaticOwnerError:
                     pass
-                    
+
             #ext.prune()
             #print "Prune after term:\n", ext
-                    
+
             # Use Nyquist sampled data if desired
             if self.nyquist:
-            
+
                 logger.info("Applying Nyquist sampling.")
-                
+
                 # Models with more free parameters than data points cannot be fit
                 # with chi-squared methods, so sometimes the existing model cannot
                 # be pruned if the data are immediately resampled at the Nyquist
@@ -374,9 +372,9 @@ class PDFPeakExtraction(PeakExtraction):
                         dr_resample = .9999*(r1[-1]-r1[0])/totalfreepars
                     else:
                         dr_resample = dr_nyquist
-                    
+
                     logger.info("Data resampled at dr=%s. (Nyquist rate=%s)", dr_resample, dr_nyquist)
-                    
+
 #                    plt.ioff()
 #                    plt.figure(1)
 #                    plt.clf()
@@ -384,37 +382,37 @@ class PDFPeakExtraction(PeakExtraction):
 #                    plt.figure(2)
 #                    plt.clf()
 #                    plt.plot(*ext.plottable(joined=True))
-                    
+
 #                    titles = []
 #                    for i, p in enumerate(ext.model):
 #                        plt.figure(i+10)
 #                        titles.append(str(p))
 #                        plt.plot(ext.r_cluster, p.value(ext.r_cluster))
-                    
+
                     (r2, y2, r_error2, y_error2) = self.resampledata(dr_resample)
-        
+
                     ext = ModelCluster(ext.model, bl, r2, y2, y_error2, None, self.error_method, self.pf)
                     ext.fit() # Clean up parameters after resampling.
                     #print "Fitting after resampling:\n", ext
-                    
+
 #                    for i, p in enumerate(ext.model):
 #                        plt.figure(i+10)
 #                        plt.suptitle(titles[i]+"->"+str(p))
 #                        plt.plot(ext.r_cluster, p.value(ext.r_cluster))
-                    
+
 #                    plt.figure(3)
 #                    plt.clf()
 #                    plt.plot(*ext.plottable())
-#                    
+#
 #                    plt.figure(4)
 #                    plt.clf()
 #                    plt.plot(*ext.plottable(joined=True))
 #                    plt.ion()
 #                    plt.show()
 #                    raw_input()
-                    
+
                     ext.prune()
-                    
+
                     if dr_resample == dr_nyquist:
                         logger.info("Nyquist sampling complete.")
                         break
@@ -427,18 +425,18 @@ class PDFPeakExtraction(PeakExtraction):
                                "Degree of oversampling: %s"]
                         logger.warning("\n".join(msg), dr_resample, dr_nyquist, dr_nyquist/dr_resample)
                         break
-                    
+
             else:
                 ext = ModelCluster(ext.model, bl, r1, y1, y_error1, None, self.error_method, self.pf)
                 ext.prune()
-            
+
             logger.info("Model after resampling and termination ripples:\n%s", ext)
-        
+
         # Fit model with baseline, report covariance matrix
         cov = ModelCovariance()
         ext.fit(fitbaseline=True, cov=cov)
         tracer.emit(ext)
-        
+
         logger.info("Model after fitting with baseline:")
         try:
             cov.transform(in_format="internal", out_format="default_output")
@@ -447,18 +445,18 @@ class PDFPeakExtraction(PeakExtraction):
         except MiseUndefinedCovarianceError as e:
             logger.warn("Covariance not defined for final model.  Fit may not have converged.")
             logger.info(str(ext))
-        
-        
-        
-        
+
+
+
+
         # Update calculated instance variables
         self.extraction_type = "extract"
         self.extracted = ext
-        
+
         tracer.popc()
-        
+
         return cov
-        
+
     def writemetadata(self):
         """Return string representation of peak extraction from PDF."""
         lines = []
@@ -469,13 +467,13 @@ class PDFPeakExtraction(PeakExtraction):
         lines.append('qmax_fromdata=%s' %repr(self.qmax_fromdata))
         lines.append('scale=%s' %repr(self.scale))
         lines.append('supersample=%s' %repr(self.supersample))
-        
+
         datastring = "\n".join(lines)+"\n"
         return datastring
-        
+
     def readmetadata(self, metastr):
         """Read metadata from string."""
-        
+
         # filename
         res = re.search(r'^filename=(.*)$', metastr, re.M)
         if res:
@@ -483,7 +481,7 @@ class PDFPeakExtraction(PeakExtraction):
         else:
             emsg = "metastr does not match required field 'filename'"
             raise MiseDataFormatError(emsg)
-        
+
         # nyquist
         res = re.search(r'^nyquist=(.*)$', metastr, re.M)
         if res:
@@ -507,7 +505,7 @@ class PDFPeakExtraction(PeakExtraction):
         else:
             emsg = "metastr does not match required field 'qmax_reportedbypdf'"
             raise MiseDataFormatError(emsg)
-        
+
         # qmax_fromdata
         res = re.search(r'^qmax_fromdata=(.*)$', metastr, re.M)
         if res:
@@ -515,7 +513,7 @@ class PDFPeakExtraction(PeakExtraction):
         else:
             emsg = "metastr does not match required field 'qmax_fromdata'"
             raise MiseDataFormatError(emsg)
-            
+
         # scale
         res = re.search(r'^scale=(.*)$', metastr, re.M)
         if res:
@@ -523,7 +521,7 @@ class PDFPeakExtraction(PeakExtraction):
         else:
             emsg = "metastr does not match required field 'scale'"
             raise MiseDataFormatError(emsg)
-        
+
         # supersample
         res = re.search(r'^supersample=(.*)$', metastr, re.M)
         if res:
@@ -531,10 +529,10 @@ class PDFPeakExtraction(PeakExtraction):
         else:
             emsg = "metastr does not match required field 'supersample'"
             raise MiseDataFormatError(emsg)
-            
+
     def writepwa(self, filename, comments="n/a"):
         """Write string summarizing extracted peaks to file.
-        
+
         Parameters
         filename: the name of the file to write"""
         bytes = self.writepwastr(comments)
@@ -542,41 +540,41 @@ class PDFPeakExtraction(PeakExtraction):
         f.write(bytes)
         f.close()
         return
-            
+
     def writepwastr(self, comments):
         """Return string of extracted peaks (position, width, area) in PDF.
-        
+
         There is not enough information to recreate the extracted peaks from
         this file.
-        
+
         Parameters
         comments: String added to header containing notes about the output.
         """
-        
+
         if self.extracted is None:
             emsg = "Cannot write summary: Peak Extraction has not been performed."
             raise MiseError(emsg)
-        
+
         import time
         from getpass import getuser
         from diffpy.srmise.mise.basefunction import BaseFunction
         from diffpy.srmise import __version__
-        
+
         lines = []
-    
+
         # Header
         lines.extend([
             'Summary written: ' + time.ctime(),
             'produced by ' + getuser(),
             'diffpy.srmise version %s' %__version__,
             '##### User comments'])
-            
+
         tcomments = []
         for c in comments.splitlines():
             tcomments.append('# '+c)
-            
+
         lines.extend(tcomments)
-            
+
         lines.extend([
             '##### PDF Peak Extraction Summary',
             '# The information below is not sufficient to replicate extraction.'])
@@ -595,22 +593,22 @@ class PDFPeakExtraction(PeakExtraction):
         lines.append('## Peak extraction metadata')
 
         # Extraction range
-        lines.append("Range=%s" %repr(self.rng))  
+        lines.append("Range=%s" %repr(self.rng))
 
         # Clustering resolution
         lines.append('cres=%g' %self.cres)
-        
+
         # Average effective dy
         lines.append("effective_dy=%s (mean)" %np.mean(self.effective_dy))
         # Passing the entire thing is something we're avoiding in the summary.
-            
+
         lines.append('')
-        
+
         # Initial peaks
         # I'm not sure what I want for this, but probably nothing.
         #lines.append('## Initial Peaks')
         #lines.append('')
-        
+
         lines.append('## Model Quality')
         # Quality of fit
         lines.append("# Quality reported by ModelEvaluator: %s" %self.extracted.quality().stat)
@@ -626,10 +624,10 @@ class PDFPeakExtraction(PeakExtraction):
         if self.error_method is None:
             lines.append('ModelEvaluator=None')
         else:
-            lines.append('ModelEvaluator=%s' %self.error_method.__name__)      
-        
+            lines.append('ModelEvaluator=%s' %self.error_method.__name__)
+
         lines.append('')
-        
+
         # Generate list of PeakFunctions and BaselineFunctions
         # so I can refer to them by index.
         allpf = []
@@ -652,7 +650,7 @@ class PDFPeakExtraction(PeakExtraction):
         allbf = list(set(allbf))
         safepf = BaseFunction.safefunctionlist(allpf)
         safebf = BaseFunction.safefunctionlist(allbf)
-        
+
         # Baseline Functions
         lines.append('## Baseline Functions')
         lines.append('# Index Type')
@@ -662,9 +660,9 @@ class PDFPeakExtraction(PeakExtraction):
             else:
                 base = ""
             lines.append('%s %s %s' %(i, bf.getmodule(), base))
-        
+
         lines.append('')
-        
+
         # Baseline
         lines.append('## Baseline')
         lines.append('# Parameters of baseline, followed by comment which')
@@ -683,9 +681,9 @@ class PDFPeakExtraction(PeakExtraction):
                 blpars = '(no parameters)'
             blidx = safebf.index(blf)
             lines.append("%s # %s" %(blpars, blidx))
-            
+
         lines.append('')
-        
+
         # Peak Functions
         lines.append('## Peak Functions')
         lines.append('# Index Type')
@@ -695,9 +693,9 @@ class PDFPeakExtraction(PeakExtraction):
             else:
                 base = ""
             lines.append('%s %s %s' %(i, pf.getmodule(), base))
-        
+
         lines.append('')
-        
+
         # PWA
         lines.append('## Extracted Peaks')
         lines.append('# Parameters are given in the natural units of the data,')
@@ -713,38 +711,38 @@ class PDFPeakExtraction(PeakExtraction):
             aidx = pf.parameterdict["area"]
             pfidx = safepf.index(pf)
             lines.append("%s %s %s # %s" %(pwa[pidx], pwa[widx], pwa[aidx], pfidx))
-        
+
         datastring = "\n".join(lines)+"\n"
         return datastring
 
 #end PDFPeakExtraction class
-        
+
 def resample(orig_r, orig_y, new_r):
     """Resample sequence with Whittaker-Shannon interpolation formula.
-    
+
     Parameters
     orig_r: (Numpy array) The r grid of the original sample.
     orig_y: (Numpy array) The data to resample.
     new_r: (Numpy array) The resampled r grid.
-    
+
     Returns sequence of same type as new_r with the resampled values.
     """
     n = len(orig_r)
     dr = (orig_r[-1]-orig_r[0])/(n-1)
-    
+
     if new_r[0] < orig_r[0]:
         logger.warning("Resampling outside original grid: %s (requested) < %s (original)" %(new_r[0], orig_r[0]))
-    
+
     if new_r[-1] > orig_r[-1]:
         logger.warning("Resampling outside original grid: %s (requested) > %s (original)" %(new_r[-1], orig_r[-1]))
-    
+
     new_y = new_r * 0.
     shift = orig_r[0]/dr
     for i, y in enumerate(orig_y):
         new_y += y*np.sinc(new_r/dr-(i+shift))
-        
+
     return new_y
-    
+
 def find_qmax(r, y, showgraphs=False):
     """Determine approximate qmax from PDF.
 
@@ -782,12 +780,12 @@ def find_qmax(r, y, showgraphs=False):
 
     if showgraphs:
         import matplotlib.pyplot as plt
-        
+
         v1 = np.max([m_idx - int(np.sqrt(m_idx)), 2])
         v2 = np.min([m_idx + int(np.sqrt(len(yfft)-1-m_idx)), len(d_ratio)])
-        
+
         plt.ion()
-        
+
         # DFT of the PDF
         plt.figure()
         plt.subplot(211) # near obtained qmax
@@ -811,40 +809,40 @@ def find_qmax(r, y, showgraphs=False):
 #        plt.plot(np.arange(v1,v2), np.diff(d_ratio)[v1-2:v2-2])
 #        plt.subplot(212) # over whole range
 #        plt.plot(np.arange(len(np.diff(d_ratio))), np.diff(d_ratio))
-#        
+#
 #        # Second differences of ratio
 #        plt.figure()
 #        plt.subplot(211) # near obtained qmax
 #        plt.plot(np.arange(v1,v2), dder[v1-2:v2-2])
 #        plt.subplot(212) # over whole range
 #        plt.plot(np.arange(len(dder)), dder)
-        
+
         plt.show()
         plt.ioff()
         raw_input()
 
     return (qmax, dq)
-    
+
 def stdratio(data):
     """Calculate ratio of standard deviation for runs of equal length in data.
-    
+
     Uses a numerically-stable online algorithm for calculating the standard
     deviation.
-    
+
     Parameters
     data: Sequence of data values
-    
+
     Returns an array of length floor(len(data)/2)-1.  The ith element is
     equivalent to std(data[:i+2])/std(data[i+2:2i+4])."""
-    
+
     limit = int(np.floor(len(data)/2))
     std_left = np.zeros(limit)
     std_right = np.zeros(limit)
-    
+
     n = 0
     mean = 0.
     m2 = 0.
-    
+
     # Update std_left.  This is the usual online algorithm.
     for i in range(limit):
         n = n + 1
@@ -852,13 +850,13 @@ def stdratio(data):
         mean = mean + delta/n
         m2 = m2 + delta*(data[i]-mean)
         std_left[i] = m2
-        
+
     n = 2
     mean = (data[2]+data[3])/2
     m2 = (data[2]-mean)**2 + (data[3]-mean)**2
     std_right[0] = 0.
     std_right[1] = m2
-        
+
     # Update std_right.  Remove one from left side, add two on right.
     for i in range(2, limit):
         # Remove one from left
@@ -866,7 +864,7 @@ def stdratio(data):
         delta = data[i] - mean
         mean = mean - delta/n
         m2 = m2 - delta*(data[i] - mean)
-        
+
         # Add two to right
         n = n + 2
         mean_add = (data[2*i] + data[2*i+1])/2
@@ -875,9 +873,9 @@ def stdratio(data):
         mean = mean + (2*delta)/n
         m2 = m2 + m2_add + (delta**2)*(2*n-4)/n
         std_right[i] = m2
-    
+
     return np.sqrt(std_left[1:]/std_right[1:])
-        
+
 
 # Redirect to main extraction script
 if __name__ == '__main__':

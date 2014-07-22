@@ -25,8 +25,6 @@
    MiseStaticOwnerError: Error when changing ModelPart instance owner.
    """
 
-__id__ = "$Id: miseerrors.py 44 2014-07-12 21:10:58Z luke $"
-
 ### Superclass class for diffpy.srmise.mise
 class MiseError(Exception):
     """Superclass of all diffpy.srmise.mise exceptions."""
@@ -47,7 +45,7 @@ class MiseDataFormatError(MiseError):
     """diffpy.srmise.mise exception class.  Error in formatted data."""
     def __init__(self, info):
         """initialize
-        
+
         info -- description string"""
         MiseError.__init__(self, info)
 
@@ -56,7 +54,7 @@ class MiseEstimationError(MiseError):
     """diffpy.srmise.mise.modelevaluator exception class.  Parameter estimation error."""
     def __init__(self, info):
        """initialize
-       
+
        info -- description string"""
        MiseError.__init__(self, info)
 
@@ -65,7 +63,7 @@ class MiseFileError(MiseError):
     """diffpy.srmise.mise exception class.  Error while reading/writing files."""
     def __init__(self, info):
         """initialize
-        
+
         info -- description string"""
         MiseError.__init__(self, info)
 
@@ -83,7 +81,7 @@ class MiseLogError(MiseError):
     """diffpy.srmise.mise exception class.  Error while handling logging capabilities."""
     def __init__(self, info):
         """initialize
-        
+
         info -- description string"""
         MiseError.__init__(self, info)
 
@@ -92,7 +90,7 @@ class MiseModelEvaluatorError(MiseError):
     """diffpy.srmise.mise.modelevaluator exception class.  Error when comparing models."""
     def __init__(self, info):
        """initialize
-       
+
        info -- description string"""
        MiseError.__init__(self, info)
 
@@ -101,7 +99,7 @@ class MiseScalingError(MiseError):
     """diffpy.srmise.mise.peaks exception class.  Error when scaling a peak function."""
     def __init__(self, info):
        """initialize
-       
+
        info -- description string"""
        MiseError.__init__(self, info)
 
@@ -118,14 +116,14 @@ class MiseTransformationError(MiseError):
     """diffpy.srmise.mise exception class.  Error transforming model/covariance parameters."""
     def __init__(self, info):
         """initialize
-        
+
         info -- description string"""
         MiseError.__init__(self, info)
-         
+
 class MiseUndefinedCovarianceError(MiseError):
     """diffpy.srmise.mise exception class.  Attempted to perform on undefined covariance."""
     def __init__(self, info):
         """initialize
-        
+
         info -- description string"""
         MiseError.__init__(self, info)

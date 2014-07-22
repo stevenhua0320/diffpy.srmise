@@ -17,7 +17,6 @@ Classes
 ModelCluster: Associate a region of data to a model that describes it.
 ModelCov: Helper class for model covariance.
 """
-__id__ = "$Id: modelcluster.py 44 2014-07-12 21:10:58Z luke $"
 
 import numpy as np
 import scipy as sp
@@ -38,41 +37,41 @@ from diffpy.srmise.mise import miselog
 
 class ModelCovariance(object):
     """Helper class preserves uncertainty info (full covariance matrix) for a fit model.
-    
+
     This object preserves a light-weight "frozen" version of a model which can be used
     to interrogate the model about the uncertainties of its parameters.
-    
+
     Note that all parameters defined by a model, including fixed ones, are included in the
     covariance matrix. Fixed parameters are defined to have 0 uncertainty.
-    
+
     Methods
     -------
     """
-    
+
     def __init__(self, *args, **kwds):
         """Intialize object."""
         self.cov = None # The raw covariance matrix
         self.model = None # ModelParts instance, so both peaks and baseline (if present)
-        
+
         # Map i->[n1,n2,...] of the jth ModelPart to the n_i parameters in cov.
         self.mmap = {}
-        
+
         # Map [i,j]->n of jth parameter of ith ModelPart to nth parameter in cov.
         self.pmap = {}
-        
+
     def clear(self):
         """Reset object."""
         self.cov = None
         self.model = None
         self.mmap = {}
         self.pmap = {}
-        
+
     def setcovariance(self, model, cov):
         """Set model and covariance.
-        
+
         Automatically initializes covariance matrix to full set of parameters in model, even
         those listed as "fixed."
-        
+
         Parameters
         ----------
         model - A ModelParts object
@@ -81,23 +80,23 @@ class ModelCovariance(object):
               parameters with 0 uncertainty.
         """
         tempcov = np.array(cov)
-        
+
         if tempcov.shape[0] != tempcov.shape[1]:
             emsg = "Parameter 'cov' must be a square matrix."
             raise ValueError(emsg)
-    
-        
+
+
         if tempcov.shape[0] != model.npars(True) and tempcov.shape[0] != model.npars(False):
             emsg = ["Parameter 'cov' must be an nxn matrix, where n is equal to the number of free ",
                     "parameters in the model, or the total number of parameters (fixed and free) of ",
                     "the model."]
             raise ValueError("".join(emsg))
-      
+
         self.model = model.copy()
-        
+
         # The free/fixed status of every parameter in the model
         free = np.concatenate([m.free for m in self.model]).ravel()
-        
+
         # Create maps from model parts to index of corresponding covariance matrix row/column
         n = 0
         for i, m in enumerate(model):
@@ -105,14 +104,14 @@ class ModelCovariance(object):
             for j, p in enumerate(m):
                 self.pmap[(i,j)] = n
                 n += 1
-        
+
         if n == tempcov.shape[0]:
             # All free and fixed parameters already in passed covariance matrix
             self.cov = tempcov
         else:
             # Create new covariance matrix, making sure to account for fixed pars
             self.cov = np.matrix(np.zeros((n,n)))
-            
+
             i=0
             rawi=0
             for i in range(n):
@@ -124,28 +123,28 @@ class ModelCovariance(object):
                             self.cov[i,j] = cov[rawi,rawj]
                         rawj += 1
                     rawi += 1
-                        
-        
+
+
     def transform(self, in_format, out_format, **kwds):
         """Transform parameters and covariance matrix under specified change of variables.
-        
+
         By default this change applies to all parameters of the model.  If the specified transformation
         is invalid for a given ModelPart the original parameterization is maintained for that part.
-        
+
         This function assumes that the derivative of every variable under this change depends only on the
         other parameters in its own part.  Essentially, each model part has it own non-zero gradient matrix for
         any change of variables, but the gradient matrix between different parts is 0.
-        
+
         Note that transformed parameters may mix previously fixed and free parameters, and consequently
         the number of each kind is not necessarily preserved.  The user is cautioned to interpret a transformed
         covariance matrix carefully.  For example, the apparent degrees of freedom in the transformed
         covariance matrix may not coincide with the degrees of freedom during model fitting.
-        
+
         Parameters
         ----------
         in_format - The current format of parameters
         out_format - The new format for parameters
-        
+
         Keywords
         --------
         parts - Specify which model part, by index, to transform.  Defaults to all parts.
@@ -154,11 +153,11 @@ class ModelCovariance(object):
             parts = kwds["parts"]
         else:
             parts = range(len(self.model))
-            
+
         if self.cov is None:
             emsg = "Cannot transform undefined covariance matrix."
             raise MiseUndefinedCovarianceError(emsg)
-        
+
         # Calculate V_y = G Transpose(V_x) G
         # where V_y is the covariance matrix in terms of the parameterization y,
         # V_x is the current covariance matrix, and G is the gradient matrix of
@@ -167,9 +166,9 @@ class ModelCovariance(object):
         # Since we assume that the parameterization of each ModelPart is independent
         # of every other ModelPart, we create the full gradient matrix from the smaller
         # gradient submatrices of each ModelPart.
-        
+
         g = np.identity(self.cov.shape[0])
-        
+
         for i in parts:
             start = self.mmap[i][0]
             stop = self.mmap[i][-1]+1
@@ -182,8 +181,8 @@ class ModelCovariance(object):
             except Exception as e:
                 logger.warning("Transformation gradient failed for part %i: %s.  Failed with message %s. Ignoring transformation." %(i, str(p), str(e)))
                 subg = np.identity(p.npars(True))
-        
-            # Now transform the parameters to match        
+
+            # Now transform the parameters to match
             try:
                 p.pars = p.owner().transform_parameters(p.pars, in_format, out_format)
             except Exception as e:
@@ -192,51 +191,51 @@ class ModelCovariance(object):
 
             # Update the global gradient matrix
             g[start:stop, start:stop] = subg
-        
+
         g = np.matrix(g)
         self.cov = np.array(g*np.matrix(self.cov).transpose()*g)
-        
+
         return
-        
-        
+
+
     def getcorrelation(self, i, j):
         """Return the correlation between variables i and j, Corr_ij=Cov_ij/(sigma_i sigma_j)
-        
+
         Returns None if the correlation is not defined for a pair of parameters, usually
         because one or both were considered fixed during optimization.
         """
         if self.cov is None:
             emsg = "Cannot get correlation on undefined covariance matrix."
             raise MiseUndefinedCovarianceError(emsg)
-        
+
         if self.cov[i,i] == 0. or self.cov[j,j] == 0.:
             return None
         else:
             return self.cov[i,j]/(np.sqrt(self.cov[i,i])*np.sqrt(self.cov[j,j]))
-            
+
     def correlationwarning(self, threshold=0.8):
         """Report distinct variables with magnitude of correlation greater than threshold.
-        
+
         Returns a list of tuples (i, j, c), where i and j are the indices of the correlated variables,
         and c is their correlation.
-        
+
         Parameters
         ----------
         threshold - A real number between 0 and 1.
-        
+
         """
         if self.cov is None:
             emsg = "Cannot calculate correlation on undefined covariance matrix."
             raise MiseUndefinedCovarianceError(emsg)
-            
-        correlated = [] 
+
+        correlated = []
         for i in range(self.cov.shape[0]):
             for j in range(i+1, self.cov.shape[0]):
                 c = self.getcorrelation(i,j)
                 if c and np.abs(c) > threshold: # filter out None values
                     correlated.append((i, j, c))
         return correlated
-            
+
     def __str__(self):
         """Return string of value (uncertainty) pairs for all parameters."""
         if self.model is None or self.cov is None:
@@ -245,23 +244,23 @@ class ModelCovariance(object):
         for i, m in enumerate(self.model):
             lines.append("  ".join([self.prettypar(i,j) for j in range(len(m))]))
         return "\n".join(lines)
-        
+
     def prettypar(self, i, j):
         """Return string 'value (uncertainty)' for parameter j of model part i."""
         if self.model is None or self.cov is None:
             return "Model and/or Covariance matrix undefined."
         k = self.pmap[(i,j)]
         return "%f (%f)" %(self.model[i][j], np.sqrt(self.cov[k,k]))
-        
-        
+
+
 # End of class ModelCovariance
 
 class ModelCluster(object):
     """Associate a contiguous cluster of data with an appropriate model.
-    
+
     A ModelCluster instance is the basic unit of diffpy.srmise, combining data and
     a model with the basic tools for controlling their interaction.
-    
+
     Methods
     -------
     addexternalpeaks: Add peaks to model, and their value to the data.
@@ -285,12 +284,12 @@ class ModelCluster(object):
     value: Return value of the model plus baseline
     valuebl: Return value of the baseline
     writestr: Return string representation of self.
-    
+
     """
-    
+
     def __init__(self, model, *args, **kwds):
         """Intialize explicitly, or from existing ModelCluster.
-        
+
         Parameters [Explicit creation]
         model - Peaks object, or None->empty model
         baseline - Baseline object, or None->0
@@ -300,11 +299,11 @@ class ModelCluster(object):
         cluster_slice - slice object defining the range of cluster.  None->all data
         error_method - an ErrorEvaluator subclass
         peak_funcs - a sequence of PeakFunction instances
-        
+
         Parameters [Creation from existing ModelCluster]
         model - ModelCluster instance, or sequence of ModelCluster instances
         """
-        self.last_fit_size = 0        
+        self.last_fit_size = 0
         self.slice = None
         self.size = None
         self.r_cluster = None
@@ -332,12 +331,12 @@ class ModelCluster(object):
                 self.model = Peaks([])
             else:
                 self.model = model
-                
+
             self.baseline = args[0]
             self.r_data = args[1]
             self.y_data = args[2]
             self.y_error = args[3]
-            
+
             # Sets self.slice, self.size, self.r_cluster, self.y_cluster,
             # and self.error_cluster.
             if args[4] is None:
@@ -348,32 +347,32 @@ class ModelCluster(object):
             self.error_method = args[5]
             self.peak_funcs = args[6]
             return
-            
+
     def copy(self):
         """Return copy of this ModelCluster.
-        
+
         Equivalent to ModelCluster(self)"""
         return ModelCluster(self)
-            
+
     def addexternalpeaks(self, peaks):
         """Add peaks (and their value) to self.
-        
+
         Parameters
         peaks - A Peaks object
         """
         self.replacepeaks(peaks)
         self.y_data += peaks.value(self.r_data)
         self.y_cluster = self.y_data[self.slice]
-    
+
     def writestr(self, **kwds):
         """Return partial string representation.
-        
+
         Keywords
         pfbaselist - List of peak function bases.  Otherwise define list from self.
         blfbaselist - List of baseline function bases. Otherwise define list from self.
         """
         from diffpy.srmise.mise.basefunction import BaseFunction
-        
+
         if "pfbaselist" in kwds:
             pfbaselist = kwds["pfbaselist"]
             writepf = False
@@ -383,19 +382,19 @@ class ModelCluster(object):
             pfbaselist = list(set(pfbaselist))
             pfbaselist = BaseFunction.safefunctionlist(pfbaselist)
             writepf = True
-            
+
         if "blfbaselist" in kwds:
             blfbaselist = kwds["blfbaselist"]
             writeblf = False
         else:
             blfbaselist = BaseFunction.safefunctionlist([self.baseline.owner()])
             writeblf = True
-        
+
         lines = []
-            
+
         if self.peak_funcs is None:
             lines.append("peak_funcs=None")
-        else: 
+        else:
             lines.append("peak_funcs=%s" %repr([pfbaselist.index(p) for p in self.peak_funcs]))
         if self.error_method is None:
             lines.append('ModelEvaluator=None')
@@ -410,7 +409,7 @@ class ModelCluster(object):
             for i, bf in enumerate(blfbaselist):
                 lines.append('# BaselineFunction %s' %i)
                 lines.append(bf.writestr(blfbaselist))
-        
+
         # Indexed peak functions (unless externally provided)
         if writepf:
             lines.append("## PeakFunctions")
@@ -423,7 +422,7 @@ class ModelCluster(object):
             lines.append("None")
         else:
             lines.append(self.baseline.writestr(blfbaselist))
-            
+
         lines.append("## ModelPeaks")
         if self.model is None:
             lines.append("None")
@@ -431,39 +430,39 @@ class ModelCluster(object):
             for m in self.model:
                 lines.append('# ModelPeak')
                 lines.append(m.writestr(pfbaselist))
-                
+
         # Raw data in modelcluster.
         lines.append('### start data')
         lines.append('#L r y dy')
         for i in range(len(self.r_data)):
             lines.append('%g %g %g' % \
                 (self.r_data[i], self.y_data[i], self.y_error[i]) )
-                
+
         datastring = "\n".join(lines)+"\n"
         return datastring
-        
+
     @staticmethod
     def factory(mcstr, **kwds):
         """Create ModelCluster from string.
-        
+
         Keywords
         pfbaselist - List of peak function bases
         blfbaselist - List of baseline function bases
         """
         from diffpy.srmise.mise.basefunction import BaseFunction
-        
+
         if "pfbaselist" in kwds:
             readpf = False
             pfbaselist = kwds["pfbaselist"]
         else:
             readpf = True
-            
+
         if "blfbaselist" in kwds:
             readblf = False
             blfbaselist = kwds["blfbaselist"]
         else:
             readblf = True
-        
+
         # The major components are:
         # - Header
         # - BaselineFunctions (optional)
@@ -471,7 +470,7 @@ class ModelCluster(object):
         # - BaselineObject
         # - ModelPeaks
         # - StartData
-        
+
         # find data section, and what information it contains
         res = re.search(r'^#+ start data\s*(?:#.*\s+)*', mcstr, re.M)
         if res:
@@ -493,7 +492,7 @@ class ModelCluster(object):
         res = re.search(r'\bdy\b', start_data_info)
         if res:
             hasdy = True
-            
+
         # Model
         res = re.search(r'^#+ ModelPeaks.*$', header, re.M)
         if res:
@@ -505,28 +504,28 @@ class ModelCluster(object):
         if res:
             baselineobject = header[res.end():].strip()
             header = header[:res.start()]
-        
-        # Peak functions  
-        if readpf: 
+
+        # Peak functions
+        if readpf:
             res = re.search(r'^#+ PeakFunctions.*$', header, re.M)
             if res:
                 peakfunctions = header[res.end():].strip()
                 header = header[:res.start()]
-        
+
         # Baseline functions
         if readblf:
             res = re.search(r'^#+ BaselineFunctions.*$', header, re.M)
             if res:
                 baselinefunctions = header[res.end():].strip()
                 header = header[:res.start()]
-            
+
         ### Instantiating baseline functions
         if readblf:
             blfbaselist = []
             res = re.split(r'(?m)^#+ BaselineFunction \d+\s*(?:#.*\s+)*', baselinefunctions)
             for s in res[1:]:
                 blfbaselist.append(BaseFunction.factory(s, blfbaselist))
-        
+
         ### Instantiating peak functions
         if readpf:
             pfbaselist = []
@@ -534,32 +533,32 @@ class ModelCluster(object):
             for s in res[1:]:
                 pfbaselist.append(BaseFunction.factory(s, pfbaselist))
 
-            
+
         ### Instantiating header data
         # peak_funcs
         res = re.search(r'^peak_funcs=(.*)$', header, re.M)
         peak_funcs = eval(res.groups()[0].strip())
         if peak_funcs is not None:
             peak_funcs = [pfbaselist[i] for i in peak_funcs]
-            
+
         # error_method
         res = re.search(r'^ModelEvaluator=(.*)$', header, re.M)
         __import__("diffpy.srmise.mise.modelevaluators")
         module = sys.modules["diffpy.srmise.mise.modelevaluators"]
         error_method = getattr(module, res.groups()[0].strip())
-        
+
         # slice
         res = re.search(r'^slice=(.*)$', header, re.M)
         cluster_slice = eval(res.groups()[0].strip())
-        
-        
+
+
         ### Instantiating BaselineObject
         if re.match(r'^None$', baselineobject):
             baseline = None
         else:
             baseline = Baseline.factory(baselineobject, blfbaselist)
-            
-            
+
+
         ### Instantiating model
         model = Peaks()
         res = re.split(r'(?m)^#+ ModelPeak\s*(?:#.*\s+)*', model_peaks)
@@ -602,18 +601,18 @@ class ModelCluster(object):
             y_data = np.array(y_data)
         if hasdy:
             y_error = np.array(y_error)
-            
+
         return ModelCluster(model, baseline, r_data, y_data, y_error, cluster_slice, error_method, peak_funcs)
-            
-    
+
+
     @staticmethod
     def join_adjacent(m1, m2):
         """Create new ModelCluster from two adjacent ones.
-        
+
         Suspected duplicate peaks are removed, and peaks may be adjusted if
         their sum where the clusters meet exceeds the data.  m1 and m2 are
         unchanged.
-        
+
         Parameters
         m1 - A ModelCluster
         m2 - A ModelCluster
@@ -634,10 +633,10 @@ class ModelCluster(object):
         if not (m1.baseline == m2.baseline):
             emsg = "Cannot join ModelClusters that do not have equivalent baselines."
             raise ValueError(emsg)
-        
+
         m1_ids = m1.slice.indices(len(m1.r_data))
         m2_ids = m2.slice.indices(len(m1.r_data))
-    
+
         if m1_ids[0] < m2_ids[0]:
             left = m1
             right = m2
@@ -648,22 +647,22 @@ class ModelCluster(object):
             right = m1
             left_ids = m2_ids
             right_ids = m1_ids
-        
+
         if not right_ids[0] == left_ids[1]:
             raise ValueError("Given ModelClusters are not adjacent.")
-            
+
         new_slice=slice(left_ids[0], right_ids[1], 1)
-        
+
         # Approximately where the clusters meet.
         border_x = .5*(left.r_data[left_ids[1]-1] + right.r_data[right_ids[0]])
         border_y = .5*(left.y_data[left_ids[1]-1] + right.y_data[right_ids[0]])
 
-        if len(m1.model) > 0 and len(m2.model) > 0:        
+        if len(m1.model) > 0 and len(m2.model) > 0:
             new_model = left.model.copy()
             new_model.extend(right.model.copy())
             new_ids = new_model.argsort(key="position")
             new_model = Peaks([new_model[i] for i in new_ids])
-            
+
             # Compare raw order with sorted order.  Peaks which are *both* out
             # of the expected order AND located on the "wrong" side of
             # border_x are removed.  The highly unlikely case of two peaks
@@ -676,7 +675,7 @@ class ModelCluster(object):
                     if (new_model[i]["position"] > border_x and new_ids[i] <  len(left.model)) and \
                        (new_model[i]["position"] < border_x and new_ids[i] >= len(left.model)):
                         del new_model[i]
-            
+
             # Likely to improve any future fitting
             new_model.match_at(border_x, border_y)
         elif len(m1.model) > 0:
@@ -696,7 +695,7 @@ class ModelCluster(object):
         self.y_cluster = self.y_data[new_slice]
         self.error_cluster = self.y_error[new_slice]
         self.size = len(self.r_cluster)
-        
+
         # Determine if any data in the cluster is above the error threshold.
         # If not, then this cluster is never fit.  This is updated as the
         # cluster expands.  This is not necessarily a strict measure because
@@ -719,7 +718,7 @@ class ModelCluster(object):
             if self.never_fit and self.slice.stop > old_slice.stop:
                 right_slice = slice(old_slice.stop, self.slice.stop)
                 self.never_fit = max(y_data_nobl[right_slice] - self.y_error[right_slice]) < 0
-                
+
 #        plt.figure(1)
 #        plt.clf()
 #        plt.plot(*self.plottable())
@@ -728,10 +727,10 @@ class ModelCluster(object):
 #        raw_input()
 
         return
-        
+
     def npars(self, count_baseline=True, count_fixed=True):
         """Return number of parameters in model and baseline.
-        
+
         Parameters
         count_baseline - [True] Boolean determines whether or not to count
                                 parameters from baseline.
@@ -742,10 +741,10 @@ class ModelCluster(object):
         if count_baseline and self.baseline is not None:
             n += self.baseline.npars(count_fixed=count_fixed)
         return n
-        
+
     def replacepeaks(self, newpeaks, delslice=slice(0,0)):
         """Replace peaks given by delslice by those in newpeaks.
-        
+
         Parameters
         newpeaks - Add each Peak in this Peaks to cluster.
         delslice - Existing peaks given by slice object are deleted.
@@ -772,8 +771,8 @@ class ModelCluster(object):
             pass
         selected = self.peak_funcs[0]
         estimate = selected.estimate_parameters(self.r_cluster, self.y_cluster - self.valuebl())
-        
-        
+
+
         if estimate is not None:
             newpeak = selected.actualize(estimate, "internal")
             logger.info("Estimate: %s" %newpeak)
@@ -784,7 +783,7 @@ class ModelCluster(object):
 
     def fit(self, justify=False, ntrials=0, fitbaseline=False, estimate=True, cov=None):
         """Perform a chi-square fit of the model to data in cluster.
-        
+
         Parameters
         justify - Revert to initial model (if one exists) if new model
                   has only a single peak and the quality of the fit suggests
@@ -793,10 +792,10 @@ class ModelCluster(object):
                   '0' indicates the fitting algorithm's default.
         fitbaseline - Whether to fit baseline along with peaks
         estimate - Estimate a single peak from data if model is empty.
-        cov - An optional ModelCovariance object which preserves covariance of fit. 
-                 
+        cov - An optional ModelCovariance object which preserves covariance of fit.
+
         If fitting changes a model, return ModelEvaluator instance.  Otherwise
-        return None. 
+        return None.
         """
         if self.never_fit:
             return None
@@ -811,7 +810,7 @@ class ModelCluster(object):
             else:
                 logger.info("Fit: No model to fit.")
                 return
-                
+
         orig_qual = self.quality()
         orig_model = self.model.copy()
         if self.baseline is None:
@@ -819,7 +818,7 @@ class ModelCluster(object):
         else:
             orig_baseline = self.baseline.copy()
         self.last_fit_size = self.size
-        
+
         if fitbaseline and self.baseline is not None and self.baseline.npars(count_fixed=False) > 0:
             y_datafit = self.y_data
             fmodel = ModelParts(self.model)
@@ -827,9 +826,9 @@ class ModelCluster(object):
         else:
             y_datafit = self.y_data - self.valuebl(self.r_data)
             fmodel = self.model
-        
+
         try:
-            fmodel.fit(self.r_data, 
+            fmodel.fit(self.r_data,
                        y_datafit,
                        self.y_error,
                        self.slice,
@@ -840,17 +839,17 @@ class ModelCluster(object):
             self.model = orig_model
             self.baseline = orig_baseline
             return None
-            
+
         if fitbaseline and self.baseline is not None and self.baseline.npars(count_fixed=False) > 0:
             self.model = Peaks(fmodel[:-1])
             self.baseline = fmodel[-1]
         else:
             self.model = fmodel
-        
+
         self.model.sort()
         self.cleanfit()
         new_qual = self.quality()
-            
+
         # Test for fit improvement
         if new_qual < orig_qual:
             # either fit blew up (and leastsq didn't notice) or the fit had already converged.
@@ -869,7 +868,7 @@ class ModelCluster(object):
             self.model = orig_model
             self.baseline = orig_baseline
             return None
-        
+
         # Short version: When justify=True a single peak is no longer fit
         # after a second peak could potentially explain its residual.
         #
@@ -886,7 +885,7 @@ class ModelCluster(object):
                 msg = ["ModelCluster.fit(): Fit over current cluster better explained by additional peaks.",
                        "Reverting to original model."]
                 logger.debug("\n".join(msg))
-                
+
                 self.model = orig_model
                 self.baseline = orig_baseline
                 return None
@@ -894,11 +893,11 @@ class ModelCluster(object):
 
     def contingent_fit(self, minpoints, growth_threshold):
         """Fit cluster if it has grown sufficiently large since its last fit.
-        
+
         Parameters
         minpoints - The minimum number of points an empty cluster requires to fit.
         growth_threshold - Fit non-empty model if (currentsize/oldsize) >= this value.
-        
+
         Return ModelEvaluator instance if fit changed, otherwise None.
         """
         if self.never_fit:
@@ -917,7 +916,7 @@ class ModelCluster(object):
         outside_idx = range(0, left_idx)
         outside_idx.extend(range(right_idx, len(self.model)))
         #inside_idx = range(left_idx, right_idx)
-        
+
         # Identify outside peaks that contribute < error everywhere in cluster.
         # Must check entire cluster and not just nearest endpoint because not
         # every peak function can be assumed to have its greatest contribution
@@ -925,11 +924,11 @@ class ModelCluster(object):
         outside_idx = [i for i in outside_idx \
             if (self.model[i].removable \
             and max(self.model[i].value(self.r_cluster) - self.error_cluster) < 0)]
-        
+
         # TODO: Check for peaks that have blown up.
         # Remember to check if a peak is removable.
         blown_idx = []
-        
+
         # NaN is too serious not to remove, even if removable is False, but I should look
         # into better handling anyway.
         nan_idx = [i for i in range(len(self.model)) if np.isnan(self.model[i].pars).any()]
@@ -938,39 +937,39 @@ class ModelCluster(object):
             msg = ["Following peaks outside cluster made no contribution within it and were removed:"]
             msg.extend([str(self.model[i]) for i in outside_idx])
             logger.debug("\n".join(msg))
-                
+
         if len(nan_idx) > 0:
             msg = ["Following peaks include non-numerical parameters and were removed:"]
             msg.extend([str(self.model[i]) for i in nan_idx])
             logger.debug("\n".join(msg))
 
-#        # TODO: Uncomment when there's a point!    
+#        # TODO: Uncomment when there's a point!
 #        if len(blown_idx) > 0:
 #            msg = ["Following peaks inside cluster were too large and had to be removed:"]
 #            msg.extend([str(self.model[i]) for i in blown_idx])
 #            logger.info("\n".join(msg))
-         
+
         # A peak can only be removed once.
         to_remove = list(set(outside_idx) | set(blown_idx) | set(nan_idx))
         to_remove.sort()
-        
+
         logger.debug("Clean fits to remove: %s", to_remove)
-        
+
         for i in reversed(to_remove):
             del self.model[i]
         return len(to_remove)
-        
+
     def reduce_to(self, x, y):
         """Reduce model(x)>y to model(x)=y if hidden peaks are unlikely.
-        
+
         This serves as an initial parameter estimate more likely to match
         with peaks on the other side of x.  Peaks with fixed parameters or
         a maximum very close to x may prevent optimal results.
-        
+
         Parameters
         x - Position at which to match
         y - Height to match.
-        
+
         Return ModelEvaluator instance if fit changed, otherwise None."""
         # No reduction neccessary
         if self.model.value(x) < y:
@@ -979,7 +978,7 @@ class ModelCluster(object):
         orig_model = self.model.copy()
         self.model.match_at(x, y-self.valuebl(x))
         quality = self.fit()
-        
+
         # Did reduction help?
         if quality is None:
             logger.debug("reduce_to: Reduction failed, reverting.")
@@ -990,10 +989,10 @@ class ModelCluster(object):
             logger.debug("reduce_to: Reduction not justified, reverting.")
             self.model = orig_model
             return None
-            
+
         logger.debug("reduce_to: Reduction successful.")
         return quality
-        
+
     def value(self, r=None):
         """Return value of baseline+model over cluster."""
         if len(self.model)==0:
@@ -1003,12 +1002,12 @@ class ModelCluster(object):
                 return self.valuebl(r)+(self.model.value(self.r_data, self.slice)[self.slice])
             else:
                 return self.valuebl(r)+(self.model.value(r))
-            
+
     def valuebl(self, r=None):
         """Return baseline's value over cluster.
-        
+
         If no baseline exists its value is 0 everywhere.
-        
+
         Parameters
         r - value(s) over which to calculate the baseline's value.
             The default is over the entire cluster.
@@ -1023,21 +1022,21 @@ class ModelCluster(object):
                 return (self.baseline.value(self.r_data, self.slice)[self.slice])
             else:
                 return self.baseline.value(r)
-                
+
     def residual(self):
         """Return residual of model over cluster."""
         return self.y_cluster - self.value()
-        
+
     def quality(self, evaluator=None, **kwds):
         """Return ModelEvaluator instance containing calculated quality of the model.
-        
+
         ModelEvaluator objects may be compared as though they were numerical
         quantities.  Its raw value is given by the 'stat' member.  For more
         details see ModelEvaluator documentation.
-        
+
         Parameters
         evaluator - A ModelEvaluator class (not instance) to use instead of default.
-        
+
         Keywords
         kwds - Keyword arguments passed the the ModelEvaluator's evaluate() method.
         """
@@ -1047,7 +1046,7 @@ class ModelCluster(object):
             evaluator_inst = evaluator()
         evaluator_inst.evaluate(self, **kwds)
         return evaluator_inst
-        
+
     def plottable(self, joined=False):
         """Return sequence suitable for plotting cluster model+baseline with matplotlib.
 
@@ -1063,14 +1062,14 @@ class ModelCluster(object):
             for i, p in enumerate(self.model):
                 toreturn[2*i+3] = bl + p.value(self.r_data, self.slice)[self.slice]
             return toreturn
-            
+
     def plottable_residual(self):
         """Return sequence suitable for plotting cluster residual with matplotlib."""
         return [self.r_cluster, self.residual()]
 
     def augment(self, source):
         """Add peaks from another ModelCluster that improve this one's quality.
-        
+
         Parameters
         source - A ModelCluster instance
         """
@@ -1098,12 +1097,12 @@ class ModelCluster(object):
             for t, s in zip(test_models, source_model):
                 t.append(s)
             test_quals = np.array([None for t in test_models])
-        
+
             for i in range(len(test_models)):
                 self.model = test_models[i]
                 self.fit()
                 test_quals[i] = self.quality()
-            
+
             args = test_quals.argsort()
             if test_quals[args[-1]] > best_qual:
                 best_qual = test_quals[args[-1]]
@@ -1112,10 +1111,10 @@ class ModelCluster(object):
             else:
                 break # Best possible model has been found.
         self.replacepeaks(best_model, slice(len(self.model)))
-        
-        # TODO: Do I need this? If test_model contains peaks 
+
+        # TODO: Do I need this? If test_model contains peaks
         # by reference, the fit peaks will change as well.
-        self.fit() 
+        self.fit()
         msg = ["Best model after fit is:",
                "%s",
                "w/ quality: %s",
@@ -1125,7 +1124,7 @@ class ModelCluster(object):
                      best_qual.stat)
 
         return
-        
+
     def __str__(self):
         """Return string representation of the cluster."""
         return '\n'.join(["Slice: %s" %self.slice,
@@ -1135,10 +1134,10 @@ class ModelCluster(object):
 
     def prune(self):
         """Remove peaks until model quality no longer improves.
-        
+
         Peaks are removed in a greedy fashion, and the best possible model is
         by no means guaranteed.
-        
+
         Due to the somewhat exploratory nature of prune many non-convergent
         fits will generally be performed, but it severely restricts the number
         of function evaluations permitted during fitting, and so fits that do
@@ -1147,14 +1146,14 @@ class ModelCluster(object):
         """
         if len(self.model) == 0:
             return
-            
+
         tracer = miselog.tracer
         tracer.pushc()
-        
+
         y_nobl = self.y_cluster - self.valuebl()
         prune_mc = ModelCluster(None, None, self.r_cluster, y_nobl, self.error_cluster, None, self.error_method, self.peak_funcs)
         orig_model = self.model.copy()
-        
+
         peak_range = 3 # number of peaks on either side of deleted peak to fit
         check_models = []
         for m in orig_model:
@@ -1162,10 +1161,10 @@ class ModelCluster(object):
                 check_models.append(orig_model)
             else:
                 check_models.append(None)
-        
+
         best_model = self.model.copy()
         best_qual = self.quality()
-        
+
         msg = ["====Pruning fits:====",
                "Original model:",
                "%s",
@@ -1173,31 +1172,31 @@ class ModelCluster(object):
         logger.info("\n".join(msg),
                     best_model,
                     best_qual.stat)
-    
+
         #### Main prune loop ####
         while(check_models.count(None) < len(check_models)):
-            
-            # Cache value of individual peaks for best current model.     
+
+            # Cache value of individual peaks for best current model.
             best_modely = []
             for b in best_model:
                 best_modely.append(b.value(self.r_cluster))
-        
+
             check_qual = np.array([])
             check_qualidx = np.array([], dtype=np.int32)
-            
+
             check_models = []
             for m in best_model:
                 if m.removable:
                     check_models.append(best_model)
                 else:
                     check_models.append(None)
-            
+
             # Check the ith model
             # Use orig_model for initial parameters of each fit, but best_model for the parameters
             # of those peaks not being fit.  This means we are always fitting to the best y data
             # yet found, but that how this fit is achieved is less biased by the order in which
             # peaks are removed.
-            for i in range(len(check_models)):        
+            for i in range(len(check_models)):
                 if check_models[i] is not None:
                     # Create model with ith peak removed, and distant peaks effectively fixed
 #                    lo = max(i-peak_range, 0)
@@ -1206,13 +1205,13 @@ class ModelCluster(object):
 #                    check_models[i].extend(orig_model[i+1:hi].copy())
 #                    prune_mc.model = check_models[i]
 #                    addpars = orig_model.npars() - check_models[i].npars() - orig_model[i].npars(count_fixed=False)
-                    
+
                     lo = max(i-peak_range, 0)
                     hi = min(i+peak_range+1, len(best_model))
                     check_models[i] = best_model[lo:i].copy()
                     check_models[i].extend(best_model[i+1:hi].copy())
                     prune_mc.model = check_models[i]
-                    
+
                     msg = ["len(check_models): %s",
                            "len(best_model): %s",
                            "i: %s"]
@@ -1220,10 +1219,10 @@ class ModelCluster(object):
                                  len(check_models),
                                  len(best_model),
                                  i)
-                                 
+
                     addpars = best_model.npars() - check_models[i].npars() - best_model[i].npars(count_fixed=False)
-                    
-                    
+
+
                     # Remove contribution of (effectively) fixed peaks
                     y = np.array(y_nobl)
                     if lo > 0:
@@ -1233,7 +1232,7 @@ class ModelCluster(object):
                         y -= np.sum(best_modely[hi:], axis=0)
                     prune_mc.y_data = y
                     prune_mc.y_cluster = y
-                    
+
                     msg = ["",
                            "--- %s ---",
                            "Removed peak: %s",
@@ -1245,11 +1244,11 @@ class ModelCluster(object):
                                  prune_mc.model)
 
                     prune_mc.fit(ntrials=int(np.sqrt(len(y))+50), estimate=False)
-                    
+
                     qual = prune_mc.quality(kshift=addpars)
                     check_qual = np.append(check_qual, qual)
                     check_qualidx = np.append(check_qualidx, i)
-                    
+
                     msg = ["Found model:",
                            "%s",
                            "addpars: %s",
@@ -1258,13 +1257,13 @@ class ModelCluster(object):
                                  prune_mc.model,
                                  addpars,
                                  qual.stat)
-                    
+
                     # Do not check this peak in the future if quality decreased.
                     if qual < best_qual:
                         check_models[i] = None
-                    
+
             arg = check_qual.argsort()
-            
+
             msg = [" - Finished round of pruning -",
                    "best_qual: %s",
                    "check_qual: %s",
@@ -1273,7 +1272,7 @@ class ModelCluster(object):
                          best_qual.stat,
                          [c.stat for c in check_qual],
                          arg)
-                         
+
             arg = arg[-1]
             newbest_qual = check_qual[arg]
             newbest_qualidx = check_qualidx[arg]
@@ -1286,25 +1285,25 @@ class ModelCluster(object):
                 prune_mc.model = bmtemp
                 prune_mc.y_data = y_nobl
                 prune_mc.y_cluster = y_nobl
-                
+
                 logger.debug("New best model (before final fit):\n%s", prune_mc.model)
-                
+
                 prune_mc.fit(estimate=False)
                 best_qual = prune_mc.quality()
                 best_model = prune_mc.model
-                
+
                 # 12/25: Moved to main loop for tracer.
                 #        Should not cause any problems.
                 self.model = best_model
                 tracer.emit(self)
-                
+
                 msg = ["New best model:",
                        "%s",
                        "best_qual: %s"]
                 logger.debug("\n".join(msg),
                              best_model,
                              best_qual.stat)
-                             
+
                 if len(best_model) > 0:
                     del check_models[newbest_qualidx]
                     del orig_model[newbest_qualidx]
@@ -1315,11 +1314,11 @@ class ModelCluster(object):
                     break
             else:
                 break
-        
+
         # 12/25: Moved this into main loop to help tracer
-        #        Should not cause any issues.       
+        #        Should not cause any issues.
         #self.model = best_model
-        
+
         msg = ["Best model after pruning is:",
                "%s",
                "w/ quality: %s",
@@ -1337,22 +1336,22 @@ class ModelCluster(object):
 # simple test code
 if __name__ == '__main__':
     from numpy.random import randn
-    
+
     from diffpy.srmise.mise.modelevaluators import AICc
     from diffpy.srmise.mise.peaks import GaussianOverR
-    
+
     pf = GaussianOverR(.7)
     res = .01
-    
+
     pars = [[3, .2, 10], [3.5, .2, 10]]
     ideal_peaks = Peaks([pf.actualize(p, "pwa") for p in pars])
 
     r = np.arange(2,4,res)
     y = ideal_peaks.value(r) + randn(len(r))
-    
+
     err = np.ones(len(r))
     evaluator = AICc()
-    
+
     guesspars = [[2.9, .15, 5], [3.6, .3, 5]]
     guess_peaks = Peaks([pf.actualize(p, "pwa") for p in guesspars])
     cluster = ModelCluster(guess_peaks, None, r, y, err, None, AICc, [pf])
@@ -1362,8 +1361,8 @@ if __name__ == '__main__':
 
     print "\n--- Before fit ---"
     print cluster
-    
+
     cluster.fit()
-    
+
     print "\n--- After fit ---"
     print cluster

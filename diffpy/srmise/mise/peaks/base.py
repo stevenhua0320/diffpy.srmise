@@ -11,8 +11,6 @@
 #
 ##############################################################################
 
-__id__ = "$Id: base.py 44 2014-07-12 21:10:58Z luke $"
-
 import numpy as np
 from diffpy.srmise.mise.miseerrors import *
 from diffpy.srmise.mise.basefunction import BaseFunction
@@ -23,7 +21,7 @@ logger = logging.getLogger("mise.peakextraction")
 
 class PeakFunction(BaseFunction):
     """Base class for functions which represent peaks.
-    
+
     Class members
     -------------
     parameterdict: A dictionary mapping string keys to their index in the
@@ -32,12 +30,12 @@ class PeakFunction(BaseFunction):
                    the default "internal" format.
     parformats: A sequence of strings defining what formats are recognized
                 by a peak function.
-    default_formats: A dictionary which maps the strings "default_input" and 
+    default_formats: A dictionary which maps the strings "default_input" and
                      "default_output" to strings also appearing in parformats.
                      "default_input"-> format used internally within the class
                      "default_output"-> Default format to use when converting
                                         parameters for outside use.
-    
+
     Class methods (implemented by inheriting classes)
     -------------
     estimate_parameters()
@@ -46,11 +44,11 @@ class PeakFunction(BaseFunction):
     _transform_derivativesraw() (optional, supports propagation of uncertainty for different paramaterizations)
     _transform_parametersraw()
     _valueraw()
-    
+
     Class methods
     -------------
     actualize()
-    
+
     Inherited methods
     -------------
     jacobian()
@@ -58,11 +56,11 @@ class PeakFunction(BaseFunction):
     transform_derivatives()
     transform_parameters()
     """
-    
+
     def __init__(self, parameterdict, parformats, default_formats, metadict, base=None, Cache=None):
         """Set parameterdict defined by subclass
-        
-        parameterdict: A dictionary mapping string keys to their index in a 
+
+        parameterdict: A dictionary mapping string keys to their index in a
                        sequence of parameters for this PeakFunction subclass.
                        The key "position" is required.
         parformats: A sequence strings containing all allowed input/output
@@ -83,35 +81,35 @@ class PeakFunction(BaseFunction):
 
 
     #### "Virtual" class methods ####
-                                  
+
     def scale_at(self, peak, x, scale):
         emsg = "scale_at must be implemented in a PeakFunction subclass."
         raise NotImplementedError(emsg)
 
 
     #### Methods required by BaseFunction ####
-    
+
     def actualize(self, pars, in_format="default_input", free=None, removable=True, static_owner=False):
         converted = self.transform_parameters(pars, in_format, out_format="internal")
         return Peak(self, converted, free, removable, static_owner)
-        
+
     def getmodule(self):
         return __name__
-        
+
 #end of class PeakFunction
 
 class Peaks(ModelParts):
     """A collection for Peak objects."""
-    
+
     def __init__(self, *args, **kwds):
         # Check that args[0] (if it exists) is an instance of Peaks?
         ModelParts.__init__(self, *args, **kwds)
-        
+
     def argsort(self, key="position"):
         """Return sequence of indices which sort peaks in order specified by key."""
         keypars=np.array([p[key] for p in self])
         # In normal use the peaks will already be sorted, so check for it.
-        sorted=True        
+        sorted=True
         for i in range(len(keypars)-1):
             if keypars[i] > keypars[i+1]:
                 sorted=False
@@ -127,19 +125,19 @@ class Peaks(ModelParts):
         Each peak is scaled equally.  Peaks with fixed parameters, a maximum
         very close to x, or other issues may prevent optimal results.  If the
         peaks cannot be scaled at all they are left unchanged.
-        
+
         Parameters:
         x: (float) Position at which to match.
         y: (float) Height to match.
-        
+
         Returns True if one or more peaks was scaled, False otherwise.
         """
         height = self.value(x)
         if height == 0:
             return False
-        
+
         orig = self.copy()
-        
+
         try:
             scale = y/height
 
@@ -155,7 +153,7 @@ class Peaks(ModelParts):
                 any_scaled = any_scaled or scaled[-1]
                 if not scaled[-1]:
                     fixed_height += peak.value(x)
-                
+
             # Second attempt at scaling peaks.
             if not all_scaled and fixed_height < y and fixed_height < height:
                 self[:] = orig[:]
@@ -171,7 +169,7 @@ class Peaks(ModelParts):
             self[:] = orig[:]
             return False
         return any_scaled
-        
+
     def sort(self, key="position"):
         """Sort peaks in order specified by key."""
         keypars=np.array([p[key] for p in self])
@@ -183,10 +181,10 @@ class Peaks(ModelParts):
 
 class Peak(ModelPart):
     """Represents a single peak associated with a PeakFunction subclass."""
-    
+
     def __init__(self, owner, pars, free=None, removable=True, static_owner=False):
         """Set instance members.
-        
+
         owner: an instance of a PeakFunction subclass
         pars: Sequence of parameters which define a single peak
         free: Sequence of Boolean variables.  If False, the corresponding
@@ -194,7 +192,7 @@ class Peak(ModelPart):
         removable: Boolean determines whether this peak can be removed.
         static_owner: (False) Whether or not the owner can be changed with
                       changeowner()
-        
+
         Note that free and removable are not mutually exclusive.  If any
         values are not free but removable=True then the entire peak may be
         removed during peak extraction, but the held parameters for this
@@ -204,30 +202,30 @@ class Peak(ModelPart):
 
     def scale_at(self, x, scale):
         """Change parameters so value(x)->scale*value(x).
-        
+
         Does not change position or height of peak's maxima.  If parameters
         that are not free would be changed, or violates other constraints,
         the peak is not adjusted.
-        
+
         Parameters
         x: (float) Position of the border
         scale: (float > 0) Amount by which to scale.
-        
+
         Returns True if parameters were scaled, False otherwise.
         """
         # Reminder: Bitwise operators "&" and "~" work element-wise with
         # numpy arrays.
-        
+
         # Check for no free parameters.
         if np.all(~self.free):
             return False
-            
+
         try:
             adj_pars = self._owner.scale_at(self.pars, x, scale)
         except MiseScalingError, err:
             logger.debug("Cannot scale peak:", err)
             return False
-        
+
         # Check if a fixed parameter was changed.
         if np.any((self.pars != adj_pars) & ~self.free):
             logger.debug("Cannot scale peak: a fixed parameter was changed")
@@ -235,19 +233,19 @@ class Peak(ModelPart):
         #print "scale_at: ", (x, scale), "\n", self.pars, " -> ", adj_pars
         self.pars = adj_pars
         return True
-        
+
     @staticmethod
     def factory(peakstr, ownerlist):
         """Instantiate a Peak from a string.
-        
+
         Parameters:
         peakstr: string representing peak
         ownerlist: List of BaseFunctions that owner is in
         """
-        from numpy import array        
-        
+        from numpy import array
+
         data = peakstr.strip().splitlines()
-        
+
         # dictionary of parameters
         pdict = {}
         for d in data:
@@ -261,7 +259,7 @@ class Peak(ModelPart):
             else:
                 emsg = ("Invalid parameter: %s" %d)
                 raise MiseDataFormatError(emsg)
-        
+
         # Correctly initialize the base function, if one exists.
         idx = pdict["owner"]
         if idx > len(ownerlist):
@@ -270,7 +268,7 @@ class Peak(ModelPart):
         pdict["owner"] = ownerlist[idx]
 
         return Peak(**pdict)
-        
+
 # End of class Peak
 
 # simple test code
@@ -281,28 +279,28 @@ if __name__ == '__main__':
     from diffpy.srmise.mise.modelevaluators import AICc
     from diffpy.srmise.mise.modelcluster import ModelCluster
     from diffpy.srmise.mise.peaks import GaussianOverR
-    
+
     res = .01
     r = np.arange(2,4,res)
     err = np.ones(len(r)) #default unknown errors
     pf = GaussianOverR(.7)
     evaluator = AICc()
-    
+
     pars = [[3, .2, 10], [3.5, .2, 10]]
     ideal_peaks = Peaks([pf.actualize(p, "pwa") for p in pars])
     y = ideal_peaks.value(r) + .1*randn(len(r))
-    
+
     guesspars = [[2.7, .15, 5], [3.7, .3, 5]]
     guess_peaks = Peaks([pf.actualize(p, "pwa") for p in guesspars])
     cluster = ModelCluster(guess_peaks, r, y, err, None, AICc, [pf])
-    
+
     qual1 = cluster.quality()
     print qual1.stat
     cluster.fit()
     yfit = cluster.calc()
     qual2 = cluster.quality()
     print qual2.stat
-    
+
     plt.figure(1)
     plt.plot(r, y, r, yfit)
     plt.show()

@@ -11,23 +11,21 @@
 #
 ##############################################################################
 
-__id__ = "$Id: extract.py 48 2014-07-16 15:01:59Z luke $"
-
 from optparse import OptionParser, OptionGroup
 import diffpy.srmise
 
 def main():
     """Default SrMise entry-point."""
-    
+
     usage = ("usage: %prog pdf_file [options]\n"
              "pdf_file can be any pdf readable by diffpy.pdfgui, or a file saved by SrMise.")
-             
+
     from diffpy.srmise import __version__
     version = "diffpy.srmise "+__version__
-    
+
     descr = ("The SrMise package is a tool to aid extracting and fitting peaks "
              "that comprise a pair distribution function.")
-              
+
     epilog = ("The options above override those already existing in a .srmise file, as well "
               "as the usual defaults in the SrMise package summarized here.\n\n"
               "Defaults (when qmax > 0)\n"
@@ -64,10 +62,10 @@ def main():
               "terrible peaks which do not improve, or seemingly good ones which are removed.  If obvious "
               "peaks are missing, a simple thing to try is to set the PDFPeakExtraction instance's "
               "initial_peaks member to the extracted model and extract again.")
-            
+
     parser = OptionParser(usage=usage, description=descr, epilog=epilog, version=version,
                           formatter=IndentedHelpFormatterWithNL())
-    
+
     parser.set_defaults(plot=False, liveplot=False, wait=False, performextraction=True, dg_mode='dG-fraction', verbosity="warning")
     dg_defaults = {'absolute':None, 'max-fraction':.05, 'ptp-fraction':.05, 'dG-fraction':1.}
 
@@ -102,13 +100,13 @@ def main():
                       help="Use spherical nanoparticle baseline with scale s and radius r.  "
                            "Append 'c' to make parameter constant.")
     parser.add_option_group(group)
-                           
-                           
+
+
     group = OptionGroup(parser, "Uncertainty Options",
                         "May specify ")
     parser.add_option("--dg-mode", dest="dg_mode", type="choice",
                       choices=['absolute', 'max-fraction', 'ptp-fraction', 'dG-fraction'],
-                      help="Treat value for --dg as absolute, fraction of maximum value in range, fraction of peak-to-peak value in range, " 
+                      help="Treat value for --dg as absolute, fraction of maximum value in range, fraction of peak-to-peak value in range, "
                            "or fraction of reported dG.")
     parser.add_option("--dg", dest="dg", type="float",
                       help="Perform extraction assuming uncertainty dg. Defaults depend on --dg-mode as follows. "
@@ -118,9 +116,9 @@ def main():
 #                      help="Generate n models from dg_min to dg_max (given by --dg-mode) and perform multimodel analysis. "
 #                           "This overrides any value given for --dg")
     parser.add_option_group(group)
-    
 
-    parser.add_option("--nyquist", action="store_true", dest="nyquist", 
+
+    parser.add_option("--nyquist", action="store_true", dest="nyquist",
                       help="Use Nyquist resampling if qmax > 0.")
     parser.add_option("--no-nyquist", action="store_false", dest="nyquist",
                       help="Do not use Nyquist resampling.")
@@ -134,7 +132,7 @@ def main():
                       help="Scale supersampled uncertainties by sqrt(oversampling) in intermediate steps when Nyquist sampling.")
     parser.add_option("--no-scale", action="store_false", dest="scale",
                       help="Never rescale uncertainties.")
-                      
+
     group = OptionGroup(parser, "Analysis Options",
                         "")
     parser.add_option("--extract", action="store_true", dest="performextraction",
@@ -142,20 +140,20 @@ def main():
     parser.add_option("--no-extract", action="store_false", dest="performextraction",
                       help="Do not perform extraction.")
     parser.add_option_group(group)
-    
-                      
+
+
     group = OptionGroup(parser, "Output Options",
                         "These options may have different effects for single or multimodel extraction.")
     parser.add_option("--name", dest="name", help="Name extraction, serves as basis for any saved files.")
-    parser.add_option("--pwa", dest="pwafile", metavar="FILE", 
+    parser.add_option("--pwa", dest="pwafile", metavar="FILE",
                       help="Save summary of result to FILE (.pwa format).")
-    parser.add_option("--save", dest="savefile", metavar="FILE", 
+    parser.add_option("--save", dest="savefile", metavar="FILE",
                       help="Save result of extraction to FILE (.srmise format).")
     parser.add_option("--plot", "-p", action="store_true", dest="plot",
                       help="Plot extracted peaks.")
     parser.add_option_group(group)
 
-                      
+
     group = OptionGroup(parser, "Debug Options",
                         "Control output to console.")
     parser.add_option("--informative", "-i", action="store_const", const="info", dest="verbosity",
@@ -167,7 +165,7 @@ def main():
     parser.add_option("--verbose", "-v", action="store_const", const="debug", dest="verbosity",
                       help="Show verbose output.")
     parser.add_option_group(group)
-                      
+
     group = OptionGroup(parser, "Deprecated/Experimental Options",
                         "Not for general use.")
     parser.add_option("--liveplot", "-l", action="store_true", dest="liveplot",
@@ -175,19 +173,19 @@ def main():
     parser.add_option("--wait", "-w", action="store_true", dest="wait",
                       help="When using liveplot wait for user after plotting.")
     parser.add_option_group(group)
-    
+
     (options, args) = parser.parse_args()
 
     if len(args) != 1:
         parser.error("Exactly one argument required. \n"+usage)
-    
+
     from diffpy.srmise.mise import miselog
     miselog.setlevel(options.verbosity)
-    
+
     import numpy as np
     from diffpy.srmise.mise.pdfpeakextraction import PDFPeakExtraction
     from diffpy.srmise.mise.miseerrors import MiseDataFormatError, MiseFileError
-    
+
     if options.peakfunction is not None:
         from diffpy.srmise.mise import peaks
         try:
@@ -196,7 +194,7 @@ def main():
             print err
             print "Could not create peak function '%s'.  Using default type." %options.peakfunction
             options.peakfunction = None
-            
+
     if options.modelevaluator is not None:
         from diffpy.srmise.mise import modelevaluators
         try:
@@ -205,7 +203,7 @@ def main():
             print err
             print "Could not find ModelEvaluator '%s'.  Using default type." %options.modelevaluator
             options.modelevaluator = None
-    
+
     if options.bcrystal is not None:
         from diffpy.srmise.mise.baselines import Polynomial
         bl = Polynomial(degree=1)
@@ -244,16 +242,16 @@ def main():
             print err
             print "Could not create baseline '%s'.  No baseline will be used." %options.baseline
             options.baseline = None
-    
+
     filename = args[0]
-    
+
     if filename is not None:
         ext = PDFPeakExtraction()
         try:
             ext.read(filename)
         except (MiseDataFormatError, MiseFileError, Exception):
             ext.loadpdf(filename)
-        
+
         pdict = {}
         if options.peakfunction is not None:
             pdict["pf"] = [options.peakfunction]
@@ -281,24 +279,24 @@ def main():
             pdict["scale"] = options.scale
         if options.modelevaluator is not None:
             pdict["error_method"] = options.modelevaluator
-            
+
         if options.liveplot:
             from diffpy.srmise.mise import miselog
             miselog.liveplotting(True, options.wait)
-        
+
         ext.setvars(**pdict)
         if options.performextraction:
             ext.extract()
         out = ext.extracted
-        
+
         if options.savefile is not None:
             try:
                 ext.write(options.savefile)
             except MiseFileError, err:
                 print err
                 print "Could not save result to '%s'." %options.savefile
-                
-            
+
+
         if options.pwafile is not None:
             try:
                 ext.writepwa(options.pwafile)
@@ -322,11 +320,11 @@ def main():
 
 def parsepars(mp, parseq):
     """Return actualized model from sequence of strings.
-    
+
     Each item in parseq must be interpretable as a float, or as
     a float with the character 'c' appended.  If 'c' is appended,
     that parameter will be fixed.
-    
+
     Parameters:
     mp - A ModelPart instance
     parseq - A sequence of string
@@ -341,8 +339,8 @@ def parsepars(mp, parseq):
             pars.append(float(p))
             free.append(True)
     return mp.actualize(pars, "internal", free=free)
-    
-    
+
+
 ### Class to preserve newlines in optparse
 # Borrowed, with minor changes, from
 # http://groups.google.com/group/comp.lang.python/browse_frm/thread/6df6e6b541a15bc2/09f28e26af0699b1
@@ -404,7 +402,7 @@ class IndentedHelpFormatterWithNL(IndentedHelpFormatter):
         for line in help_lines[1:]])
     elif opts[-1] != "\n":
       result.append("\n")
-    return "".join(result) 
+    return "".join(result)
 ### End class
 
 if __name__ == "__main__":

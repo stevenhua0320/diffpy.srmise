@@ -13,10 +13,10 @@ setup(
     # numpy
     # scipy
     # matplotlib >= 1.1.0
-    install_requires = ['diffpy.pdfgui', 'matplotlib >= 1.1.0', 'numpy', 'scipy'], 
+    install_requires = ['diffpy.pdfgui', 'matplotlib >= 1.1.0', 'numpy', 'scipy'],
 
     # other arguments here...
-    entry_points = { 'console_scripts': ['srmise = diffpy.srmise.applications.extract:main', 'srmiseplot = diffpy.srmise.applications.plot:main']}, 
+    entry_points = { 'console_scripts': ['srmise = diffpy.srmise.applications.extract:main', 'srmiseplot = diffpy.srmise.applications.plot:main']},
 
     package_data = { '': ['*.srmise', '*.gr', '*.dat', '*.pwa', 'documentation/*.pdf'] }
 

@@ -37,8 +37,6 @@ setlevel: Set logging level of default logger.
 gettracer: Get a TracePeaks instance for tracing peak extraction.
 """
 
-__id__ = "$Id: miselog.py 44 2014-07-12 21:10:58Z luke $"
-
 import sys, os.path, re
 import logging
 from diffpy.srmise.mise.miseerrors import MiseLogError, MiseDataFormatError, MiseFileError
@@ -73,7 +71,7 @@ wait = False
 
 def addfilelog(filename, level=defaultlevel, format=defaultformat):
     """Log output from diffpy.srmise.mise in specified file.
-    
+
     Parameters
     filename: Name of file to receiving output
     level: The logging level
@@ -87,7 +85,7 @@ def addfilelog(filename, level=defaultlevel, format=defaultformat):
 
 def setfilelevel(level):
     """Set level of file logger.
-    
+
     Parameters
     level: The logging level."""
     global fh
@@ -102,7 +100,7 @@ def setfilelevel(level):
 
 def setlevel(level):
     """Set level of default (stdout) logger.
-    
+
     Parameters
     level: The logging level."""
     global ch
@@ -113,10 +111,10 @@ def setlevel(level):
 
 def liveplotting(lp, w=False):
     """Set whether or not to use live plotting.
-    
+
     When using liveplotting, a plot will be shown and updated
     as extraction progresses.
-    
+
     Parameters
     lp: Use live plotting (True) or not (False).
     w: (False) Whether to wait for user after plotting."""
@@ -139,12 +137,12 @@ def liveplotting(lp, w=False):
 
 class TracePeaks(object):
     """Output trace information during peak extraction."""
-    
+
     def __init__(self, **kwds):
-        
+
         self.__filter = None
         self.filter = kwds.get("filter", ["False"])
-        
+
         self.filebase = kwds.get("filebase", None)
         self.store = kwds.get("store", False)
         self.trace = []
@@ -152,17 +150,17 @@ class TracePeaks(object):
         self.recursion = None
         self.call = None
         self.reset_trace()
-        
+
         if self.filebase:
             dir = os.path.dirname(self.filebase)
             if dir and not os.path.exists(dir):
                 os.makedirs(dir)
 
         return
-        
+
     def emit(self, *args, **kwds):
         """Write current trace to file.
-        
+
         Parameters
         Any number of ModelCluster instances"""
         if not eval(self.filter):
@@ -175,10 +173,10 @@ class TracePeaks(object):
                 self.trace.append(trace)
             self.counter += 1
             return
-    
+
     def maketrace(self, *args, **kwds):
         """Return dictionary of trace properties.
-        
+
         Keywords
         model - Use specified model (Peaks instance) instead of those in args.
         """
@@ -191,7 +189,7 @@ class TracePeaks(object):
         for m in args[1:]:
             mc.replacepeaks(m.model)
         return {"mc":mc, "clusters":clusters, "recursion":self.recursion, "counter":self.counter}
-    
+
     def writestr(self, trace):
         """Return string representation of current trace."""
         lines = []
@@ -200,10 +198,10 @@ class TracePeaks(object):
         lines.append("recursion=%i" %trace["recursion"])
         lines.append("clusters=%s" %trace["clusters"])
         lines.append("### ModelCluster")
-        
+
         lines.append(trace["mc"].writestr())
         return "\n".join(lines)
-     
+
     def write(self, trace):
         """Write current trace to file."""
         filename = "%s_%i" %(self.filebase, trace["counter"])
@@ -211,7 +209,7 @@ class TracePeaks(object):
         bytes = self.writestr(trace)
         f.write(bytes)
         f.close()
-        
+
     def read(self, filename):
         """Read tracer ModelCluster from file.
 
@@ -232,19 +230,19 @@ class TracePeaks(object):
                 "or corrupted data. [%s]") % (basename, err)
             raise MiseFileError(emsg)
         return None
-        
+
     def readstr(self, datastring):
         """Read tracer ModelCluster from string.
-        
+
         Parameters
         datastring - The string representation of a trace
-        
+
         Returns dictionary with keys
         "clusters" - List of cluster regions [[r0,r1],[r2,r3],...]
         "counter" - The count when object was created
         "mc" - A ModelCluster instance
         "recursion" - The recursion level of mc"""
-        
+
         # find where the ModelCluster section starts
         res = re.search(r'^#+ ModelCluster\s*(?:#.*\s+)*', datastring, re.M)
         if res:
@@ -253,72 +251,72 @@ class TracePeaks(object):
         else:
             emsg = "Required section 'ModelCluster' not found."
             raise MiseDataFormatError(emsg)
-            
+
         # instantiate ModelCluster
         if re.match(r'^None$', mc):
             mc = None
         else:
             from diffpy.srmise.mise.modelcluster import ModelCluster
             mc = ModelCluster.factory(mc)
-            
+
         res = re.search(r'^clusters=(.*)$', header, re.M)
         if res:
             clusters = eval(res.groups()[0].strip())
         else:
             emsg = "Required field 'clusters' not found."
             raise MiseDataFormatError(emsg)
-        
+
         res = re.search(r'^recursion=(.*)$', header, re.M)
         if res:
             recursion = eval(res.groups()[0].strip())
         else:
             emsg = "Required field 'recursion' not found."
             raise MiseDataFormatError(emsg)
-            
+
         res = re.search(r'^counter=(.*)$', header, re.M)
         if res:
             counter = eval(res.groups()[0].strip())
         else:
             emsg = "Required field 'counter' not found."
             raise MiseDataFormatError(emsg)
-        
+
         return {"mc":mc, "clusters":clusters, "recursion":self.recursion, "counter":self.counter}
-    
+
     def pushr(self):
         """Enter a layer of recursion, and return new level."""
         self.recursion += 1
         return self.recursion
-        
+
     def popr(self):
         """Exit a layer of recursion, and return new level."""
         self.recursion -= 1
         return self.recursion
-        
+
     def pushc(self):
         """Enter a new tracer-aware function."""
         if self.call == 0:
             self.reset_trace()
         self.call += 1
         return self.call
-        
+
     def popc(self):
         """Exit a tracer-aware function."""
         self.call -= 1
         return self.call
-        
+
     def reset_trace(self):
         self.call = 0
         self.counter = 0
         self.recursion = 0
         self.stored = []
-    
+
     # filter property
     def setfilter(self, filter):
         self.__filter = compile(" and ".join(["(%s)" %f for f in filter]), '<string>', 'eval')
     def getfilter(self): return self.__filter
     filter = property(getfilter, setfilter)
-        
-### End of class TracePeaks 
+
+### End of class TracePeaks
 
 def settracer(**kwds):
     global tracer
@@ -327,5 +325,3 @@ def settracer(**kwds):
 
 # Default tracer never emits
 tracer = settracer()
-
-    

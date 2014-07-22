@@ -11,8 +11,6 @@
 #
 ##############################################################################
 
-__id__ = "$Id: peakextraction.py 55 2014-07-18 10:44:37Z luke $"
-
 import numpy as np
 import os.path
 import re
@@ -34,7 +32,7 @@ from diffpy.srmise.mise import miselog
 
 class PeakExtraction(object):
     """Class for peak extraction.
-    
+
     Data members
     x: x coordinates of the data
     y: y coordinates of the data
@@ -47,15 +45,15 @@ class PeakExtraction(object):
     baseline: Baseline for data
     cres: Resolution of clustering
     error_method: ErrorEvaluator class used to compare models
-    
+
     Calculated members
     extracted: ModelCluster after extraction
     extraction_type: Type of extraction
     """
-        
+
     def __init__(self, newvars=[]):
         """Initialize PeakExtraction object.
-        
+
         Parameters
         newvars: Sequence of strings that represent additional extraction parameters."""
         self.clear()
@@ -67,7 +65,7 @@ class PeakExtraction(object):
                 emsg = "Extraction variable %s conflicts with existing variable" %k
                 raise ValueError(emsg)
         return
-        
+
     def clear(self):
         """Clear all members."""
         self.x = None
@@ -82,12 +80,12 @@ class PeakExtraction(object):
         self.initial_peaks = None
         self.rng = None
         self.clearcalc()
-        
+
     def clearcalc(self):
         """Clear all calculated members."""
         self.extracted = None
         self.extraction_type = None
-    
+
     def setdata(self, x, y, dx=None, dy=None):
         if len(x) != len(y):
             emsg = "Sequences x and y must have the same length."
@@ -110,10 +108,10 @@ class PeakExtraction(object):
 
     def setvars(self, quiet=False, **kwds):
         """Set one or more extraction variables.
-        
+
         Variables
         quiet: [False] Log changes quietly.
-        
+
         Keywords
         cres: The clustering resolution, must be > 0.
         effective_dy: The uncertainties actually used during extraction
@@ -133,18 +131,18 @@ class PeakExtraction(object):
                 emsg = "Invalid extraction variable: %s=%s" % (k, v)
                 raise ValueError(emsg)
         self.defaultvars()
-                
+
     def defaultvars(self, *args):
         """Set unset(=None) extraction variables to default values.
-        
+
         Certain variables may be partially set for convenience, and are transformed
         appropriately.  See 'Default values' below.
-        
+
         Parameters
         Any number of strings corresponding to extraction variables.  These
         variables are reset to their default values even if another value
         already exists.
-        
+
         Default values:
         cres -> 4 times the average spacing between elements in x
         effective_dy -> The data dy if all elements > 0, otherwise 5% of max(y)-min(y).
@@ -156,13 +154,13 @@ class PeakExtraction(object):
         initial_peaks -> No initial peaks
         rng -> [x[0], x[-1]].  Partially set ranges like [None, 100.] replace None with
                the appropriate limit in the data.
-               
+
         Note that the default values of very important parameters like the uncertainty
         and clustering resolution are crude guesses at best.
         """
         if self.cres is None or 'cres' in args:
             self.cres = 4*(self.x[-1] - self.x[0])/len(self.x)
-            
+
         if self.effective_dy is None or 'effective_dy' in args:
             if np.all(self.dy > 0):
                 # That is, all points positive uncertainty.
@@ -172,12 +170,12 @@ class PeakExtraction(object):
                 self.effective_dy = .05*(np.max(self.y)-np.min(self.y))*np.ones(len(self.x))
         elif np.isscalar(self.effective_dy) and self.effective_dy > 0:
             self.effective_dy = self.effective_dy*np.ones(len(self.x))
-            
+
         if self.pf is None or "pf" in args:
             from diffpy.srmise.mise.peaks import GaussianOverR
             # TODO: Make a more useful default.
             self.pf = [GaussianOverR(self.x[-1]-self.x[0])]
-        
+
         # Set baseline where the type is given, but parameters must be estimated.
         if hasattr(self.baseline, "estimate_parameters"):
             try:
@@ -188,19 +186,19 @@ class PeakExtraction(object):
             except (NotImplementedError, MiseEstimationError):
                 logger.error("Could not estimate baseline from provided BaselineFunction, trying default values.")
                 self.baseline = None
-        
+
         if self.baseline is None or "baseline" in args:
             from diffpy.srmise.mise.baselines import Polynomial
             bl = Polynomial(degree = -1)
             self.baseline = bl.actualize(np.array([]), "internal")
-        
+
         if self.error_method is None or "error_method" in args:
             from diffpy.srmise.mise.modelevaluators import AIC
             self.error_method = AIC
-            
+
         if self.initial_peaks is None or "initial_peaks" in args:
             self.initial_peaks = Peaks()
-            
+
         if self.rng is None or "rng" in args:
             self.rng = [self.x[0], self.x[-1]]
         else:
@@ -220,23 +218,23 @@ class PeakExtraction(object):
             out.append(str(self.extracted))
         else:
             out.append("No extracted peaks exist.")
-        
+
         return '\n'.join(out)+'\n'
 
     def plot(self, **kwds):
         """Convenience function to plot data and extracted peaks with matplotlib.
-        
+
         Uses initial peaks instead if no peaks have been extracted.
-        
+
         Takes same keywords as ModelCluster.plottable()"""
         plt.clf()
         if self.extracted is not None:
             plt.plot(*self.extracted.plottable(kwds))
         else:
-        
+
             # Make sure all required extraction variables have some value
             self.defaultvars()
-            
+
             rangeslice = self.getrangeslice()
             x = self.x[rangeslice]
             y = self.y[rangeslice]
@@ -244,7 +242,7 @@ class PeakExtraction(object):
             mcluster = ModelCluster(self.initial_peaks, self.baseline, x, y, dy, None, self.error_method, self.pf)
             plt.plot(*mcluster.plottable(kwds))
 
-            
+
     def read(self, filename):
         """load PeakExtraction object from file
 
@@ -261,16 +259,16 @@ class PeakExtraction(object):
                 "or corrupted data. [%s]") % (basename, err)
             raise MiseFileError(emsg)
         return self
-        
+
     def readstr(self, datastring):
         """Initialize members from string.
-        
+
         Parameters
         datastring: The raw data to read"""
         from diffpy.srmise.mise.basefunction import BaseFunction
-        
+
         self.clear()
-        
+
         # The major components are:
         # - Header
         # - BaselineFunctions
@@ -281,17 +279,17 @@ class PeakExtraction(object):
         # - MetaData
         # - StartData
         # - Results
-        
+
         # Lists holding BaseFunctions as they are instantiated
         safepf = []
         safebf = []
-        
+
         # find where the results section starts
         res = re.search(r'^#+ Results\s*(?:#.*\s+)*', datastring, re.M)
         if res:
             results = datastring[res.end():].strip()
             header = datastring[:res.start()]
-        
+
         # find data section, and what information it contains
         res = re.search(r'^#+ start data\s*(?:#.*\s+)*', header, re.M)
         if res:
@@ -321,47 +319,47 @@ class PeakExtraction(object):
         res = re.search(r'\edy\b', start_data_info)
         if res:
             hasedy = True
-            
+
         res = re.search(r'^#+ Metadata\s*(?:#.*\s+)*', header, re.M)
         if res:
             metadata = header[res.end():].strip()
             header = header[:res.start()]
-            
+
         res = re.search(r'^#+ MiseMetadata\s*(?:#.*\s+)*', header, re.M)
         if res:
             misemetadata = header[res.end():].strip()
             header = header[:res.start()]
-            
+
         res = re.search(r'^#+ InitialPeaks.*$', header, re.M)
         if res:
             initial_peaks = header[res.end():].strip()
             header = header[:res.start()]
-            
+
         res = re.search(r'^#+ BaselineObject\s*(?:#.*\s+)*', header, re.M)
         if res:
             baselineobject = header[res.end():].strip()
             header = header[:res.start()]
-            
+
         res = re.search(r'^#+ PeakFunctions.*$', header, re.M)
         if res:
             peakfunctions = header[res.end():].strip()
             header = header[:res.start()]
-            
+
         res = re.search(r'^#+ BaselineFunctions.*$', header, re.M)
         if res:
             baselinefunctions = header[res.end():].strip()
             header = header[:res.start()]
-            
+
         ### Instantiating baseline functions
         res = re.split(r'(?m)^#+ BaselineFunction \d+\s*(?:#.*\s+)*', baselinefunctions)
         for s in res[1:]:
             safebf.append(BaseFunction.factory(s, safebf))
-        
+
         ### Instantiating peak functions
         res = re.split(r'(?m)^#+ PeakFunction \d+\s*(?:#.*\s+)*', peakfunctions)
         for s in res[1:]:
             safepf.append(BaseFunction.factory(s, safepf))
-            
+
         ### Instantiating Baseline object
         if re.match(r'^None$', baselineobject):
             self.baseline = None
@@ -369,7 +367,7 @@ class PeakExtraction(object):
             self.baseline = safebf[int(baselineobject)]
         else:
             self.baseline = Baseline.factory(baselineobject, safebf)
-            
+
         ### Instantiating initial peaks
         if re.match(r'^None$', initial_peaks):
             self.initial_peaks = None
@@ -378,34 +376,34 @@ class PeakExtraction(object):
             res = re.split(r'(?m)^#+ InitialPeak\s*(?:#.*\s+)*', initial_peaks)
             for s in res[1:]:
                 self.initial_peaks.append(Peak.factory(s, safepf))
-            
+
         ### Instantiating mise metatdata
-        
+
         # pf
         res = re.search(r'^pf=(.*)$', misemetadata, re.M)
         self.pf = eval(res.groups()[0].strip())
         if self.pf is not None:
             self.pf = [safepf[i] for i in self.pf]
-           
-        # cres 
+
+        # cres
         rx = { 'f' : r'[-+]?(\d+(\.\d*)?|\d*\.\d+)([eE][-+]?\d+)?' }
         regexp = r"\bcres *= *(%(f)s)\b" % rx
         res = re.search(regexp, misemetadata, re.I)
         self.cres = float(res.groups()[0])
-            
+
         # error_method
         res = re.search(r'^ModelEvaluator=(.*)$', misemetadata, re.M)
         __import__("diffpy.srmise.mise.modelevaluators")
         module = sys.modules["diffpy.srmise.mise.modelevaluators"]
         self.error_method = getattr(module, res.groups()[0].strip())
-        
+
         # range
         res = re.search(r'^Range=(.*)$', misemetadata, re.M)
         self.rng = eval(res.groups()[0].strip())
-        
+
         ### Instantiating other metadata
         self.readmetadata(metadata)
-        
+
         ### Instantiating start data
         # read actual data - x, y, dx, dy, plus effective_dy
         arrays = []
@@ -461,7 +459,7 @@ class PeakExtraction(object):
         if res:
             mc = results[res.end():].strip()
             results = results[:res.start()]
-        
+
         # extraction type
         res = re.search(r'^extraction_type=(.*)$', results, re.M)
         if res:
@@ -469,16 +467,16 @@ class PeakExtraction(object):
         else:
             emsg = "Required field 'extraction_type' not found."
             raise MiseDataFormatError(emsg)
-            
+
         # extracted
         if re.match(r'^None$', mc):
             self.extracted = None
         else:
             self.extracted = ModelCluster.factory(mc, pfbaselist=safepf, blfbaselist=safebf)
-        
+
     def write(self, filename):
         """Write string representation of PeakExtraction instance to file.
-        
+
         Parameters
         filename: the name of the file to write"""
         bytes = self.writestr()
@@ -486,24 +484,24 @@ class PeakExtraction(object):
         f.write(bytes)
         f.close()
         return
-        
-        
+
+
     def writestr(self):
         """Return string representation of PeakExtraction object."""
         import time
         from getpass import getuser
         from diffpy.srmise.mise.basefunction import BaseFunction
         from diffpy.srmise import __version__
-        
+
         lines = []
-    
+
         # Header
         lines.extend([
             'History written: ' + time.ctime(),
             'produced by ' + getuser(),
             'diffpy.srmise version %s' %__version__,
             '##### PDF Peak Extraction' ])
-        
+
         # Generate list of PeakFunctions and BaselineFunctions
         # so I can refer to them by index when necessary.
         allpf = []
@@ -526,19 +524,19 @@ class PeakExtraction(object):
         allbf = list(set(allbf))
         safepf = BaseFunction.safefunctionlist(allpf)
         safebf = BaseFunction.safefunctionlist(allbf)
-            
+
         # Indexed baseline functions
         lines.append("## BaselineFunctions")
         for i, bf in enumerate(safebf):
             lines.append('# BaselineFunction %s' %i)
             lines.append(bf.writestr(safebf))
-        
+
         # Indexed peak functions
         lines.append("## PeakFunctions")
         for i, pf in enumerate(safepf):
             lines.append('# PeakFunction %s' %i)
             lines.append(pf.writestr(safepf))
-        
+
         # Baseline
         lines.append("# BaselineObject")
         if self.baseline is None:
@@ -547,7 +545,7 @@ class PeakExtraction(object):
             lines.append('%s' %repr(safebf.index(self.baseline)))
         else:
             lines.append(self.baseline.writestr(safebf))
-        
+
         # Initial peaks
         lines.append("## InitialPeaks")
         if self.initial_peaks is None:
@@ -556,13 +554,13 @@ class PeakExtraction(object):
             for ip in self.initial_peaks:
                 lines.append('# InitialPeak')
                 lines.append(ip.writestr(safepf))
-            
+
         lines.append('# MiseMetadata')
 
         # Extractable peak types
         if self.pf is None:
             lines.append("pf=None")
-        else: 
+        else:
             lines.append("pf=%s" %repr([safepf.index(p) for p in self.pf]))
 
         # Clustering resolution
@@ -574,11 +572,11 @@ class PeakExtraction(object):
             lines.append('ModelEvaluator=%s' %self.error_method.__name__)
         # Extraction range
         lines.append("Range=%s" %repr(self.rng))
-        
+
         # Everything not defined by PeakExtraction
         lines.append('# Metadata')
         lines.append(self.writemetadata())
-            
+
         # Raw data used in extraction.
         lines.append('##### start data')
         line = ['#L']
@@ -612,33 +610,33 @@ class PeakExtraction(object):
             if self.effective_dy is not None:
                 line.append("%g" %self.effective_dy[i])
             lines.append(" ".join(line))
-            
-                
+
+
         ### Calculated members
         lines.append('##### Results')
         lines.append('extraction_type=%s' %repr(self.extraction_type))
-        
+
         lines.append("### ModelCluster")
         if self.extracted is None:
             lines.append('None')
         else:
             lines.append(self.extracted.writestr(pfbaselist=safepf, blfbaselist=safebf))
-        
+
         datastring = "\n".join(lines)+"\n"
         return datastring
-        
+
     def writemetadata(self):
         """Return string for metadata not defined by mise class."""
         return
-        
+
     def readmetadata(self):
         """Return string for metadata not defined by mise class."""
         return
-        
+
     def writesummary(self):
         """Return summary of peak extraction results."""
         pass
-        
+
     def getrangeslice(self):
         """Convert the ranges in terms of x-coordinates to a slice object."""
         low_idx = 0
@@ -648,27 +646,27 @@ class PeakExtraction(object):
         while self.x[hi_idx-1] > min(self.x[-1], self.rng[1]):
             hi_idx -= 1
         return slice(low_idx, hi_idx)
-        
-        
+
+
 #    def safefunctionlist(self, fs):
 #        """Return list of BaseFunction instances where any dependencies occur earlier in list.
-#        
+#
 #        Any functions with hidden dependent functions (i.e. those not in fs)
 #        are included in the returned list.  This list provides an order that
 #        is guaranteed to be safe for saving/reinstantiating peak functions.
-#        
+#
 #        Parameters
 #        fs: List of BaseFunction instances."""
 #        fsafe = []
 #        for f in fs:
 #            self.safefunction(f, fsafe)
 #        return fsafe
-#            
+#
 #    def safefunction(self, f, fsafe):
 #        """Append BaseFunction instance f to fsafe, but adding dependent functions first.
-#        
+#
 #        Does not handle circular dependencies.
-#        
+#
 #        Parameters
 #        f: A BaseFunction instance
 #        fsafe: List of BaseFunction instances being built."""
@@ -678,22 +676,22 @@ class PeakExtraction(object):
 #            fsafe.append(f)
 #
 #        return
-        
+
     def estimate_peak(self, x, add=True):
         """Return new estimated peak near x.
-        
+
         Peaks already extracted, if any, are taken into account.  If none exist,
         use those specified by initial_peaks instead.
-        
+
         Parameters:
         x: Coordinate of the point of interest
         add: (True) Automatically add peak to extracted peaks or initial_peaks.
-        
+
         Return a Peak object, or None if estimation fails.
         """
         # Make sure all required extraction variables have some value
         self.defaultvars()
-        
+
         if self.extracted is not None:
             # Determine clusters using existing peaks and baseline in extracted
             x1 = self.extracted.r_cluster
@@ -705,27 +703,27 @@ class PeakExtraction(object):
             x1 = self.x[rangeslice]
             y1 = self.y[rangeslice] - self.baseline.value(x1) - self.initial_peaks.value(x1)
             dy = self.effective_dy[rangeslice]
-        
+
         if x < x1[0] or x > x1[-1]:
             emsg = "Argument x=%s outside allowed range (%s, %s)." %(x, x1[0], x1[-1])
             raise ValueError(emsg)
-        
+
         # Object performing clustering on data. Note that DataClusters
         # provides an iterator that clusters the next point and returns
         # itself. Thus, dclusters and step (below) refer to the same object.
-        
+
         dclusters = DataClusters(x1, y1, self.cres) # Cluster with baseline removed
         dclusters.makeclusters()
         cidx = dclusters.find_nearest_cluster2(x)[0]
         cslice = dclusters.cut(cidx)
-        
+
         x1 = x1[cslice]
         y1 = y1[cslice]
         dy = dy[cslice]
-        
+
         mcluster = ModelCluster(None, None, x1, y1, dy, None, self.error_method, self.pf)
         mcluster.fit()
-        
+
         if len(mcluster.model) > 0:
             if add:
                 logger.info("Adding peak: %s" %mcluster.model[0])
@@ -735,11 +733,11 @@ class PeakExtraction(object):
             return mcluster.model[0]
         else:
             logger.info("No peaks found.")
-            return None 
-            
+            return None
+
     def addpeaks(self, peaks):
         """Add peaks to extracted peaks, or initial_peaks if no extracted peaks exist.
-        
+
         Parameters
         peaks: A Peaks instance"""
         if self.extracted is not None:
@@ -749,48 +747,48 @@ class PeakExtraction(object):
                 self.setvars("initial_peaks")
             self.initial_peaks.extend(peaks)
             self.initial_peaks.sort(key="position")
-    
+
     def extract_single(self, recursion_depth=1):
         """Find ModelCluster with peaks extracted from data. Return ModelCovariance instance at top level.
-    
+
            Every extracted peak is one of the peak functions supplied. All
            comparisons of different peak models are performed with the class
            specified by error_method.
-    
+
            Parameters
            recursion_depth: (1) Tracks recursion with extract_single."""
         self.clearcalc()
         tracer = miselog.tracer
         tracer.pushc()
         tracer.pushr()
-        
+
         # Make sure all required extraction variables have some value
         self.defaultvars()
         bl = self.baseline
-        
+
         # Copy initial_peaks
         # While it would be nice to integrate them into extracted model naturally
         # as it progresses, this is fraught with difficulties.  Thus, they will
         # only be added back in before the final prune.
         ip = self.initial_peaks.copy()
-        
+
         rangeslice = self.getrangeslice()
         x = self.x[rangeslice]
         y = self.y[rangeslice] - bl.value(x) - ip.value(x)
         dy = self.effective_dy[rangeslice]
-        
+
         # Object performing clustering on data. Note that DataClusters
         # provides an iterator that clusters the next point and returns
         # itself. Thus, dclusters and step (below) refer to the same object.
-        
+
         dclusters = DataClusters(x, y, self.cres) # Cluster with baseline removed
 
         # The data for model clusters includes the baseline
         y = self.y[rangeslice] - ip.value(x)
-        
+
         # List of ModelClusters containing extracted peaks.
         mclusters = [ModelCluster(None, bl, x, y, dy, dclusters.cut(0), self.error_method, self.pf)]
-        
+
         # The minimum number of points required to make a valid fit, as
         # determined by the peak functions and error method used.  This is a
         # conservative estimate.
@@ -801,7 +799,7 @@ class PeakExtraction(object):
         ############################
         ### Main extraction loop ###
         for step in dclusters:
-        
+
             stepcounter += 1
 
             msg = "\n\n------ Recursion: %s  Step: %s  Cluster: %s %s ------"
@@ -811,7 +809,7 @@ class PeakExtraction(object):
                         step.lastcluster_idx,
                         step.clusters[step.lastcluster_idx]
                         )
-        
+
             # Update mclusters
             if len(step.clusters) > len(mclusters):
                 # Add a new cluster
@@ -827,10 +825,10 @@ class PeakExtraction(object):
             else:
                 # Update an existing cluster
                 mclusters[step.lastcluster_idx].change_slice(step.cut(step.lastcluster_idx))
-                
+
             # Find newly adjacent clusters
             adjacent = step.find_adjacent_clusters().ravel()
-            
+
             # Various assertions in case terrible things are afoot.
             # These could save some gray hairs if they are needed.
             # ------
@@ -844,7 +842,7 @@ class PeakExtraction(object):
             #1. Refit clusters adjacent to at least one other cluster.
             for a in adjacent:
                 mclusters[a].fit(justify=True)
-            
+
             # 2. If necessary, update the fit of the cluster which has just
             #    had one or more points added.  This occurs if the function
             #    has not been fit before but now contains enough data points
@@ -852,10 +850,10 @@ class PeakExtraction(object):
             #    increased enough (e.g. doubled in size) since it was last
             #    fit.
             mclusters[step.lastcluster_idx].contingent_fit(minpoints, 2.0)
-            
+
             # 3. Boundary recursion.  If a cluster fills to the boundary of
             #    the data it should be recursively fit as though it were
-            #    combining with an empty cluster at the boundary.  This should 
+            #    combining with an empty cluster at the boundary.  This should
             #    reveal hidden peaks that might otherwise be improperly fit
             #    with just a single peak function.
             #
@@ -869,7 +867,7 @@ class PeakExtraction(object):
             #    that section.  The primary difference is no need to create an
             #    enlarged cluster ("new_cluster") or an intermediate cluster
             #    ("adj_cluster").
-            
+
             if step.lastpoint_idx == 0 or step.lastpoint_idx == len(step.x)-1:
                 logger.debug("Boundary full: %s", step.lastpoint_idx)
                 #print "Boundary full: ", step.lastpoint_idx
@@ -879,7 +877,7 @@ class PeakExtraction(object):
                 # Estimate coordinate where clusters combine.
                 border_x = x[step.lastcluster_idx]
                 border_y = y[step.lastcluster_idx]
-                
+
                 # Determine neighborhood appropriate for fitting (no larger than combined clusters)
                 if len(full_cluster.model) > 0:
                     peak_pos = np.array([p['position'] for p in full_cluster.model])
@@ -887,12 +885,12 @@ class PeakExtraction(object):
                 else:
                     peak_pos = np.array([])
                     pivot = 0
-                
+
                 # near_peaks: array containing the indices of two nearest peaks on either side of border_x
                 # other_peaks: all the other peaks in full_cluster
                 # left_data, right_data: indices defining the extent of the "interpeak range" for x, etc.
                 near_peaks = np.array([], dtype=np.int)
-                
+
                 # interpeak range goes from peak to peak of next nearest peaks, although their contributions to the data are still removed.
                 if pivot == 0:
                     # No peaks left of border_x!
@@ -905,7 +903,7 @@ class PeakExtraction(object):
                     # left_data -> one more peak to the left
                     left_data = max(0, x.searchsorted(peak_pos[pivot-2])-1)
                     near_peaks = np.append(near_peaks, pivot-1)
-                    
+
                 if pivot == len(peak_pos):
                     # No peaks right of border_x!
                     right_data = full_cluster.slice.indices(len(x))[1]-1
@@ -917,9 +915,9 @@ class PeakExtraction(object):
                     # right_data -> one more peak to the right
                     right_data = min(len(x), x.searchsorted(peak_pos[pivot+1])+1)
                     near_peaks = np.append(near_peaks, pivot)
-                    
+
                 other_peaks = np.concatenate([np.arange(0, pivot-1), np.arange(pivot+1, len(peak_pos))])
-                
+
                 # Go from indices to lists of peaks.
                 near_peaks = Peaks([full_cluster.model[i] for i in near_peaks])
                 other_peaks = Peaks([full_cluster.model[i] for i in other_peaks])
@@ -954,15 +952,15 @@ class PeakExtraction(object):
                     rec_search.extract_single(recursion_depth+1)
                     rec = rec_search.extracted
                     logger.info("*********ENDING RECURSION level %s (full boundary) ************\n" %(recursion_depth+1))
-              
+
                     # Incorporate best peaks from recursive search.
                     adj_cluster.augment(rec)
-                    
+
                 ### Select which model to use
                 full_cluster.model = other_peaks
                 full_cluster.replacepeaks(adj_cluster.model)
                 full_cluster.fit(True)
-                
+
                 msg = ["---Result of full boundary---",
                        "Original cluster:",
                        "%s",
@@ -972,29 +970,29 @@ class PeakExtraction(object):
                 logger.debug("\n".join(msg),
                              mclusters[step.lastcluster_idx],
                              full_cluster)
-                
+
                 mclusters[step.lastcluster_idx] = full_cluster
             ### End update cluster fits ###
-            
+
             ### Combine adjacent clusters ###
-            
+
             # Iterate in reverse order to preserve earlier indices
             for idx in adjacent[-1:0:-1]:
-            
+
                 msg = ["Current model"]
                 msg.extend(["%s" for m in mclusters])
                 logger.debug("\n".join(msg),
                              *[m.model for m in mclusters])
-            
+
                 cleft = step.clusters[idx-1]
                 cright = step.clusters[idx]
 
                 new_cluster = ModelCluster.join_adjacent(mclusters[idx-1], mclusters[idx])
-                
+
                 # Estimate coordinate where clusters combine.
                 border_x = .5*(x[cleft[1]]+x[cright[0]])
                 border_y = .5*(y[cleft[1]]+y[cright[0]])
-                
+
                 # Determine neighborhood appropriate for fitting (no larger than combined clusters)
                 if len(new_cluster.model) > 0:
                     peak_pos = np.array([p['position'] for p in new_cluster.model])
@@ -1002,12 +1000,12 @@ class PeakExtraction(object):
                 else:
                     peak_pos = np.array([])
                     pivot = 0
-                
+
                 # near_peaks: array containing the indices of two nearest peaks on either side of border_x
                 # other_peaks: all the other peaks in new_cluster
                 # left_data, right_data: indices defining the extent of the "interpeak range" for x, etc.
                 near_peaks = np.array([], dtype=np.int)
-                
+
                 # interpeak range goes from peak to peak of next nearest peaks, although their contributions to the data are still removed.
                 if pivot == 0:
                     # No peaks left of border_x!
@@ -1020,7 +1018,7 @@ class PeakExtraction(object):
                     # left_data -> one more peak to the left
                     left_data = max(0,x.searchsorted(peak_pos[pivot-2])-1)
                     near_peaks = np.append(near_peaks, pivot-1)
-                    
+
                 if pivot == len(peak_pos):
                     # No peaks right of border_x!
                     right_data = new_cluster.slice.indices(len(x))[1]-1
@@ -1032,13 +1030,13 @@ class PeakExtraction(object):
                     # right_data -> one more peak to the right
                     right_data = min(len(x), x.searchsorted(peak_pos[pivot+1])+1)
                     near_peaks = np.append(near_peaks, pivot)
-                    
+
                 other_peaks = np.concatenate([np.arange(0, pivot-1), np.arange(pivot+1, len(peak_pos))])
-                
+
                 # Go from indices to lists of peaks.
                 near_peaks = Peaks([new_cluster.model[i] for i in near_peaks])
                 other_peaks = Peaks([new_cluster.model[i] for i in other_peaks])
-                
+
                 ### Remove contribution of peaks outside neighborhood
                 # Define range of fitting/recursion to the interpeak range
                 # The adjusted error is passed unchanged.  This may introduce
@@ -1048,27 +1046,27 @@ class PeakExtraction(object):
                 adj_x = x[adj_slice]
                 adj_y = y[adj_slice]-other_peaks.value(adj_x)
                 adj_error = dy[adj_slice]
-                
+
                 #### Perform recursion on a version that is scaled at the
                 # border, as well as on that is simply fit beforehand.  In
                 # many cases these lead to nearly identical results, but
                 # occasionally one works much better than the other.
                 adj_cluster1 = ModelCluster(near_peaks.copy(), bl, adj_x, adj_y, adj_error, slice(len(adj_x)), self.error_method, self.pf)
                 adj_cluster2 = ModelCluster(near_peaks.copy(), bl, adj_x, adj_y, adj_error, slice(len(adj_x)), self.error_method, self.pf)
-                
+
                 # Adjust cluster at border if there is at least one peak on
                 # either side.
                 if len(near_peaks) == 2:
                     #print "Before reduce_to: ", adj_cluster1.model
                     adj_cluster1.reduce_to(border_x, border_y)
                     #print "After reduce_to: ", adj_cluster1.model
-                    
+
                     # Recursively cluster/fit the residual
                     rec_r1 = adj_x
                     #rec_y1 = adj_y - near_peaks.value(rec_r1)
                     rec_y1 = adj_y - adj_cluster1.model.value(rec_r1)
                     rec_error1 = adj_error
-                    
+
                     # Quick check to see if there is anything to find
                     min_npars = min([p.npars for p in self.pf])
                     checkrec = ModelCluster(None, None, rec_r1, rec_y1, rec_error1, None, self.error_method, self.pf)
@@ -1088,7 +1086,7 @@ class PeakExtraction(object):
 
                 # Fit cluster model
                 adj_cluster2.fit(True)
-                
+
                 # Recursively cluster/fit the residual
                 rec_r2 = adj_x
                 #rec_y2 = adj_y - near_peaks.value(rec_r2)
@@ -1108,10 +1106,10 @@ class PeakExtraction(object):
                     rec_search2.extract_single(recursion_depth+1)
                     rec2 = rec_search2.extracted
                     logger.info("*********ENDING RECURSION level %s (prefit) ************\n" %(recursion_depth+1))
-              
+
                     # Incorporate best peaks from recursive search.
                     adj_cluster2.augment(rec2)
-                
+
                 ### Select which model to use
                 new_cluster.model = other_peaks
                 rej_cluster = ModelCluster(new_cluster)
@@ -1120,13 +1118,13 @@ class PeakExtraction(object):
                 if q1 > q2:
                     new_cluster.replacepeaks(adj_cluster1.model)
                     rej_cluster.replacepeaks(adj_cluster2.model)
-                else:                   
+                else:
                     new_cluster.replacepeaks(adj_cluster2.model)
                     rej_cluster.replacepeaks(adj_cluster1.model)
-                    
+
                 new_cluster.fit(True)
-                
-                
+
+
                 msg = ["---Result of combining clusters---",
                        "First cluster:",
                        "%s",
@@ -1135,24 +1133,24 @@ class PeakExtraction(object):
                        "Resulting cluster:",
                        "%s",
                        "---End of combining clusters---"]
-                       
+
                 logger.debug("\n".join(msg),
                              mclusters[idx-1],
                              mclusters[idx],
                              new_cluster)
-                
+
                 mclusters[idx-1] = new_cluster
                 del mclusters[idx]
-                
+
             ### End combine adjacent clusters loop ###
-            
+
             # Finally, combine clusters in dclusters
             if len(adjacent) > 0:
                 step.combine_clusters([adjacent])
-                
+
             tracer.emit(*mclusters)
-        
-        
+
+
         ### End main extraction loop ###
         ################################
 
@@ -1161,7 +1159,7 @@ class PeakExtraction(object):
 
         # Remove unnecessary peaks
         mclusters[0].prune()
-        
+
         # At the top level of recursion the baseline should be fit as well.
         # Other than simply removing the baseline for recursive calls (viable
         # but annoying for display purposes) this is the simplest solution to
@@ -1174,16 +1172,16 @@ class PeakExtraction(object):
         # Update calculated instance variables
         self.extraction_type = "extract_single"
         self.extracted = mclusters[0]
-        
+
         tracer.popc()
         tracer.popr()
-        
+
         if recursion_depth == 1:
             return cov
 
 #end PeakExtraction class
-        
-        
+
+
 # simple test code
 if __name__ == '__main__':
 
@@ -1192,22 +1190,22 @@ if __name__ == '__main__':
     from diffpy.srmise.mise.modelevaluators import AICc
     from diffpy.srmise.mise.peaks import GaussianOverR
     from diffpy.srmise.mise import miselog
-    
+
     miselog.setlevel("info")
     miselog.liveplotting(False)
-    
+
     pf = GaussianOverR(.7)
     res = .01
-    
+
     pars = [[3, .2, 10], [3.5, .2, 10]]
     ideal_peaks = Peaks([pf.actualize(p, "pwa") for p in pars])
 
     r = np.arange(2,4,res)
     y = ideal_peaks.value(r) + randn(len(r))
-    
+
     err = np.ones(len(r))
     evaluator = AICc()
-    
+
     te = PeakExtraction()
     te.setdata(r, y, None, err)
     te.setvars(rng=[1.51,10.], pf=[pf], cres=.1, effective_dy = 1.5*err)
@@ -1215,7 +1213,7 @@ if __name__ == '__main__':
 
     print "--- Actual Peak parameters ---"
     print ideal_peaks
-    
+
     print "\n--- After extraction ---"
     print te
 
