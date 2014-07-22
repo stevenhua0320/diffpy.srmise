@@ -6,6 +6,7 @@ setup(
     version = "0.4a1",
     namespace_packages = ['diffpy'],
     packages = find_packages(),
+    include_package_data = True,
     zip_safe = False,
 
     # Dependencies
@@ -16,8 +17,10 @@ setup(
     install_requires = ['diffpy.pdfgui', 'matplotlib >= 1.1.0', 'numpy', 'scipy'],
 
     # other arguments here...
-    entry_points = { 'console_scripts': ['srmise = diffpy.srmise.applications.extract:main', 'srmiseplot = diffpy.srmise.applications.plot:main']},
-
-    package_data = { '': ['*.srmise', '*.gr', '*.dat', '*.pwa', 'documentation/*.pdf'] }
-
+    entry_points = {
+        'console_scripts' : [
+            'srmise = diffpy.srmise.applications.extract:main',
+            'srmiseplot = diffpy.srmise.applications.plot:main',
+            ]
+    },
 )
