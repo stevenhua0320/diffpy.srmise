@@ -1,0 +1,88 @@
+Installation instructions for diffpy.srmise
+
+Linux, Unix, and Mac
+====================
+Given a downloaded source distribution, simply expand the file and run
+setup.py install
+
+Other installation options are possible via easy_install (part of the
+setuptools package) or pip.  These are available at the given URLs.
+http://pypi.python.org/pypi/setuptools
+http://pypi.python.org/pypi/pip
+
+In addition, pip may be quickly installed by running the following
+bootstrap script.
+https://bootstrap.pypa.io/get-pip.py
+
+Installation from a downloaded source distribution is then
+easy_install diffpy.srmise-version.tar.gz
+or
+pip install diffpy.srmise-version.tar.gz
+
+More powerfully, these allow installation from the PyPI package database.
+easy_install diffpy.srmise
+or
+pip install diffpy.srmise
+
+See the documentation for easy_install or pip for additional options.
+
+Installation on Windows
+=======================
+Although diffpy.srmise is pure Python, its dependencies are not. Windows
+users are strongly encouraged to install an appropriate binary distribution
+ for NumPy, SciPy, and matplotlib before installing diffpy.srmise.
+NumPy - http://www.numpy.org/
+SciPy - http://www.scipy.org/
+matplotlib - http://www.matplotlib.org/
+
+Unfortunately, a Windows binary of diffpy.pdfgui compatible with diffpy.srmise
+is not available. Fortunately, diffpy.srmise relies only on Python components
+of diffpy.pdfgui, so even an incomplete installation is sufficient.  Simply\
+attempt to install diffpy.pdfgui from source or PyPI.  Even though elements
+will fail to compile, the Python sources should still be copied to your
+Python installation's site-packages directory and therefore be available to
+diffpy.srmise.
+
+It is also possible to compile a Windows version of diffpy.pdfgui.  The
+instructions below assume you have installed Python from Windows binaries,
+and that the Windows Path environment variable gives access to python.exe and
+Python scripts.  (This is the default for most Windows installations of
+Python.)
+1) Install an appropriate wxpython binary.
+   http://www.wxpython.org
+2) Install Visual Studio Express 2008.
+   http://go.microsoft.com/?linkid=7729279
+3) Download VSE 2008 compatible port of GNU Scientific Library (GSL) by David
+   Geldreich.
+   http://david.geldreich.free.fr/dev.html
+4) Build GSL headers and libraries in VSE 2008.  (See the documentation for the
+   VSE 2008 compatible GSL project.)  Make sure this is not a debug build, and
+   note the directory where these are created.
+5) Copy the Windows ports of getopt.h, stdint.h, and unistd.h to some
+   directory the compiler will check.  It may be simplest to create a new
+   directory with these three files and temporarily add it to the Windows
+   $PATH.  This step is necessary to compile diffpy.pdfgui's PyCifRW
+   dependency.
+6) Open a command window.  (This may need to be an elevated window on some
+   systems.)
+7) In the command window, set environment variable CL.
+   SET CL=/I"gsl_include_directory"
+   where "gsl_include_directory" is the directory with the header files.
+   For example, if error.h is located at C:\mypath\include\gsl\error.h, then
+   "gsl_include_directory" is "C:\mypath\include".
+8) In the command window, set environment variable LINK.
+   SET LINK=/LIBPATH:"gsl_lib_directory"
+   where gsl_lib_directory is the directory containing the GSL library you
+   built.  This file must be named "gsl.lib" if it is not already.
+9) Install diffpy.pdfgui within this command window.  Using easy_install or
+   pip is highly recommended since they will automatically compile and link
+   everything else that is needed. Thus,
+   easy_install diffpy.pdfgui
+   or
+   pip install diffpy.pdfgui
+10) Install diffpy.srmise as outlined at start of the document.
+
+At the time of writing using non-Microsoft compilers (such as gcc with MinGW)
+is not successful due to naming conflicts in libraries from the other
+binaries.  If you compiled Python for Windows yourself, use the same compiler
+for diffpy.srmise's dependencies.
