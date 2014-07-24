@@ -74,9 +74,9 @@ setup_args = dict(
     },
 
     author = "Luke Granlund",
-    author_email = "granlund@pa.msu.edu",
-    description = "SrMise - FIXME",
-    license = 'FIXME',
+    author_email = "luke.r.granlund@gmail.com",
+    description = "SrMise - Peak extraction tool for pair distribution functions.",
+    license = 'BSD-like',
     # url = "",
     # keywords = "",
     classifiers = [
