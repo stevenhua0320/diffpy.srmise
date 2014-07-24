@@ -1,4 +1,9 @@
-recursive-include diffpy *
-# include AUTHORS.txt LICENSE*.txt README.rst
+recursive-include diffpy *.py
+include AUTHORS.txt INSTALL.txt LICENSE*.txt
+# include README.rst
 exclude MANIFEST.in
-recursive-exclude diffpy *.pyc
+include diffpy/srmise/version.cfg
+include diffpy/srmise/applications/examples/*.pwa
+include diffpy/srmise/applications/examples/*.srmise
+include diffpy/srmise/applications/examples/*.dat
+include diffpy/srmise/documentation/userguide.pdf

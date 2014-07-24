@@ -42,3 +42,6 @@ nosetests.xml
 # version information
 setup.cfg
 /diffpy/srmise/version.cfg
+
+# Any auxiliary files in documentation
+/diffpy/srmise/documentation
