@@ -279,8 +279,10 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
     figdict["data"] = ax_data
 
     # Plot the data, fit, and residual
-    plt.plot(rexpand, gr_obs, **gobs_style)
-    plt.plot(rfine, gr_fit, **gfit_style)
+    if show_observed:
+        plt.plot(rexpand, gr_obs, **gobs_style)
+    if show_fit:
+        plt.plot(rfine, gr_fit, **gfit_style)
     if fill_individual:
         for peak in gr_fit_ind:
             plt.fill_between(rfine, gr_fit_baseline, peak, **gind_style)
