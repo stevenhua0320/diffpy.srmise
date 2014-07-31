@@ -149,14 +149,14 @@ class ModelCovariance(object):
         --------
         parts - Specify which model part, by index, to transform.  Defaults to all parts.
         """
+        if self.cov is None:
+            emsg = "Cannot transform undefined covariance matrix."
+            raise MiseUndefinedCovarianceError(emsg)
+
         if "parts" in kwds:
             parts = kwds["parts"]
         else:
             parts = range(len(self.model))
-
-        if self.cov is None:
-            emsg = "Cannot transform undefined covariance matrix."
-            raise MiseUndefinedCovarianceError(emsg)
 
         # Calculate V_y = G Transpose(V_x) G
         # where V_y is the covariance matrix in terms of the parameterization y,
