@@ -207,10 +207,8 @@ def main():
     if options.bcrystal is not None:
         from diffpy.srmise.mise.baselines import Polynomial
         bl = Polynomial(degree=1)
-        options.baseline = parsepars(bl, [options.bspherical, '0c'])
-        options.baseline[0] = -4*np.pi*options.baseline[0]
-        #options.baseline = bl.actualize([-4*np.pi*options.bcrystal, 0.], "internal")
-        #options.baseline.free[1] = False
+        options.baseline = parsepars(bl, [options.bcrystal, '0c'])
+        options.baseline.pars[0] = -4*np.pi*options.baseline.pars[0]
     elif options.bsrmise is not None:
         # use baseline from existing file
         blext = PDFPeakExtraction()
