@@ -38,11 +38,12 @@ class PDFPeakExtraction(PeakExtraction):
     qmax_reportedbypdf: The qmax read from a file containing a PDF
     qmax_fromdata: The qmax determined directly from the PDF data
     scale: Whether or not to use increased uncertainties when supersampling.
-           This often speeds extraction by reducing the number of very small
-           peaks found while supersampled, and puts the chi-square error
+           This can speed extraction by reducing the number of very small
+           peaks found while supersampled, but also means small features
+           are more likely to be missed.  This option puts the chi-square error
            of a fit on roughly the same scale before and after resampling.
-           This parameter has no effect when Nyquist is False, and defaults
-           to True when Nyquist is True.
+           This option has no effect when Nyquist is False, and defaults
+           to False when Nyquist is True.
     supersample: Make sure data is supersampled by at least this factor
                  above Nyquist sampling before starting extraction.
 
@@ -158,7 +159,7 @@ class PDFPeakExtraction(PeakExtraction):
         # scale
         if self.scale is None or "scale" in args:
             if self.nyquist:
-                self.scale = True
+                self.scale = False
             else:
                 self.scale = False
             if "scale" in args: nargs.remove("scale")

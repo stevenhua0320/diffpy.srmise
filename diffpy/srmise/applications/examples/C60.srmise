@@ -1,6 +1,6 @@
-History written: Tue Jul 22 06:05:10 2014
+History written: Wed Jan 21 10:10:55 2015
 produced by Luke
-diffpy.srmise version 0.4a1
+diffpy.srmise version 0.4a1-11
 ##### PDF Peak Extraction
 ## BaselineFunctions
 # BaselineFunction 0
@@ -44,7 +44,7 @@ nyquist=True
 qmax=20.755266780473114
 qmax_reportedbypdf=21.299999
 qmax_fromdata=20.755266780473114
-scale=True
+scale=False
 supersample=4.0
 
 ##### start data
@@ -2064,91 +2064,91 @@ static_owner=False
 ## ModelPeaks
 # ModelPeak
 owner=1
-pars=[1.4401424869569028, -1.2410142668375679, 35202.027562052092]
+pars=[1.43988000497808, -1.2513305363427976, 34982.728112553035]
 free=[True, True, True]
 removable=True
 static_owner=False
 
 # ModelPeak
 owner=1
-pars=[2.4379702693888294, -0.95323679915689763, 76692.837745041557]
+pars=[2.4379795894023806, -0.95314857740745518, 76698.966329379487]
 free=[True, True, True]
 removable=True
 static_owner=False
 
 # ModelPeak
 owner=1
-pars=[2.8464989579349353, -1.3877012160449942, 21270.002550988196]
+pars=[2.8457653331825252, -1.3953011239805146, 21222.844597451509]
 free=[True, True, True]
 removable=True
 static_owner=False
 
 # ModelPeak
 owner=1
-pars=[3.6142807029102002, -0.98875459505987129, 73218.18504016017]
+pars=[3.61423576919309, -0.99043748993648895, 73160.355477864927]
 free=[True, True, True]
 removable=True
 static_owner=False
 
 # ModelPeak
 owner=1
-pars=[4.1155981265571775, -0.92249776010614426, 59194.290693683441]
+pars=[4.1160537839229647, -0.91508309285774225, 59507.237131168295]
 free=[True, True, True]
 removable=True
 static_owner=False
 
 # ModelPeak
 owner=1
-pars=[4.5351165059197509, -1.1439037921134096, 70024.915912656652]
+pars=[4.5350391123386506, -1.155080161227408, 69662.655370259483]
 free=[True, True, True]
 removable=True
 static_owner=False
 
 # ModelPeak
 owner=1
-pars=[4.8049072116205327, -1.1213919620710837, 33152.126679420042]
+pars=[4.8012478808420003, -1.1873127374924612, 32082.958354834434]
 free=[True, True, True]
 removable=True
 static_owner=False
 
 # ModelPeak
 owner=1
-pars=[5.1488359908685926, -1.243200974813548, 23102.815952270488]
+pars=[5.1397851401493355, -1.1758280637533298, 23188.426950348061]
 free=[True, True, True]
 removable=True
 static_owner=False
 
 # ModelPeak
 owner=1
-pars=[5.4304434782737925, -0.95603293959326818, 90614.760140097584]
+pars=[5.4300896734344981, -0.92602720339382361, 92278.499376230335]
 free=[True, True, True]
 removable=True
 static_owner=False
 
 # ModelPeak
 owner=1
-pars=[5.7540463024599129, -0.9042232174994369, 65459.408843089092]
+pars=[5.7592302346308726, -0.88396967955598993, 66400.989904473056]
 free=[True, True, True]
 removable=True
 static_owner=False
 
 # ModelPeak
 owner=1
-pars=[6.1083797357913063, -0.75667753019812423, 98614.028274243741]
+pars=[6.1107332775889329, -0.77988113777045587, 96530.969174768165]
 free=[True, True, True]
 removable=True
 static_owner=False
 
 # ModelPeak
 owner=1
-pars=[6.6239030942393313, -0.77836804938035264, 107328.87245547683]
+pars=[6.6250196726104287, -0.76462464122805829, 109085.5665993505]
 free=[True, True, True]
 removable=True
 static_owner=False
 
 # ModelPeak
 owner=1
-pars=[6.962511707188896, -0.55546854247927491, 71896.14428159954]
+pars=[6.9659449891528507, -0.57009818328327255, 70488.026012374234]
 free=[True, True, True]
 removable=True
 static_owner=False

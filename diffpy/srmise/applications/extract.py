@@ -35,7 +35,7 @@ def main():
               "Nyquist - True\n"
               "Range - All the data\n"
               "Resolution - The Nyquist rate (thinking about changing this, though).\n"
-              "Scale - True\n\n"
+              "Scale - False\n\n"
               "Defaults (when qmax = 0):\n"
               "Baseline - as above\n"
               "dg - as above\n"

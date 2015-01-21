@@ -1,12 +1,12 @@
-Summary written: Tue Jul 22 06:12:06 2014
+Summary written: Wed Jan 21 11:07:44 2015
 produced by Luke
-diffpy.srmise version 0.4a1
+diffpy.srmise version 0.4a1-11
 ##### User comments
 # This is a best model determined by MultiModelSelection
-# Model: 3 (of 10)
-# Class: 3 (of 7, tolerance=0.100000)
-# Best model for uncertainties: 1165.340000-2201.197778
-# Max Akaike probability: 0.999998
+# Model: 17 (of 20)
+# Class: 14 (of 15, tolerance=0.200000)
+# Best model for uncertainties: 8341.381053-9997.390526
+# Max Akaike probability: 0.225296
 ##### PDF Peak Extraction Summary
 # The information below is not sufficient to replicate extraction.
 ## PDF metadata
@@ -15,19 +15,19 @@ nyquist=True
 qmax=20.755266780473114
 qmax_reportedbypdf=21.299999
 qmax_fromdata=20.755266780473114
-scale=True
+scale=False
 supersample=4.0
 
 ## Peak extraction metadata
 Range=[1.0, 7.25]
 cres=0.05
-effective_dy=2719.12666667 (mean)
+effective_dy=10549.3936842 (mean)
 
 ## Model Quality
-# Quality reported by ModelEvaluator: 126.667595208
-# Free parameters in extracted peaks: 42
+# Quality reported by ModelEvaluator: 70.166612836
+# Free parameters in extracted peaks: 30
 # Free parameters in baseline: 0
-# Length of data in final fit: 43
+# Length of data in final fit: 42
 ModelEvaluator=AIC
 
 ## Baseline Functions
@@ -51,17 +51,13 @@ ModelEvaluator=AIC
 # Each line is followd by a comment which gives the index
 # of the corresponding Peak Function.
 #L position fwhm area
-1.4401469686 0.107941655639 34430.0397067 # 2
-1.99172865439 0.512006182035 5427.43271493 # 2
-2.4384838953 0.207132981249 75418.1108711 # 2
-2.84914400317 0.0539909317438 20542.8286168 # 2
-3.61253951929 0.203660831818 73856.5620155 # 2
-4.11528102817 0.212796186255 58171.6610079 # 2
-4.53510400547 0.154541986293 71373.5310785 # 2
-4.79599179923 0.113176651218 29537.2589924 # 2
-5.13807389263 0.223171210143 26095.8472514 # 2
-5.4412005521 0.248520654377 97352.9634639 # 2
-5.78049686422 0.223815316243 64034.8047237 # 2
-6.11395393889 0.244093336839 90956.5527962 # 2
-6.63660988485 0.30416045807 121922.213443 # 2
-6.99228661165 0.288057403386 58804.6916042 # 2
+1.43953916484 0.0906875528613 33469.6355266 # 2
+2.43686547818 0.213975889351 76792.6533969 # 2
+2.84931280649 0.0582347647635 21155.6302672 # 2
+3.61206416793 0.192101961953 72098.9664895 # 2
+4.12230312966 0.213325844848 58692.0579288 # 2
+4.50385113133 0.049770147165 52664.9148313 # 2
+4.71224368731 0.228035543001 46800.9026757 # 2
+5.55180691393 0.699999999999 212569.827232 # 2
+6.11633516262 0.126209894363 54078.8959568 # 2
+6.70974531511 0.573720720093 193576.64972 # 2

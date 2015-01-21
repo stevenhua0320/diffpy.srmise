@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+#
+# For a complete summary, run: C60multimodel.py --report --plotbest --plotprobs --savepwa --savefigs
+#
 
 import numpy as np
 import optparse, sys
@@ -11,7 +14,7 @@ import diffpy.srmise.mise.miselog as ml
 defaultstabfile = "C60ps.dat"
 defaultmsfile = "C60ms.dat"
 
-deftol = 0.1 # default tolerance when classifying models
+deftol = 0.2 # default tolerance when classifying models
 
 ml.setlevel("warning")
 ms = MultimodelSelection()

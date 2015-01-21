@@ -1,6 +1,6 @@
-History written: Tue Jul 22 06:05:14 2014
+History written: Wed Jan 21 10:16:09 2015
 produced by Luke
-diffpy.srmise version 0.4a1
+diffpy.srmise version 0.4a1-11
 ##### PDF Peak Extraction
 ## BaselineFunctions
 # BaselineFunction 0
@@ -43,7 +43,7 @@ nyquist=True
 qmax=18.4429722158707
 qmax_reportedbypdf=18.5
 qmax_fromdata=18.4429722158707
-scale=True
+scale=False
 supersample=4.0
 
 ##### start data
@@ -3063,35 +3063,49 @@ static_owner=False
 ## ModelPeaks
 # ModelPeak
 owner=1
-pars=[1.3825041893483054, -0.88624976175592252, 2.4502755473687063]
+pars=[1.3806475989192499, -0.97178805465569784, 2.3432030570118418]
 free=[True, True, True]
 removable=True
 static_owner=False
 
 # ModelPeak
 owner=1
-pars=[2.3785551386680543, -0.52385666795137076, 3.1838350086189822]
+pars=[2.2688005770821902, -1.1679542098187363, 0.8992597240839918]
 free=[True, True, True]
 removable=True
 static_owner=False
 
 # ModelPeak
 owner=1
-pars=[3.6060408224729597, -0.094394969999932327, 11.460283707224511]
+pars=[2.4469671170015737, -0.63095346854528545, 2.2775946889217811]
 free=[True, True, True]
 removable=True
 static_owner=False
 
 # ModelPeak
 owner=1
-pars=[4.1589670857960872, 1.5707963267948963, 16.603371702663843]
+pars=[3.2501554569072941, -0.95550220795643137, 1.0493513930073086]
 free=[True, True, True]
 removable=True
 static_owner=False
 
 # ModelPeak
 owner=1
-pars=[4.8154548039639273, 1.5706658550780099, 16.685470472718016]
+pars=[3.601706367138795, -0.4701139555273931, 8.6970396496849265]
+free=[True, True, True]
+removable=True
+static_owner=False
+
+# ModelPeak
+owner=1
+pars=[4.0966090537582254, 1.5698655475975269, 17.225618094767157]
+free=[True, True, True]
+removable=True
+static_owner=False
+
+# ModelPeak
+owner=1
+pars=[4.7831728186204723, 1.5707944124657987, 17.448245276693328]
 free=[True, True, True]
 removable=True
 static_owner=False

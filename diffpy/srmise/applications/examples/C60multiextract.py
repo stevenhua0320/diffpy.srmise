@@ -19,8 +19,8 @@ def run(plot=True):
     ms.setppe(ppe)
 
     # Define the values of dg to assume in order to generate multiple models.
-    # For the purpose of illustration we'll use 10 evenly-spaced values of dg
-    # where 1% < dg < 5% of max gr value.
+    # For the purpose of illustration we'll use 20 evenly-spaced values of dg
+    # where 1% < dg < 10% of max gr value.
     rmin = 1.
     rmax = 7.25
     r = np.array(ppe.x)
@@ -31,7 +31,7 @@ def run(plot=True):
     grmax = np.max(gr)
     print "Maximum height of G(r) within %s <= r <= %s angstroms" %(rmin, rmax)
     print "G(r): %s at r=%s" %(grmax, r[np.argmax(gr)])
-    dgs = np.linspace(.01*grmax, .05*grmax, 10)
+    dgs = np.linspace(.01*grmax, .10*grmax, 20)
 
     # Extraction keywords are inherited from C60.srmise, but explicitly
     # overwrite whatever extraction range it used.
