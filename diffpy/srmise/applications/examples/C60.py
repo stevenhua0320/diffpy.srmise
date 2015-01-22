@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # This script is equivalent to:
-# srmise C60.gr --range 1. 8. --bseq C60baseline.dat --dg 750 --save C60.srmise -p
+# srmise C60.gr --range 1. 8. --bseq C60baseline.dat --dg 5000 --save C60.srmise -p
 
 import numpy as np
 import matplotlib.pyplot as plt
