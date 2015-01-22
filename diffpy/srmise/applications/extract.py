@@ -93,6 +93,8 @@ def main():
                       help="Use constant baseline given by y=a0.  Append 'c' to make parameter constant.")
     group.add_option("--bpoly1", dest="bpoly1", type="string", nargs=2, metavar="a1[c] a0[c]",
                       help="Use baseline given by y=a1*x + a0.  Append 'c' to make parameter constant.")
+    group.add_option("--bpoly2", dest="bpoly2", type="string", nargs=3, metavar="a2[c] a1[c] a0[c]",
+                      help="Use baseline given by y=a2*x^2+a1*x + a0.  Append 'c' to make parameter constant.")
     group.add_option("--bseq", dest="bseq", type="string", metavar="file",
                       help="Use baseline interpolated from x,y values in file."
                            "This baseline has no free parameters.")
@@ -223,7 +225,10 @@ def main():
         from diffpy.srmise.mise.baselines import Polynomial
         bl = Polynomial(degree=1)
         options.baseline = parsepars(bl, options.bpoly1)
-        #options.baseline = bl.actualize(list(options.bpoly1), "internal")
+    elif options.bpoly2 is not None:
+        from diffpy.srmise.mise.baselines import Polynomial
+        bl = Polynomial(degree=2)
+        options.baseline = parsepars(bl, options.bpoly2)
     elif options.bseq is not None:
         from diffpy.srmise.mise.baselines import FromSequence
         bl = FromSequence(options.bseq)
