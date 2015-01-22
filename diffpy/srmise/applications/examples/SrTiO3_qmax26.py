@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # This script is equivalent to:
-# srmise SrTiO3_qmax26.gr --range 1.5 10 --bcrystal .0839486  --no-nyquist --dg 0.3 --save SrTiO3_qmax26.srmise -p
+# srmise SrTiO3_qmax26.gr --range 1.5 10 --bcrystal .0839486  --no-nyquist --dg-mode absolute --dg 0.3 --save SrTiO3_qmax26.srmise -p
 
 import numpy as np
 import matplotlib.pyplot as plt

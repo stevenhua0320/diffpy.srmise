@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # This script is equivalent to:
-# srmise caffeine.gr --range 1. 5. --baseline Polynomial(degree=1) --dg .2 --save caffeine.srmise -p
+# srmise caffeine.gr --range 1. 5. --baseline Polynomial(degree=1) --dg-mode absolute --dg .2 --save caffeine.srmise -p
 
 import numpy as np
 import matplotlib.pyplot as plt
