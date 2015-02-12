@@ -606,7 +606,7 @@ class PeakExtraction(object):
             if self.dx is not None:
                 line.append("%g" %self.dx[i])
             if self.dy is not None:
-                line.append("%g" %self.dx[i])
+                line.append("%g" %self.dy[i])
             if self.effective_dy is not None:
                 line.append("%g" %self.effective_dy[i])
             lines.append(" ".join(line))
