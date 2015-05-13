@@ -12,13 +12,13 @@
 ##############################################################################
 
 import numpy as np
-from diffpy.srmise.mise.baselines.base import BaselineFunction
-from diffpy.srmise.mise.miseerrors import MiseEstimationError
+from diffpy.srmise.baselines.base import BaselineFunction
+from diffpy.srmise.srmiseerrors import SrMiseEstimationError
 
 import matplotlib.pyplot as plt
 
-import logging, diffpy.srmise.mise.miselog
-logger = logging.getLogger("mise.peakextraction")
+import logging, diffpy.srmise.srmiselog
+logger = logging.getLogger("diffpy.srmise")
 
 class Arbitrary (BaselineFunction):
     """Methods for evaluating a baseline from an arbitrary function.
@@ -104,7 +104,7 @@ class Arbitrary (BaselineFunction):
 
         Returns Numpy array of parameters in the default internal format.
         Raises NotImplementedError if no estimation routine is defined, and
-        MiseEstimationError if parameters cannot be estimated for any other."""
+        SrMiseEstimationError if parameters cannot be estimated for any other."""
         if self.estimatef is None:
             emsg = "No estimation routine provided to Arbitrary."
             raise NotImplementedError(emsg)
@@ -115,7 +115,7 @@ class Arbitrary (BaselineFunction):
         except Exception, e:
             emsg = "Error within estimation routine provided to Arbitrary:\n"+\
                    str(e)
-            raise MiseEstimationError(emsg)
+            raise SrMiseEstimationError(emsg)
 
     def _jacobianraw(self, pars, r, free):
         """Return the Jacobian of a polynomial.

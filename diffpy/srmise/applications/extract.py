@@ -70,10 +70,10 @@ def main():
     dg_defaults = {'absolute':None, 'max-fraction':.05, 'ptp-fraction':.05, 'dG-fraction':1.}
 
     parser.add_option("--peakfunction", dest="peakfunction", metavar="PF",
-                      help="Fit peak function PF defined in diffpy.srmise.mise.peaks. "
+                      help="Fit peak function PF defined in diffpy.srmise.peaks. "
                            "e.g. 'GaussianOverR(maxwidth=0.7)'")
     parser.add_option("--me", "-m", dest="modelevaluator", metavar="ME",
-                      help="ModelEvaluator defined in diffpy.srmise.mise.modelevaluators. "
+                      help="ModelEvaluator defined in diffpy.srmise.modelevaluators. "
                            "e.g. 'AICc'")
 
     group = OptionGroup(parser, "Baseline Options",
@@ -81,7 +81,7 @@ def main():
                         "and a good estimate is critical to reliable results.  Automated estimation "
                         "implemented only for linear baseline, and crudely.")
     group.add_option("--baseline", dest="baseline", metavar="BL",
-                      help="Estimate baseline from baseline function BL defined in diffpy.srmise.mise.baselines. "
+                      help="Estimate baseline from baseline function BL defined in diffpy.srmise.baselines. "
                            "e.g. 'Polynomial(degree=1)'.  All parameters are free.")
     group.add_option("--bcrystal", dest="bcrystal", type="string", metavar="rho0[c]",
                       help="Use linear baseline defined by crystal number density rho0.  "
@@ -181,15 +181,15 @@ def main():
     if len(args) != 1:
         parser.error("Exactly one argument required. \n"+usage)
 
-    from diffpy.srmise.mise import miselog
-    miselog.setlevel(options.verbosity)
+    from diffpy.srmise import srmiselog
+    srmiselog.setlevel(options.verbosity)
 
     import numpy as np
-    from diffpy.srmise.mise.pdfpeakextraction import PDFPeakExtraction
-    from diffpy.srmise.mise.miseerrors import MiseDataFormatError, MiseFileError
+    from diffpy.srmise.pdfpeakextraction import PDFPeakExtraction
+    from diffpy.srmise.srmiseerrors import SrMiseDataFormatError, SrMiseFileError
 
     if options.peakfunction is not None:
-        from diffpy.srmise.mise import peaks
+        from diffpy.srmise import peaks
         try:
             options.peakfunction = eval("peaks."+options.peakfunction)
         except Exception, err:
@@ -198,7 +198,7 @@ def main():
             options.peakfunction = None
 
     if options.modelevaluator is not None:
-        from diffpy.srmise.mise import modelevaluators
+        from diffpy.srmise import modelevaluators
         try:
             options.modelevaluator = eval("modelevaluators."+options.modelevaluator)
         except Exception,  err:
@@ -207,7 +207,7 @@ def main():
             options.modelevaluator = None
 
     if options.bcrystal is not None:
-        from diffpy.srmise.mise.baselines import Polynomial
+        from diffpy.srmise.baselines import Polynomial
         bl = Polynomial(degree=1)
         options.baseline = parsepars(bl, [options.bcrystal, '0c'])
         options.baseline.pars[0] = -4*np.pi*options.baseline.pars[0]
@@ -217,28 +217,28 @@ def main():
         blext.read(options.bsrmise)
         options.baseline = blext.extracted.baseline
     elif options.bpoly0 is not None:
-        from diffpy.srmise.mise.baselines import Polynomial
+        from diffpy.srmise.baselines import Polynomial
         bl = Polynomial(degree=0)
         options.baseline = parsepars(bl, [options.bpoly0])
         #options.baseline = bl.actualize([options.bpoly0], "internal")
     elif options.bpoly1 is not None:
-        from diffpy.srmise.mise.baselines import Polynomial
+        from diffpy.srmise.baselines import Polynomial
         bl = Polynomial(degree=1)
         options.baseline = parsepars(bl, options.bpoly1)
     elif options.bpoly2 is not None:
-        from diffpy.srmise.mise.baselines import Polynomial
+        from diffpy.srmise.baselines import Polynomial
         bl = Polynomial(degree=2)
         options.baseline = parsepars(bl, options.bpoly2)
     elif options.bseq is not None:
-        from diffpy.srmise.mise.baselines import FromSequence
+        from diffpy.srmise.baselines import FromSequence
         bl = FromSequence(options.bseq)
         options.baseline = bl.actualize([], "internal")
     elif options.bspherical is not None:
-        from diffpy.srmise.mise.baselines import NanoSpherical
+        from diffpy.srmise.baselines import NanoSpherical
         bl = NanoSpherical()
         options.baseline = parsepars(bl, options.bspherical)
     elif options.baseline is not None:
-        from diffpy.srmise.mise import baselines
+        from diffpy.srmise import baselines
         try:
             options.baseline = eval("baselines."+options.baseline)
         except Exception, err:
@@ -252,7 +252,7 @@ def main():
         ext = PDFPeakExtraction()
         try:
             ext.read(filename)
-        except (MiseDataFormatError, MiseFileError, Exception):
+        except (SrMiseDataFormatError, SrMiseFileError, Exception):
             ext.loadpdf(filename)
 
         pdict = {}
@@ -284,8 +284,8 @@ def main():
             pdict["error_method"] = options.modelevaluator
 
         if options.liveplot:
-            from diffpy.srmise.mise import miselog
-            miselog.liveplotting(True, options.wait)
+            from diffpy.srmise import srmiselog
+            srmiselog.liveplotting(True, options.wait)
 
         ext.setvars(**pdict)
         if options.performextraction:
@@ -295,7 +295,7 @@ def main():
         if options.savefile is not None:
             try:
                 ext.write(options.savefile)
-            except MiseFileError, err:
+            except SrMiseFileError, err:
                 print err
                 print "Could not save result to '%s'." %options.savefile
 
@@ -303,7 +303,7 @@ def main():
         if options.pwafile is not None:
             try:
                 ext.writepwa(options.pwafile)
-            except MiseFileError, err:
+            except SrMiseFileError, err:
                 print err
                 print "Could not save pwa summary to '%s'." %options.pwafile
 

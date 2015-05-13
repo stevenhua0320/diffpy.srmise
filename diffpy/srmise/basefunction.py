@@ -16,11 +16,11 @@ import sys
 import re
 
 import numpy as np
-from diffpy.srmise.mise.miseerrors import *
-from diffpy.srmise.mise.modelparts import ModelParts, ModelPart
+from diffpy.srmise.srmiseerrors import *
+from diffpy.srmise.modelparts import ModelParts, ModelPart
 
 import logging
-logger = logging.getLogger("mise.peakextraction")
+logger = logging.getLogger("diffpy.srmise")
 
 class BaseFunction(object):
     """Base class for mathematical functions which model numeric sequences.
@@ -320,8 +320,8 @@ class BaseFunction(object):
         return
 
     def getmodule(self):
-        """Return 'diffpy.srmise.mise.basefunction'"""
-        return "diffpy.srmise.mise.basefunction"
+        """Return 'diffpy.srmise.basefunction'"""
+        return "diffpy.srmise.basefunction"
 
     def writestr(self, baselist):
         """Return string representation of self.
@@ -379,7 +379,7 @@ class BaseFunction(object):
             except Exception, e:
                 logger.exception(e)
                 emsg = ("Invalid parameter: %s=%s" %(k,v))
-                raise MiseDataFormatError(emsg)
+                raise SrMiseDataFormatError(emsg)
 
         function_name = pdict["function"]
         del pdict["function"]
@@ -441,7 +441,7 @@ class BaseFunction(object):
 
 if __name__ == '__main__':
 
-    from diffpy.srmise.mise.peaks import GaussianOverR, TerminationRipples
+    from diffpy.srmise.peaks import GaussianOverR, TerminationRipples
 
     p = GaussianOverR(0.8)
     outstr = p.writestr([])

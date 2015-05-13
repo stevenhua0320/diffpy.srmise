@@ -13,7 +13,7 @@
 
 """Tools for peak extraction from PDF."""
 
-__all__ = ["basefunction", "miseerrors", "miselog", "dataclusters",
+__all__ = ["basefunction", "srmiseerrors", "srmiselog", "dataclusters",
            "modelcluster", "modelparts", "pdfdataset", "pdfpeakextraction",
            "peakextraction", "peakstability", "multimodelselection"]
 

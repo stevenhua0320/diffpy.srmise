@@ -13,10 +13,10 @@
 
 import numpy as np
 import scipy.fftpack as fp
-from diffpy.srmise.mise.peaks.base import PeakFunction
+from diffpy.srmise.peaks.base import PeakFunction
 
-import logging, diffpy.srmise.mise.miselog
-logger = logging.getLogger("mise.peakextraction")
+import logging, diffpy.srmise.srmiselog
+logger = logging.getLogger("diffpy.srmise")
 
 class TerminationRipples (PeakFunction):
     """Methods for evaluation and parameter estimation of a peak function with termination ripples."""
@@ -66,7 +66,7 @@ class TerminationRipples (PeakFunction):
         y: (Numpy array) Data along y from which to estimate
 
         Returns Numpy array of parameters in the default internal format.
-        Raises MiseEstimationError if parameters cannot be estimated for any
+        Raises SrMiseEstimationError if parameters cannot be estimated for any
         reason."""
         return self.base.estimate_parameters(r, y)
 
@@ -76,7 +76,7 @@ class TerminationRipples (PeakFunction):
         """Change parameters so value(x)->scale*value(x) for the base function.
 
         Does not change position or height of peak's maxima.  Raises
-        MiseScalingError if the parameters cannot be scaled.
+        SrMiseScalingError if the parameters cannot be scaled.
 
         Parameters
         pars: (Array) Parameters corresponding to a single peak
@@ -313,11 +313,11 @@ if __name__ == '__main__':
 
     from numpy.random import randn
     import matplotlib.pyplot as plt
-    from diffpy.srmise.mise.modelevaluator import AICc
-    from diffpy.srmise.mise.modelcluster import ModelCluster
-    from diffpy.srmise.mise.peakfunctions.gaussianoverr import GaussianOverR
-    from diffpy.srmise.mise.peakfunctions.terminationripples import TerminationRipples
-    from diffpy.srmise.mise.peakfunctions.peaks import Peaks
+    from diffpy.srmise.modelevaluator import AICc
+    from diffpy.srmise.modelcluster import ModelCluster
+    from diffpy.srmise.peakfunctions.gaussianoverr import GaussianOverR
+    from diffpy.srmise.peakfunctions.terminationripples import TerminationRipples
+    from diffpy.srmise.peakfunctions.peaks import Peaks
 
     res = .01
     r = np.arange(2,4,res)

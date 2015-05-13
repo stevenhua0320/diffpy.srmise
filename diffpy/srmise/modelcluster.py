@@ -21,19 +21,19 @@ ModelCov: Helper class for model covariance.
 import numpy as np
 import scipy as sp
 from scipy.optimize import leastsq
-from diffpy.srmise.mise.peaks import Peak, Peaks
-from diffpy.srmise.mise.modelparts import ModelParts
-from diffpy.srmise.mise.miseerrors import MiseEstimationError, MiseFitError, MiseDataFormatError, MiseUndefinedCovarianceError
-from diffpy.srmise.mise.baselines import Baseline
+from diffpy.srmise.peaks import Peak, Peaks
+from diffpy.srmise.modelparts import ModelParts
+from diffpy.srmise.srmiseerrors import MiseEstimationError, MiseFitError, MiseDataFormatError, MiseUndefinedCovarianceError
+from diffpy.srmise.baselines import Baseline
 import re
 import sys
 
 import matplotlib.pyplot as plt
 
 import logging
-logger = logging.getLogger("mise.peakextraction")
+logger = logging.getLogger("diffpy.srmise")
 
-from diffpy.srmise.mise import miselog
+from diffpy.srmise import srmiselog
 
 class ModelCovariance(object):
     """Helper class preserves uncertainty info (full covariance matrix) for a fit model.
@@ -151,7 +151,7 @@ class ModelCovariance(object):
         """
         if self.cov is None:
             emsg = "Cannot transform undefined covariance matrix."
-            raise MiseUndefinedCovarianceError(emsg)
+            raise SrMiseUndefinedCovarianceError(emsg)
 
         if "parts" in kwds:
             parts = kwds["parts"]
@@ -206,7 +206,7 @@ class ModelCovariance(object):
         """
         if self.cov is None:
             emsg = "Cannot get correlation on undefined covariance matrix."
-            raise MiseUndefinedCovarianceError(emsg)
+            raise SrMiseUndefinedCovarianceError(emsg)
 
         if self.cov[i,i] == 0. or self.cov[j,j] == 0.:
             return None
@@ -226,7 +226,7 @@ class ModelCovariance(object):
         """
         if self.cov is None:
             emsg = "Cannot calculate correlation on undefined covariance matrix."
-            raise MiseUndefinedCovarianceError(emsg)
+            raise SrMiseUndefinedCovarianceError(emsg)
 
         correlated = []
         for i in range(self.cov.shape[0]):
@@ -371,7 +371,7 @@ class ModelCluster(object):
         pfbaselist - List of peak function bases.  Otherwise define list from self.
         blfbaselist - List of baseline function bases. Otherwise define list from self.
         """
-        from diffpy.srmise.mise.basefunction import BaseFunction
+        from diffpy.srmise.basefunction import BaseFunction
 
         if "pfbaselist" in kwds:
             pfbaselist = kwds["pfbaselist"]
@@ -449,7 +449,7 @@ class ModelCluster(object):
         pfbaselist - List of peak function bases
         blfbaselist - List of baseline function bases
         """
-        from diffpy.srmise.mise.basefunction import BaseFunction
+        from diffpy.srmise.basefunction import BaseFunction
 
         if "pfbaselist" in kwds:
             readpf = False
@@ -543,8 +543,8 @@ class ModelCluster(object):
 
         # error_method
         res = re.search(r'^ModelEvaluator=(.*)$', header, re.M)
-        __import__("diffpy.srmise.mise.modelevaluators")
-        module = sys.modules["diffpy.srmise.mise.modelevaluators"]
+        __import__("diffpy.srmise.modelevaluators")
+        module = sys.modules["diffpy.srmise.modelevaluators"]
         error_method = getattr(module, res.groups()[0].strip())
 
         # slice
@@ -585,7 +585,7 @@ class ModelCluster(object):
             arrays.append(y_error)
         else:
             y_error = None
-        # raise MiseDataFormatError if something goes wrong
+        # raise SrMiseDataFormatError if something goes wrong
         try:
             for line in start_data.split("\n"):
                 l = line.split()
@@ -594,7 +594,7 @@ class ModelCluster(object):
                 for a, v in zip(arrays, line.split()):
                     a.append(float(v))
         except (ValueError, IndexError), err:
-            raise MiseDataFormatError(err)
+            raise SrMiseDataFormatError(err)
         if hasr:
             r_data = np.array(r_data)
         if hasy:
@@ -804,7 +804,7 @@ class ModelCluster(object):
             if estimate:
                 try:
                     self.estimatepeak()
-                except MiseEstimationError, e:
+                except SrMiseEstimationError, e:
                     logger.info("Fit: No model to fit, estimation not possible.")
                     return
             else:
@@ -834,7 +834,7 @@ class ModelCluster(object):
                        self.slice,
                        ntrials,
                        cov)
-        except MiseFitError, e:
+        except SrMiseFitError, e:
             logger.debug("Error while fitting cluster: %s\nReverting to original model.", e)
             self.model = orig_model
             self.baseline = orig_baseline
@@ -1147,7 +1147,7 @@ class ModelCluster(object):
         if len(self.model) == 0:
             return
 
-        tracer = miselog.tracer
+        tracer = srmiselog.tracer
         tracer.pushc()
 
         y_nobl = self.y_cluster - self.valuebl()
@@ -1337,8 +1337,8 @@ class ModelCluster(object):
 if __name__ == '__main__':
     from numpy.random import randn
 
-    from diffpy.srmise.mise.modelevaluators import AICc
-    from diffpy.srmise.mise.peaks import GaussianOverR
+    from diffpy.srmise.modelevaluators import AICc
+    from diffpy.srmise.peaks import GaussianOverR
 
     pf = GaussianOverR(.7)
     res = .01

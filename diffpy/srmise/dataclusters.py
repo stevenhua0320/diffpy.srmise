@@ -15,8 +15,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import logging, diffpy.srmise.mise.miselog
-logger = logging.getLogger("mise.peakextraction")
+import logging, diffpy.srmise.srmiselog
+logger = logging.getLogger("diffpy.srmise")
 
 class DataClusters:
     """Find clusters corresponding to peaks in numerical x-, y-value arrays.

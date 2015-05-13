@@ -12,12 +12,12 @@
 ##############################################################################
 
 import numpy as np
-from diffpy.srmise.mise.peaks.base import PeakFunction
-from diffpy.srmise.mise.miseerrors import MiseEstimationError, MiseScalingError, MiseTransformationError
+from diffpy.srmise.peaks.base import PeakFunction
+from diffpy.srmise.srmiseerrors import SrMiseEstimationError, SrMiseScalingError, SrMiseTransformationError
 import matplotlib.pyplot as plt
 
-import logging, diffpy.srmise.mise.miselog
-logger = logging.getLogger("mise.peakextraction")
+import logging, diffpy.srmise.srmiselog
+logger = logging.getLogger("diffpy.srmise")
 
 class Gaussian (PeakFunction):
     """Methods for evaluation and parameter estimation of width-limited Gaussian.
@@ -79,11 +79,11 @@ class Gaussian (PeakFunction):
         y: (Numpy array) Data along y from which to estimate
 
         Returns Numpy array of parameters in the default internal format.
-        Raises MiseEstimationError if parameters cannot be estimated for any
+        Raises SrMiseEstimationError if parameters cannot be estimated for any
         reason."""
         if len(r) != len(y):
             emsg = "Arrays r, y must have equal length."
-            raise MiseEstimationError(emsg)
+            raise SrMiseEstimationError(emsg)
 
         logger.debug("Estimate peak using %s point(s)", len(r))
 
@@ -96,7 +96,7 @@ class Gaussian (PeakFunction):
 
         if len(usable_idx) < minpoints_required:
             emsg = "Not enough data for successful estimation."
-            raise MiseEstimationError(emsg)
+            raise SrMiseEstimationError(emsg)
 
         #### Estimation ####
         guesspars = np.array([0., 0., 0.], dtype=float)
@@ -139,7 +139,7 @@ class Gaussian (PeakFunction):
         """Change parameters so value(x)->scale*value(x).
 
         Does not change position or height of peak's maxima.  Raises
-        MiseScalingError if the parameters cannot be scaled.
+        SrMiseScalingError if the parameters cannot be scaled.
 
         Parameters
         pars: (Array) Parameters corresponding to a single peak
@@ -147,7 +147,7 @@ class Gaussian (PeakFunction):
         scale: (float > 0) Size of scaling at x."""
         if scale <= 0:
             emsg = ''.join(["Cannot scale by ", str(scale), "."])
-            raise MiseScalingError(emsg)
+            raise SrMiseScalingError(emsg)
 
         if scale == 1:
             return pars
@@ -173,8 +173,8 @@ class Gaussian (PeakFunction):
         tpars[2] = area2
         try:
             tpars = self.transform_parameters(tpars, in_format="mu_sigma_area", out_format="internal")
-        except MiseTransformationError, err:
-            raise MiseScalingError(str(err))
+        except SrMiseTransformationError, err:
+            raise SrMiseScalingError(str(err))
         return tpars
 
     def _jacobianraw(self, pars, r, free):
@@ -254,13 +254,13 @@ class Gaussian (PeakFunction):
         elif in_format == "pwa":
             if temp[1] > self.maxwidth:
                 emsg = "Width %s (FWHM) greater than maximum allowed width %s" %(temp[1], self.maxwidth)
-                raise MiseTransformationError(emsg)
+                raise SrMiseTransformationError(emsg)
             temp[1] = np.arcsin(2.*temp[1]**2/self.maxwidth**2-1.)
         elif in_format == "mu_sigma_area":
             fwhm = temp[1]*self.sigma2fwhm
             if fwhm > self.maxwidth:
                 emsg = "Width %s (FWHM) greater than maximum allowed width %s" %(fwhm, self.maxwidth)
-                raise MiseTransformationError(emsg)
+                raise SrMiseTransformationError(emsg)
             temp[1] = np.arcsin(2.*fwhm**2/self.maxwidth**2-1.)
         else:
             raise ValueError("Argument 'in_format' must be one of %s." \
@@ -322,9 +322,9 @@ if __name__ == '__main__':
 
     from numpy.random import randn
     import matplotlib.pyplot as plt
-    from diffpy.srmise.mise.modelevaluators import AICc
-    from diffpy.srmise.mise.modelcluster import ModelCluster
-    from diffpy.srmise.mise.peaks import Peaks
+    from diffpy.srmise.modelevaluators import AICc
+    from diffpy.srmise.modelcluster import ModelCluster
+    from diffpy.srmise.peaks import Peaks
 
     res = .01
     r = np.arange(2,4,res)

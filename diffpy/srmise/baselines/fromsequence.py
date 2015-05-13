@@ -13,12 +13,12 @@
 
 import numpy as np
 import scipy.interpolate as spi
-from diffpy.srmise.mise.baselines.base import BaselineFunction
+from diffpy.srmise.baselines.base import BaselineFunction
 
 import matplotlib.pyplot as plt
 
-import logging, diffpy.srmise.mise.miselog
-logger = logging.getLogger("mise.peakextraction")
+import logging, diffpy.srmise.srmiselog
+logger = logging.getLogger("diffpy.srmise")
 
 class FromSequence (BaselineFunction):
     """Methods for evaluation of a baseline from discrete data via interpolation.
@@ -165,7 +165,7 @@ class FromSequence (BaselineFunction):
 
     def readxy(self, filename):
         """ """
-        from diffpy.srmise.mise.miseerrors import MiseDataFormatError, MiseFileError
+        from diffpy.srmise.srmiseerrors import SrMiseDataFormatError, SrMiseFileError
 
         # TODO: Make this safer
         try:
@@ -187,7 +187,7 @@ class FromSequence (BaselineFunction):
                 x.append(float(v[0]))
                 y.append(float(v[1]))
         except (ValueError, IndexError), err:
-            raise MiseDataFormatError(str(err))
+            raise SrMiseDataFormatError(str(err))
 
         return (np.array(x), np.array(y))
 

@@ -14,12 +14,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import transforms
-from diffpy.srmise.mise.modelevaluators.base import ModelEvaluator
-from diffpy.srmise.mise import ModelCluster
-from diffpy.srmise.mise import PeakStability
+from diffpy.srmise.modelevaluators.base import ModelEvaluator
+from diffpy.srmise import ModelCluster
+from diffpy.srmise import PeakStability
 
-import logging, diffpy.srmise.mise.miselog
-logger = logging.getLogger("mise.peakextraction")
+import logging, diffpy.srmise.srmiselog
+logger = logging.getLogger("diffpy.srmise")
 
 def eatkwds(*args, **kwds):
     """Convenience function to remove all keywords in args from kwds."""

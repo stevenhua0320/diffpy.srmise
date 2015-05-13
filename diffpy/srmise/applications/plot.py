@@ -15,8 +15,8 @@
 import sys
 import optparse
 
-from diffpy.srmise.mise import PDFPeakExtraction, PeakStability
-from diffpy.srmise.mise.pdfpeakextraction import resample
+from diffpy.srmise import PDFPeakExtraction, PeakStability
+from diffpy.srmise.pdfpeakextraction import resample
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -460,7 +460,7 @@ def on_draw(event):
 
 def readcompare(filename):
     """Returns a list of distances read from filename, otherwise None."""
-    from diffpy.srmise.mise.miseerrors import MiseDataFormatError, MiseFileError
+    from diffpy.srmise.srmiseerrors import SrMiseDataFormatError, SrMiseFileError
 
     # TODO: Make this safer
     try:
@@ -495,7 +495,7 @@ def main():
     descr = ("A very basic tool for somewhat prettier plotting than provided by "
              "the basic SrMise classes.  Can be used to compare peak positions "
              "with those from a list.\n"
-             "NOTE: At this time the utility only works with peaks extracted using diffpy.srmise.mise.PDFPeakExtraction.")
+             "NOTE: At this time the utility only works with peaks extracted using diffpy.srmise.PDFPeakExtraction.")
 
     parser = optparse.OptionParser(usage=usage, description=descr)
     parser.add_option("--compare", type="string",

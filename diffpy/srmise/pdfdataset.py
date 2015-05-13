@@ -26,8 +26,8 @@ import copy
 import time
 from getpass import getuser
 
-from diffpy.srmise.mise.miseerrors import \
-        MisePDFKeyError, MiseFileError
+from diffpy.srmise.srmiseerrors import \
+        SrMisePDFKeyError, SrMiseFileError
 
 
 class PDFComponent(object):
@@ -122,7 +122,7 @@ class PDFDataSet(PDFComponent):
             setattr(self, barevar, fvalue)
         else:
             emsg = "Invalid PdfFit dataset variable %r" % barevar
-            raise MisePDFKeyError(emsg)
+            raise SrMisePDFKeyError(emsg)
         return
 
     def getvar(self, var):
@@ -139,7 +139,7 @@ class PDFDataSet(PDFComponent):
             value = getattr(self, barevar)
         else:
             emsg = "Invalid PdfFit dataset variable %r" % barevar
-            raise MisePDFKeyError(emsg)
+            raise SrMisePDFKeyError(emsg)
         return value
 
     def read(self, filename):
@@ -155,7 +155,7 @@ class PDFDataSet(PDFComponent):
             basename = os.path.basename(filename)
             emsg = ("Could not open '%s' due to unsupported file format " +
                 "or corrupted data. [%s]") % (basename, err)
-            raise MiseFileError(emsg)
+            raise SrMiseFileError(emsg)
         self.filename = os.path.abspath(filename)
         return self
 

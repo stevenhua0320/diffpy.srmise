@@ -15,19 +15,19 @@ import numpy as np
 import os.path
 import re
 
-from diffpy.srmise.mise.peakextraction import PeakExtraction
-from diffpy.srmise.mise.modelcluster import ModelCluster, ModelCovariance
-from diffpy.srmise.mise.miseerrors import *
+from diffpy.srmise.peakextraction import PeakExtraction
+from diffpy.srmise.modelcluster import ModelCluster, ModelCovariance
+from diffpy.srmise.srmiseerrors import *
 
 #from diffpy.pdfgui.control.pdfdataset import PDFDataSet
-from diffpy.srmise.mise.pdfdataset import PDFDataSet
+from diffpy.srmise.pdfdataset import PDFDataSet
 
 import matplotlib.pyplot as plt
 
 import logging
-logger = logging.getLogger("mise.peakextraction")
+logger = logging.getLogger("diffpy.srmise")
 
-from diffpy.srmise.mise import miselog
+from diffpy.srmise import srmiselog
 
 class PDFPeakExtraction(PeakExtraction):
     """Class for peak extraction of peaks from the PDF.
@@ -177,17 +177,17 @@ class PDFPeakExtraction(PeakExtraction):
                 if "cres" in args: nargs.remove("cres")
 
         if self.pf is None or "pf" in args:
-            from diffpy.srmise.mise.peaks import GaussianOverR
+            from diffpy.srmise.peaks import GaussianOverR
             self.pf = [GaussianOverR(.7)]
             if "pf" in args: nargs.remove("pf")
 
         if self.baseline is None or "baseline" in args:
-            from diffpy.srmise.mise.baselines import Polynomial
+            from diffpy.srmise.baselines import Polynomial
             bl = Polynomial(degree = 1)
             try:
                 epars = bl.estimate_parameters(self.x, self.y)
                 self.baseline = bl.actualize(epars, "internal")
-            except (NotImplementedError, MiseEstimationError):
+            except (NotImplementedError, SrMiseEstimationError):
                 bl = Polynomial(degree = -1)
                 epars = np.array([])
             self.baseline = bl.actualize(epars, "internal")
@@ -263,7 +263,7 @@ class PDFPeakExtraction(PeakExtraction):
 
         self.clearcalc()
 
-        tracer = miselog.tracer
+        tracer = srmiselog.tracer
         tracer.pushc()
 
         # Make sure all required extraction variables have some value
@@ -333,7 +333,7 @@ class PDFPeakExtraction(PeakExtraction):
             logger.info("\n".join(msg),
                         ext)
 
-            from diffpy.srmise.mise.peaks import TerminationRipples
+            from diffpy.srmise.peaks import TerminationRipples
 
             owners = list(set([p.owner() for p in ext.model]))
             tfuncs={}
@@ -349,7 +349,7 @@ class PDFPeakExtraction(PeakExtraction):
                     #       is inadmissible.
                     if not isinstance(p.owner(), TerminationRipples):
                         p.changeowner(tfuncs[p.owner()])
-                except MiseStaticOwnerError:
+                except SrMiseStaticOwnerError:
                     pass
 
             #ext.prune()
@@ -444,7 +444,7 @@ class PDFPeakExtraction(PeakExtraction):
             cov.transform(in_format="internal", out_format="default_output")
             logger.info(str(cov))
             logger.info("Correlations > .8:\n%s", "\n".join(str(c) for c in cov.correlationwarning(.8)))
-        except MiseUndefinedCovarianceError as e:
+        except SrMiseUndefinedCovarianceError as e:
             logger.warn("Covariance not defined for final model.  Fit may not have converged.")
             logger.info(str(ext))
 
@@ -482,7 +482,7 @@ class PDFPeakExtraction(PeakExtraction):
             self.filename = eval(res.groups()[0].strip())
         else:
             emsg = "metastr does not match required field 'filename'"
-            raise MiseDataFormatError(emsg)
+            raise SrMiseDataFormatError(emsg)
 
         # nyquist
         res = re.search(r'^nyquist=(.*)$', metastr, re.M)
@@ -490,7 +490,7 @@ class PDFPeakExtraction(PeakExtraction):
             self.nyquist = eval(res.groups()[0].strip())
         else:
             emsg = "metastr does not match required field 'nyquist'"
-            raise MiseDataFormatError(emsg)
+            raise SrMiseDataFormatError(emsg)
 
         # qmax
         res = re.search(r'^qmax=(.*)$', metastr, re.M)
@@ -498,7 +498,7 @@ class PDFPeakExtraction(PeakExtraction):
             self.qmax = eval(res.groups()[0].strip())
         else:
             emsg = "metastr does not match required field 'qmax'"
-            raise MiseDataFormatError(emsg)
+            raise SrMiseDataFormatError(emsg)
 
         # qmax_reportedbypdf
         res = re.search(r'^qmax_reportedbypdf=(.*)$', metastr, re.M)
@@ -506,7 +506,7 @@ class PDFPeakExtraction(PeakExtraction):
             self.qmax_reportedbypdf = eval(res.groups()[0].strip())
         else:
             emsg = "metastr does not match required field 'qmax_reportedbypdf'"
-            raise MiseDataFormatError(emsg)
+            raise SrMiseDataFormatError(emsg)
 
         # qmax_fromdata
         res = re.search(r'^qmax_fromdata=(.*)$', metastr, re.M)
@@ -514,7 +514,7 @@ class PDFPeakExtraction(PeakExtraction):
             self.qmax_fromdata = eval(res.groups()[0].strip())
         else:
             emsg = "metastr does not match required field 'qmax_fromdata'"
-            raise MiseDataFormatError(emsg)
+            raise SrMiseDataFormatError(emsg)
 
         # scale
         res = re.search(r'^scale=(.*)$', metastr, re.M)
@@ -522,7 +522,7 @@ class PDFPeakExtraction(PeakExtraction):
             self.scale = eval(res.groups()[0].strip())
         else:
             emsg = "metastr does not match required field 'scale'"
-            raise MiseDataFormatError(emsg)
+            raise SrMiseDataFormatError(emsg)
 
         # supersample
         res = re.search(r'^supersample=(.*)$', metastr, re.M)
@@ -530,7 +530,7 @@ class PDFPeakExtraction(PeakExtraction):
             self.supersample = eval(res.groups()[0].strip())
         else:
             emsg = "metastr does not match required field 'supersample'"
-            raise MiseDataFormatError(emsg)
+            raise SrMiseDataFormatError(emsg)
 
     def writepwa(self, filename, comments="n/a"):
         """Write string summarizing extracted peaks to file.
@@ -555,11 +555,11 @@ class PDFPeakExtraction(PeakExtraction):
 
         if self.extracted is None:
             emsg = "Cannot write summary: Peak Extraction has not been performed."
-            raise MiseError(emsg)
+            raise SrMiseError(emsg)
 
         import time
         from getpass import getuser
-        from diffpy.srmise.mise.basefunction import BaseFunction
+        from diffpy.srmise.basefunction import BaseFunction
         from diffpy.srmise import __version__
 
         lines = []

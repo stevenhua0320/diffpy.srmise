@@ -12,12 +12,12 @@
 ##############################################################################
 
 import numpy as np
-from diffpy.srmise.mise.miseerrors import *
-from diffpy.srmise.mise.basefunction import BaseFunction
-from diffpy.srmise.mise.modelparts import ModelParts, ModelPart
+from diffpy.srmise.srmiseerrors import *
+from diffpy.srmise.basefunction import BaseFunction
+from diffpy.srmise.modelparts import ModelParts, ModelPart
 
-import logging, diffpy.srmise.mise.miselog
-logger = logging.getLogger("mise.peakextraction")
+import logging, diffpy.srmise.srmiselog
+logger = logging.getLogger("diffpy.srmise")
 
 class PeakFunction(BaseFunction):
     """Base class for functions which represent peaks.
@@ -222,7 +222,7 @@ class Peak(ModelPart):
 
         try:
             adj_pars = self._owner.scale_at(self.pars, x, scale)
-        except MiseScalingError, err:
+        except SrMiseScalingError, err:
             logger.debug("Cannot scale peak:", err)
             return False
 
@@ -255,10 +255,10 @@ class Peak(ModelPart):
                     pdict[l[0]] = eval(l[1])
                 except Exception:
                     emsg = ("Invalid parameter: %s" %d)
-                    raise MiseDataFormatError(emsg)
+                    raise SrMiseDataFormatError(emsg)
             else:
                 emsg = ("Invalid parameter: %s" %d)
-                raise MiseDataFormatError(emsg)
+                raise SrMiseDataFormatError(emsg)
 
         # Correctly initialize the base function, if one exists.
         idx = pdict["owner"]
@@ -276,9 +276,9 @@ if __name__ == '__main__':
 
     from numpy.random import randn
     import matplotlib.pyplot as plt
-    from diffpy.srmise.mise.modelevaluators import AICc
-    from diffpy.srmise.mise.modelcluster import ModelCluster
-    from diffpy.srmise.mise.peaks import GaussianOverR
+    from diffpy.srmise.modelevaluators import AICc
+    from diffpy.srmise.modelcluster import ModelCluster
+    from diffpy.srmise.peaks import GaussianOverR
 
     res = .01
     r = np.arange(2,4,res)

@@ -14,14 +14,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from diffpy.srmise.mise import PDFPeakExtraction
-from diffpy.srmise.mise import ModelCluster
+from diffpy.srmise import PDFPeakExtraction
+from diffpy.srmise import ModelCluster
 
 # This is a total hack-job right now, and isn't suitable for
 # general use. Limitations include:
 # 1) Only works with PDFPeakExtraction, not PeakExtraction
 # 2) Only constant uncertainties are supported
-# 3) Not using miselog
+# 3) Not using srmiselog
 # 4) Really ugly kluge to allow FromSequence to pickle.
 class PeakStability:
     """Utility to test robustness of peaks.

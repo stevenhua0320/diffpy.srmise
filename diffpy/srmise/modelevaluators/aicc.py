@@ -12,11 +12,11 @@
 ##############################################################################
 
 import numpy as np
-from diffpy.srmise.mise.modelevaluators.base import ModelEvaluator
-from diffpy.srmise.mise.miseerrors import MiseModelEvaluatorError
+from diffpy.srmise.modelevaluators.base import ModelEvaluator
+from diffpy.srmise.srmiseerrors import SrMiseModelEvaluatorError
 
-import logging, diffpy.srmise.mise.miselog
-logger = logging.getLogger("mise.peakextraction")
+import logging, diffpy.srmise.srmiselog
+logger = logging.getLogger("diffpy.srmise")
 
 class AICc (ModelEvaluator):
     """Evaluate and compare models with the AICc statistic.
@@ -58,7 +58,7 @@ class AICc (ModelEvaluator):
         k = fit.model.npars(count_fixed=count_fixed) + kshift
         if k < 0:
             emsg = "AICc not defined for negative number of parameters."
-            raise MiseModelEvaluatorError(emsg)
+            raise SrMiseModelEvaluatorError(emsg)
 
         # Number of data points included in the fit
         n = fit.size

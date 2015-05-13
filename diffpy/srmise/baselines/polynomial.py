@@ -12,12 +12,12 @@
 ##############################################################################
 
 import numpy as np
-from diffpy.srmise.mise.baselines.base import BaselineFunction
-from diffpy.srmise.mise.miseerrors import MiseEstimationError
+from diffpy.srmise.baselines.base import BaselineFunction
+from diffpy.srmise.srmiseerrors import SrMiseEstimationError
 import matplotlib.pyplot as plt
 
-import logging, diffpy.srmise.mise.miselog
-logger = logging.getLogger("mise.peakextraction")
+import logging, diffpy.srmise.srmiselog
+logger = logging.getLogger("diffpy.srmise")
 
 class Polynomial (BaselineFunction):
     """Methods for evaluation and parameter estimation of a polynomial baseline."""
@@ -65,7 +65,7 @@ class Polynomial (BaselineFunction):
 
         Returns Numpy array of parameters in the default internal format.
         Raises NotImplementedError if estimation is not implemented for this
-        degree, or MiseEstimationError if parameters cannot be estimated for
+        degree, or SrMiseEstimationError if parameters cannot be estimated for
         any other reason."""
         if self.degree > 1:
             emsg = "Polynomial implements estimation for baselines of degree <= 1 only."
@@ -97,7 +97,7 @@ class Polynomial (BaselineFunction):
             except Exception, e:
                 emsg = "Error during estimation -- "+str(e)
                 raise
-                raise MiseEstimationError(emsg)
+                raise SrMiseEstimationError(emsg)
 
     def _jacobianraw(self, pars, r, free):
         """Return the Jacobian of a polynomial.

@@ -20,11 +20,11 @@ ModelParts: Collection (list) of ModelPart instances.
 
 import numpy as np
 from scipy.optimize import leastsq
-from diffpy.srmise.mise.miseerrors import *
-from diffpy.srmise.mise import miselog
+from diffpy.srmise.srmiseerrors import *
+from diffpy.srmise import srmiselog
 
 import logging
-logger = logging.getLogger("mise.peakextraction")
+logger = logging.getLogger("diffpy.srmise")
 
 import matplotlib.pyplot as plt
 
@@ -73,10 +73,10 @@ class ModelParts(list):
         if len(freepars) >= len(r):
             emsg = "Cannot fit model with " + str(len(freepars)) +\
                    " free parametersbut only "+str(len(r)) + " data points."
-            raise MiseFitError(emsg)
+            raise SrMiseFitError(emsg)
         if len(freepars) == 0:
             #emsg = "Cannot fit model with no free parameters."
-            #raise MiseFitError(emsg)
+            #raise SrMiseFitError(emsg)
             return
 
         if range == None:
@@ -84,7 +84,7 @@ class ModelParts(list):
 
         args = (r, y, y_error, range)
 
-        if miselog.liveplots:
+        if srmiselog.liveplots:
             plt.figure(1)
             plt.ioff()
             plt.subplot(211)
@@ -125,11 +125,11 @@ class ModelParts(list):
             import traceback
             emsg = "Unexpected error in modelparts.fit().  Original exception:\n" +\
                    traceback.format_exc() + "End original exception."
-            raise MiseFitError(emsg)
+            raise SrMiseFitError(emsg)
 
 #        if np.isnan(f[0]).any():
 #            emsg = "One or more parameters became NaN or inf during fit."
-#            raise MiseFitError(emsg)
+#            raise SrMiseFitError(emsg)
 
         result = f[0]
         #if np.isscalar(result):
@@ -139,7 +139,7 @@ class ModelParts(list):
 
         self.pack_freepars(result)
 
-        if miselog.liveplots:
+        if srmiselog.liveplots:
             plt.draw()
             plt.ioff()
             plt.figure(1)
@@ -152,13 +152,13 @@ class ModelParts(list):
                      *[i for sublist in [[r, p.value(r, range=range)] for p in self] for i in sublist])
             plt.draw()
 
-            if miselog.wait:
+            if srmiselog.wait:
                 print "Press 'Enter' to continue...",
                 raw_input()
 
         if f[4] not in (1,2,3,4):
             emsg = "Fit did not succeed -- " + str(f[3])
-            raise MiseFitError(emsg)
+            raise SrMiseFitError(emsg)
 
         # clean up parameters
         for p in self:
@@ -407,7 +407,7 @@ class ModelPart(object):
         """Change the owner of this part.
 
         Does not change the parameters associated with this model part. Raises
-        MiseStaticOwnerError if this peak has been declared to have a static
+        SrMiseStaticOwnerError if this peak has been declared to have a static
         owner, or if the number of parameters is incompatible.
 
         Parameters
@@ -415,11 +415,11 @@ class ModelPart(object):
         """
         if self.static_owner and self._owner is not owner:
             emsg = "Cannot change owner if static_owner is True."
-            raise MiseStaticOwnerError(emsg)
+            raise SrMiseStaticOwnerError(emsg)
         if self._owner.npars != owner.npars:
             emsg = "New owner specifies different number of parameters than "+\
                    "original owner."
-            raise MiseStaticOwnerError(emsg)
+            raise SrMiseStaticOwnerError(emsg)
         self._owner = owner
 
     def compress(self):

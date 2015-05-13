@@ -16,19 +16,19 @@ import os.path
 import re
 import sys
 
-from diffpy.srmise.mise.dataclusters import DataClusters
-from diffpy.srmise.mise.modelcluster import ModelCluster, ModelCovariance
-from diffpy.srmise.mise.modelparts import ModelPart, ModelParts
-from diffpy.srmise.mise.miseerrors import *
-from diffpy.srmise.mise.peaks import Peak, Peaks
-from diffpy.srmise.mise.baselines import Baseline
+from diffpy.srmise.dataclusters import DataClusters
+from diffpy.srmise.modelcluster import ModelCluster, ModelCovariance
+from diffpy.srmise.modelparts import ModelPart, ModelParts
+from diffpy.srmise.srmiseerrors import *
+from diffpy.srmise.peaks import Peak, Peaks
+from diffpy.srmise.baselines import Baseline
 
 import matplotlib.pyplot as plt
 
 import logging
-logger = logging.getLogger("mise.peakextraction")
+logger = logging.getLogger("diffpy.srmise")
 
-from diffpy.srmise.mise import miselog
+from diffpy.srmise import srmiselog
 
 class PeakExtraction(object):
     """Class for peak extraction.
@@ -172,7 +172,7 @@ class PeakExtraction(object):
             self.effective_dy = self.effective_dy*np.ones(len(self.x))
 
         if self.pf is None or "pf" in args:
-            from diffpy.srmise.mise.peaks import GaussianOverR
+            from diffpy.srmise.peaks import GaussianOverR
             # TODO: Make a more useful default.
             self.pf = [GaussianOverR(self.x[-1]-self.x[0])]
 
@@ -183,17 +183,17 @@ class PeakExtraction(object):
                 epars = self.baseline.estimate_parameters(self.x[s], self.y[s])
                 self.baseline = self.baseline.actualize(epars, "internal")
                 logger.info("Estimating baseline: %s" %self.baseline)
-            except (NotImplementedError, MiseEstimationError):
+            except (NotImplementedError, SrMiseEstimationError):
                 logger.error("Could not estimate baseline from provided BaselineFunction, trying default values.")
                 self.baseline = None
 
         if self.baseline is None or "baseline" in args:
-            from diffpy.srmise.mise.baselines import Polynomial
+            from diffpy.srmise.baselines import Polynomial
             bl = Polynomial(degree = -1)
             self.baseline = bl.actualize(np.array([]), "internal")
 
         if self.error_method is None or "error_method" in args:
-            from diffpy.srmise.mise.modelevaluators import AIC
+            from diffpy.srmise.modelevaluators import AIC
             self.error_method = AIC
 
         if self.initial_peaks is None or "initial_peaks" in args:
@@ -252,12 +252,12 @@ class PeakExtraction(object):
         """
         try:
             self.readstr(open(filename,'rb').read())
-        except MiseDataFormatError, err:
+        except SrMiseDataFormatError, err:
             logger.exception("")
             basename = os.path.basename(filename)
             emsg = ("Could not open '%s' due to unsupported file format " +
                 "or corrupted data. [%s]") % (basename, err)
-            raise MiseFileError(emsg)
+            raise SrMiseFileError(emsg)
         return self
 
     def readstr(self, datastring):
@@ -265,7 +265,7 @@ class PeakExtraction(object):
 
         Parameters
         datastring: The raw data to read"""
-        from diffpy.srmise.mise.basefunction import BaseFunction
+        from diffpy.srmise.basefunction import BaseFunction
 
         self.clear()
 
@@ -275,7 +275,7 @@ class PeakExtraction(object):
         # - PeakFunctions
         # - BaselineObject
         # - InitialPeaks
-        # - MiseMetaData
+        # - SrMiseMetaData
         # - MetaData
         # - StartData
         # - Results
@@ -325,9 +325,9 @@ class PeakExtraction(object):
             metadata = header[res.end():].strip()
             header = header[:res.start()]
 
-        res = re.search(r'^#+ MiseMetadata\s*(?:#.*\s+)*', header, re.M)
+        res = re.search(r'^#+ SrMiseMetadata\s*(?:#.*\s+)*', header, re.M)
         if res:
-            misemetadata = header[res.end():].strip()
+            srmisemetadata = header[res.end():].strip()
             header = header[:res.start()]
 
         res = re.search(r'^#+ InitialPeaks.*$', header, re.M)
@@ -377,10 +377,10 @@ class PeakExtraction(object):
             for s in res[1:]:
                 self.initial_peaks.append(Peak.factory(s, safepf))
 
-        ### Instantiating mise metatdata
+        ### Instantiating srmise metatdata
 
         # pf
-        res = re.search(r'^pf=(.*)$', misemetadata, re.M)
+        res = re.search(r'^pf=(.*)$', srmisemetadata, re.M)
         self.pf = eval(res.groups()[0].strip())
         if self.pf is not None:
             self.pf = [safepf[i] for i in self.pf]
@@ -388,17 +388,17 @@ class PeakExtraction(object):
         # cres
         rx = { 'f' : r'[-+]?(\d+(\.\d*)?|\d*\.\d+)([eE][-+]?\d+)?' }
         regexp = r"\bcres *= *(%(f)s)\b" % rx
-        res = re.search(regexp, misemetadata, re.I)
+        res = re.search(regexp, srmisemetadata, re.I)
         self.cres = float(res.groups()[0])
 
         # error_method
-        res = re.search(r'^ModelEvaluator=(.*)$', misemetadata, re.M)
-        __import__("diffpy.srmise.mise.modelevaluators")
-        module = sys.modules["diffpy.srmise.mise.modelevaluators"]
+        res = re.search(r'^ModelEvaluator=(.*)$', srmisemetadata, re.M)
+        __import__("diffpy.srmise.modelevaluators")
+        module = sys.modules["diffpy.srmise.modelevaluators"]
         self.error_method = getattr(module, res.groups()[0].strip())
 
         # range
-        res = re.search(r'^Range=(.*)$', misemetadata, re.M)
+        res = re.search(r'^Range=(.*)$', srmisemetadata, re.M)
         self.rng = eval(res.groups()[0].strip())
 
         ### Instantiating other metadata
@@ -432,7 +432,7 @@ class PeakExtraction(object):
             arrays.append(self.effective_dy)
         else:
             self.effective_dy = None
-        # raise MiseDataFormatError if something goes wrong
+        # raise SrMiseDataFormatError if something goes wrong
         try:
             for line in start_data.split("\n"):
                 l = line.split()
@@ -441,7 +441,7 @@ class PeakExtraction(object):
                 for a, v in zip(arrays, line.split()):
                     a.append(float(v))
         except (ValueError, IndexError), err:
-            raise MiseDataFormatError(str(err))
+            raise SrMiseDataFormatError(str(err))
         if hasx:
             self.x = np.array(self.x)
         if hasy:
@@ -466,7 +466,7 @@ class PeakExtraction(object):
             self.extraction_type = eval(res.groups()[0].strip())
         else:
             emsg = "Required field 'extraction_type' not found."
-            raise MiseDataFormatError(emsg)
+            raise SrMiseDataFormatError(emsg)
 
         # extracted
         if re.match(r'^None$', mc):
@@ -490,7 +490,7 @@ class PeakExtraction(object):
         """Return string representation of PeakExtraction object."""
         import time
         from getpass import getuser
-        from diffpy.srmise.mise.basefunction import BaseFunction
+        from diffpy.srmise.basefunction import BaseFunction
         from diffpy.srmise import __version__
 
         lines = []
@@ -555,7 +555,7 @@ class PeakExtraction(object):
                 lines.append('# InitialPeak')
                 lines.append(ip.writestr(safepf))
 
-        lines.append('# MiseMetadata')
+        lines.append('# SrMiseMetadata')
 
         # Extractable peak types
         if self.pf is None:
@@ -626,11 +626,11 @@ class PeakExtraction(object):
         return datastring
 
     def writemetadata(self):
-        """Return string for metadata not defined by mise class."""
+        """Return string for metadata not defined by srmise class."""
         return
 
     def readmetadata(self):
-        """Return string for metadata not defined by mise class."""
+        """Return string for metadata not defined by srmise class."""
         return
 
     def writesummary(self):
@@ -758,7 +758,7 @@ class PeakExtraction(object):
            Parameters
            recursion_depth: (1) Tracks recursion with extract_single."""
         self.clearcalc()
-        tracer = miselog.tracer
+        tracer = srmiselog.tracer
         tracer.pushc()
         tracer.pushr()
 
@@ -1187,12 +1187,12 @@ if __name__ == '__main__':
 
     from numpy.random import randn
 
-    from diffpy.srmise.mise.modelevaluators import AICc
-    from diffpy.srmise.mise.peaks import GaussianOverR
-    from diffpy.srmise.mise import miselog
+    from diffpy.srmise.modelevaluators import AICc
+    from diffpy.srmise.peaks import GaussianOverR
+    from diffpy.srmise import srmiselog
 
-    miselog.setlevel("info")
-    miselog.liveplotting(False)
+    srmiselog.setlevel("info")
+    srmiselog.liveplotting(False)
 
     pf = GaussianOverR(.7)
     res = .01

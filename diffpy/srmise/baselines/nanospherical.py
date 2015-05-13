@@ -12,12 +12,12 @@
 ##############################################################################
 
 import numpy as np
-from diffpy.srmise.mise.baselines.base import BaselineFunction
-from diffpy.srmise.mise.miseerrors import MiseEstimationError
+from diffpy.srmise.baselines.base import BaselineFunction
+from diffpy.srmise.srmiseerrors import SrMiseEstimationError
 import matplotlib.pyplot as plt
 
-import logging, diffpy.srmise.mise.miselog
-logger = logging.getLogger("mise.peakextraction")
+import logging, diffpy.srmise.srmiselog
+logger = logging.getLogger("diffpy.srmise")
 
 class NanoSpherical (BaselineFunction):
     """Methods for evaluation of baseline of spherical nanoparticle of uniform density.
@@ -61,7 +61,7 @@ class NanoSpherical (BaselineFunction):
 #
 #        Returns Numpy array of parameters in the default internal format.
 #        Raises NotImplementedError if estimation is not implemented for this
-#        degree, or MiseEstimationError if parameters cannot be estimated for
+#        degree, or SrMiseEstimationError if parameters cannot be estimated for
 #        any other reason.
 #        """
 #        if len(r) != len(y):

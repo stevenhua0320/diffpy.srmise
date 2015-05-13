@@ -10,10 +10,10 @@
 # See LICENSE.txt for license information.
 #
 ##############################################################################
-"""Controls the logging and plotting options of diffpy.srmise.mise.
+"""Controls the logging and plotting options of diffpy.srmise.
 
 By default messages are logged to stdout, but logging to a file is also supported.
-MiseLog defines five levels of message importance, and all messages at least
+SrMiseLog defines five levels of message importance, and all messages at least
 as important as the set level are displayed and/or written to the appropriate file.
 Levels are specified as non-negative integers or equivalent strings, and are identical
 to those found in the Python logging package.
@@ -39,7 +39,7 @@ gettracer: Get a TracePeaks instance for tracing peak extraction.
 
 import sys, os.path, re
 import logging
-from diffpy.srmise.mise.miseerrors import MiseLogError, MiseDataFormatError, MiseFileError
+from diffpy.srmise.srmiseerrors import SrMiseLogError, SrMiseDataFormatError, SrMiseFileError
 
 ### Default settings ###
 defaultformat = "%(message)s"
@@ -52,7 +52,7 @@ LEVELS = {'debug': logging.DEBUG,
           'critical': logging.CRITICAL}
 
 ### Set up logging to stdout ###
-logger = logging.getLogger("mise")
+logger = logging.getLogger("diffpy.srmise")
 logger.setLevel(defaultlevel)
 ch = logging.StreamHandler()
 ch.setLevel(defaultlevel)
@@ -70,7 +70,7 @@ liveplots = False
 wait = False
 
 def addfilelog(filename, level=defaultlevel, format=defaultformat):
-    """Log output from diffpy.srmise.mise in specified file.
+    """Log output from diffpy.srmise in specified file.
 
     Parameters
     filename: Name of file to receiving output
@@ -96,7 +96,7 @@ def setfilelevel(level):
             logger.setLevel(level)
     else:
         emsg = "File handler does not exist, cannot set its level."
-        raise MiseLogError(emsg)
+        raise SrMiseLogError(emsg)
 
 def setlevel(level):
     """Set level of default (stdout) logger.
@@ -223,12 +223,12 @@ class TracePeaks(object):
         "recursion" - The recursion level of mc"""
         try:
             return self.readstr(open(filename,'rb').read())
-        except MiseDataFormatError, err:
+        except SrMiseDataFormatError, err:
             logger.exception("")
             basename = os.path.basename(filename)
             emsg = ("Could not open '%s' due to unsupported file format " +
                 "or corrupted data. [%s]") % (basename, err)
-            raise MiseFileError(emsg)
+            raise SrMiseFileError(emsg)
         return None
 
     def readstr(self, datastring):
@@ -250,13 +250,13 @@ class TracePeaks(object):
             mc = datastring[res.end():].strip()
         else:
             emsg = "Required section 'ModelCluster' not found."
-            raise MiseDataFormatError(emsg)
+            raise SrMiseDataFormatError(emsg)
 
         # instantiate ModelCluster
         if re.match(r'^None$', mc):
             mc = None
         else:
-            from diffpy.srmise.mise.modelcluster import ModelCluster
+            from diffpy.srmise.modelcluster import ModelCluster
             mc = ModelCluster.factory(mc)
 
         res = re.search(r'^clusters=(.*)$', header, re.M)
@@ -264,21 +264,21 @@ class TracePeaks(object):
             clusters = eval(res.groups()[0].strip())
         else:
             emsg = "Required field 'clusters' not found."
-            raise MiseDataFormatError(emsg)
+            raise SrMiseDataFormatError(emsg)
 
         res = re.search(r'^recursion=(.*)$', header, re.M)
         if res:
             recursion = eval(res.groups()[0].strip())
         else:
             emsg = "Required field 'recursion' not found."
-            raise MiseDataFormatError(emsg)
+            raise SrMiseDataFormatError(emsg)
 
         res = re.search(r'^counter=(.*)$', header, re.M)
         if res:
             counter = eval(res.groups()[0].strip())
         else:
             emsg = "Required field 'counter' not found."
-            raise MiseDataFormatError(emsg)
+            raise SrMiseDataFormatError(emsg)
 
         return {"mc":mc, "clusters":clusters, "recursion":self.recursion, "counter":self.counter}
 
