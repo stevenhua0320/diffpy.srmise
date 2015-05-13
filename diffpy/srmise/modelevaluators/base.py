@@ -40,10 +40,10 @@
 ########################################################################
 
 import numpy as np
-from diffpy.srmise.mise.miseerrors import MiseModelEvaluatorError
+from diffpy.srmise.srmiseerrors import SrMiseModelEvaluatorError
 
-import logging, diffpy.srmise.mise.miselog
-logger = logging.getLogger("mise.peakextraction")
+import logging, diffpy.srmise.srmiselog
+logger = logging.getLogger("diffpy.srmise")
 
 class ModelEvaluator:
     """Class for evaluating the quality of a fit.  Comparison between different

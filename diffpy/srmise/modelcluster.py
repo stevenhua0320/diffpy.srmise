@@ -23,7 +23,7 @@ import scipy as sp
 from scipy.optimize import leastsq
 from diffpy.srmise.peaks import Peak, Peaks
 from diffpy.srmise.modelparts import ModelParts
-from diffpy.srmise.srmiseerrors import MiseEstimationError, MiseFitError, MiseDataFormatError, MiseUndefinedCovarianceError
+from diffpy.srmise.srmiseerrors import SrMiseEstimationError, SrMiseFitError, SrMiseDataFormatError, SrMiseUndefinedCovarianceError
 from diffpy.srmise.baselines import Baseline
 import re
 import sys
