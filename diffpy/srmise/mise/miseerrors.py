@@ -127,3 +127,11 @@ class MiseUndefinedCovarianceError(MiseError):
 
         info -- description string"""
         MiseError.__init__(self, info)
+        
+class MisePDFKeyError(MiseError):
+    """diffpy.srmise.mise exception class.  Requested PDF key can't be found."""
+    def __init__(self, info):
+        """initialize
+
+        info -- description string"""
+        MiseError.__init__(self, info)

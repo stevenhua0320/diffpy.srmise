@@ -59,11 +59,10 @@ setup_args = dict(
     zip_safe = False,
 
     # Dependencies
-    # pdfgui
     # numpy
     # scipy
     # matplotlib >= 1.1.0
-    install_requires = ['diffpy.pdfgui', 'matplotlib >= 1.1.0', 'numpy', 'scipy'],
+    install_requires = ['matplotlib >= 1.1.0', 'numpy', 'scipy'],
 
     # other arguments here...
     entry_points = {

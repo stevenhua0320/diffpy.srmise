@@ -19,7 +19,8 @@ from diffpy.srmise.mise.peakextraction import PeakExtraction
 from diffpy.srmise.mise.modelcluster import ModelCluster, ModelCovariance
 from diffpy.srmise.mise.miseerrors import *
 
-from diffpy.pdfgui.control.pdfdataset import PDFDataSet
+#from diffpy.pdfgui.control.pdfdataset import PDFDataSet
+from diffpy.srmise.mise.pdfdataset import PDFDataSet
 
 import matplotlib.pyplot as plt
 
