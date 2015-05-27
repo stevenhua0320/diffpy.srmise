@@ -1,0 +1,142 @@
+Purpose
+----------
+
+These example scripts are an introduction to the SrMise library, and are
+intended to expose new users and developers to the major use cases and options
+anticipated for SrMise.
+
+Generating interest in SrMise is another goal for these tutorials, and we hope
+you will discover exciting ways to apply its capabilities to your scientific
+goals. If you think SrMise may help you do so, please feel free to contact us
+through the DiffPy website.
+
+http://www.diffpy.org
+
+
+Overview
+----------
+
+SrMise is an implementation of the `ParSCAPE algorithm
+<https://dx.doi.org/10.1107/S2053273315005276>`_, which incorporates standard
+chi-square fitting within an iterative clustering framework.  The algorithm
+supposes that, in the absence of an atomic structure model, the model
+complexity (informally, the number of extracted peaks) which can be
+justifiably obtained from a PDF is primarily determined by the experimental
+uncertainties.  The Akaike Information Criterion (AIC), summarized in the
+manual, is the information-theoretic tool used to balance model complexity
+with goodness-of-fit.
+
+Three primary use cases are envisioned for SrMise:
+
+1) Peak extraction, where peak parameters and their number is determined
+   solely from the experimental data.
+2) Peak fitting, where a user-specified model of peaks is fit to the
+   experimental data.
+3) Multimodel selection, where multiple models fitting the data are compared
+   in an AIC-driven analysis to determine a set of most plausible models to
+   guide additional investigation.
+
+Productively running SrMise requires, in basic, the following elements:
+
+1) An experimental PDF.  Note that peak extraction, though not peak fitting,
+   requires that all peaks of interest be positive.  This rules out peak
+   extraction using SrMise for neutron PDFs obtained from samples containing
+   elements with both positive and negative scattering factors.
+2) The experimental uncertainties.  In principle these should be reported with
+   the data, but in practice experimental uncertainties are frequently not
+   reported, or are unreliable due to details of the data reduction process.
+   In these cases the user should specify an ad hoc value.  In peak extraction
+   an ad hoc uncertainty necessarily results in ad hoc model complexity, or,
+   more precisely, a reasonable model complexity if the provided uncertainty
+   is presumed correct.  (Even when the uncertainties are known, specifying an
+   ad hoc value can be a pragmatic tool for exploring alternate models,
+   especially in conjunction with multimodeling analysis.)  Note that for both
+   peak extraction and peak fitting the estimated uncertainties of peak
+   parameters (i.e. location, width, intensity) are dependent on the
+   experimental uncertainty
+3) The PDF baseline.  For crystalline samples the baseline is linear and can
+   be readily estimated.  For nanoparticles more effort is required as SrMise
+   includes explicit support for only a few basic shapes, although the user
+   can define a baseline using arbitrary polynomials or a list of arbitrary
+   numerical values.
+4) The range over which to extract or fit peaks.
+
+The examples described below, though not exhaustive, go into detail about each
+of these points.  They also cover other parameters for which good default
+values can usually be estimated directly from the data.
+
+
+Examples
+----------
+
+The following examples are contained in the *doc/examples/* directory of the
+SrMise source distribution.
+
+Run an example by typing in the command line ::
+
+    python example.py
+
+where *example.py* represents the example file.
+
+Here is an overview of the examples. It is recommended that you work through
+them in the order listed below.  Each example is copiously commented, and
+indicates the command-line equivalent for the script where applicable.
+
+Basic:
+
+* Ag_singlepeak.py_
+    Introductory script demonstrating how to load a PDF, automatically
+    estimate a crystalline baseline, and extract an isolated peak.
+
+* Ag_multiplepeaks.py_
+    Introductory script demonstrating how to use a baseline from a saved
+    SrMise file, extract multiple peaks, and obtain detailed information
+    about the extracted peak parameters.
+
+* TiO2_parameterdetail.py_
+    Introductory script demonstrating basic use of all SrMise parameters. Of
+    particular interest, it covers defining a crystalline baseline with
+    explicit parameters, and assigning an ad hoc uncertainty when the
+    experimental uncertainties are unreliable or unreported.
+
+* TiO2_initialpeaks.py_
+    Introductory script demonstrating how to estimate or explicitly define
+    peaks prior to extraction.  This can be used to accomplish peak fitting
+    or a mixture of peak fitting and peak extraction.
+
+Advanced:
+
+The examples here introduce multimodel selection using SrMise.  Note that the
+API for multimodel selection is expected to change dramatically in a future
+version of SrMise.
+
+* C60_multimodelextraction.py_
+    Demonstrates how to generate many models by varying the PDF uncertainty
+    assumed during peak extraction, for later use in AIC-base multimodel
+    selection.  Also shows how to use a baseline interpolated from a list
+    of supplied values.
+
+* C60_multimodelanalysis.py_
+    Demonstrates a simple AIC-based multimodel analysis using the results of
+    the previous script.
+
+Sample PDF Information
+------------------------
+
+* Ag
+    Crystalline silver X-ray PDF with qmax=30 angstrom^(-1). The PDF is Nyquist
+    sampled, and the reported uncertainties are accurately determined from
+    experiment.
+
+* TiO2
+    Crystalline titanium dioxide (rutile) X-ray PDF with qmax=26 angstrom^(-1).
+    The PDF is finely sampled, and the reported uncertainties are unreliable
+    due to strong correlations introduced in the data reduction process.
+
+* C60
+    Buckminsterfullerene X-ray PDF with qmax=21.3 angstrom^(-1). The PDF is
+    finely sampled, and the reported uncertainties are unreliable due to
+    strong correlations introduced in the data reduction process.  The
+    included baseline is a fit to the observed interparticle contribution
+    using an empirical model of thin spherical shells of constant density in a
+    face-centered cubic lattice.

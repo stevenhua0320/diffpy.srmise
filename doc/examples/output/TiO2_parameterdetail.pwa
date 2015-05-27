@@ -1,0 +1,64 @@
+Summary written: Wed May 20 14:08:57 2015
+produced by Luke
+diffpy.srmise version 0.4a1-25
+##### User comments
+# n/a
+##### PDF Peak Extraction Summary
+# The information below is not sufficient to replicate extraction.
+## PDF metadata
+filename=D:\Workspaces\MSU research\diffpy.srmise\doc\examples\data\TiO2_fine_qmax26.gr
+nyquist=True
+qmax=26.0
+qmax_reportedbypdf=26.0
+qmax_fromdata=25.891671185741703
+scale=False
+supersample=4.0
+
+## Peak extraction metadata
+Range=[1.5, 10.0]
+cres=0.05
+effective_dy=0.35 (mean)
+
+## Model Quality
+# Quality reported by ModelEvaluator: 102.20401451
+# Free parameters in extracted peaks: 45
+# Free parameters in baseline: 1
+# Length of data in final fit: 71
+ModelEvaluator=AIC
+
+## Baseline Functions
+# Index Type
+0 diffpy.srmise.baselines.polynomial 
+
+## Baseline
+# Parameters of baseline, followed by comment which
+# gives the index of corresponding Baseline Function.
+# a_1 a_0
+-0.65 0.0 # 0
+
+## Peak Functions
+# Index Type
+0 diffpy.srmise.peaks.gaussianoverr 
+1 diffpy.srmise.peaks.terminationripples (base=0)
+
+## Extracted Peaks
+# Parameters are given in the natural units of the data,
+# where width is measured as full-width at half maximum.
+# Each line is followd by a comment which gives the index
+# of the corresponding Peak Function.
+#L position fwhm area
+1.95575837382 0.248653255714 2.57964008122 # 1
+2.92664172829 0.292421204424 2.56254947542 # 1
+3.56137506854 0.264637361091 8.11037663577 # 1
+4.09205304442 0.434416384565 4.16959979393 # 1
+4.58775999572 0.309981677725 8.87794015492 # 1
+4.93861532225 0.285034068793 2.20562689126 # 1
+5.46865166416 0.300271307054 14.0583019622 # 1
+5.82711276824 0.335455490725 8.03860474358 # 1
+6.26604487461 0.437031534788 4.42986395731 # 1
+6.9593431988 0.699999992949 30.3385398852 # 1
+7.4593720808 0.375475007031 21.4291827218 # 1
+8.02783945419 0.370409758305 12.8418137327 # 1
+8.48149774476 0.403564520978 22.8980062441 # 1
+9.0560268259 0.699999839828 42.7843770514 # 1
+9.99223170513 0.699999999716 54.101939695 # 1

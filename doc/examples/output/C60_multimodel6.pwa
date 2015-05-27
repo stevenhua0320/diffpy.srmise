@@ -1,0 +1,66 @@
+Summary written: Wed May 20 14:18:02 2015
+produced by Luke
+diffpy.srmise version 0.4a1-25
+##### User comments
+# This is a best model determined by MultiModelSelection
+# Model: 6 (of 20)
+# Class: 6 (of 16, tolerance=0.200000)
+# Best model for uncertainties: 3373.338158-5029.340526
+# Max Akaike probability: 0.394275
+##### PDF Peak Extraction Summary
+# The information below is not sufficient to replicate extraction.
+## PDF metadata
+filename=D:\Workspaces\MSU research\diffpy.srmise\doc\examples\data\C60_fine_qmax21.gr
+nyquist=True
+qmax=21.299999
+qmax_reportedbypdf=21.299999
+qmax_fromdata=20.755266780473114
+scale=False
+supersample=4.0
+
+## Peak extraction metadata
+Range=[1.0, 7.25]
+cres=0.05
+effective_dy=4477.33973684 (mean)
+
+## Model Quality
+# Quality reported by ModelEvaluator: 92.3580418815
+# Free parameters in extracted peaks: 39
+# Free parameters in baseline: 0
+# Length of data in final fit: 43
+ModelEvaluator=AIC
+
+## Baseline Functions
+# Index Type
+0 diffpy.srmise.baselines.fromsequence 
+
+## Baseline
+# Parameters of baseline, followed by comment which
+# gives the index of corresponding Baseline Function.
+(no parameters) # 0
+
+## Peak Functions
+# Index Type
+0 diffpy.srmise.peaks.gaussianoverr 
+1 diffpy.srmise.peaks.gaussianoverr 
+2 diffpy.srmise.peaks.terminationripples (base=1)
+
+## Extracted Peaks
+# Parameters are given in the natural units of the data,
+# where width is measured as full-width at half maximum.
+# Each line is followd by a comment which gives the index
+# of the corresponding Peak Function.
+#L position fwhm area
+1.44241398291 0.129178324594 35670.0393477 # 2
+2.4385627361 0.203265349746 75524.3095939 # 2
+2.84133359486 0.0704762963894 20980.1714821 # 2
+3.61531013251 0.202545958826 73449.5545681 # 2
+4.11407648072 0.225020252337 59436.8085529 # 2
+4.53094724119 0.145179969765 66893.0999199 # 2
+4.79692524828 0.212321608703 37262.5810112 # 2
+5.1708782939 0.14897860675 24765.6038362 # 2
+5.44640629583 0.22995262112 94971.6483948 # 2
+5.77976631699 0.206393941453 63213.8602403 # 2
+6.11037864645 0.234885682025 90099.4449736 # 2
+6.64826559303 0.334654480443 133065.975429 # 2
+7.01450238824 0.23732508258 48220.4588625 # 2

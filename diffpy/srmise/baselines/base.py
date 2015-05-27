@@ -36,7 +36,7 @@ class BaselineFunction(BaseFunction):
                                         parameters for outside use.
 
     Class methods (implemented by inheriting classes)
-    -------------
+    -------------------------------------------------
     estimate_parameters() (optional)
     _jacobianraw() (optional, but strongly recommended)
     _transform_derivativesraw() (optional, supports propagation of uncertainty for different paramaterizations)
@@ -48,7 +48,7 @@ class BaselineFunction(BaseFunction):
     actualize()
 
     Inherited methods
-    -------------
+    -----------------
     jacobian()
     value()
     transform_derivatives()
@@ -59,8 +59,7 @@ class BaselineFunction(BaseFunction):
         """Set parameterdict defined by subclass
 
         parameterdict: A dictionary mapping string keys to their index in a
-                       sequence of parameters for this PeakFunction subclass.
-                       The key "position" is required.
+                       sequence of parameters for this BaselineFunction subclass.
         parformats: A sequence strings containing all allowed input/output
                     formats defined for the peak function's parameters.
         default_formats: A dictionary mapping the string keys "internal" and

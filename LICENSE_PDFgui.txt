@@ -1,4 +1,4 @@
-SrMise incorporates source code from the PDFgui program in the file
+SrMise incorporates source code from diffpy.pdfgui in the file
 pdfdataset.py. The PDFgui license is reproduced in full below.
 ===================================================================
 

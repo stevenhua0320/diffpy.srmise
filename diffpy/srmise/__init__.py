@@ -21,7 +21,7 @@ from diffpy.srmise.version import __version__
 
 from basefunction import BaseFunction
 from dataclusters import DataClusters
-from modelcluster import ModelCluster
+from modelcluster import ModelCluster, ModelCovariance
 from modelparts import ModelPart, ModelParts
 from pdfdataset import PDFDataSet
 from pdfpeakextraction import PDFPeakExtraction

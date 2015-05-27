@@ -72,12 +72,6 @@ class AIC (ModelEvaluator):
 
         self.stat = self.chisq + self.parpenalty(k, n)
 
-
-#        print "=========Testing Quality======="
-#        print "tested model:\n", fit.model
-#        print "chi: ", self.chisq
-#        print "stat: ", self.stat
-
         return self.stat
 
 
@@ -119,10 +113,6 @@ class AIC (ModelEvaluator):
             n=self.minpoints(k_actual)
 
         penalty=self.parpenalty(k_test, n) - self.parpenalty(k_actual, n)
-
-#        print "growth_justified():"
-#        print "chiSq: ", self.chisq
-#        print "penalty: ", penalty
 
         return penalty < self.chisq
 

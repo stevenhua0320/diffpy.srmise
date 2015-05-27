@@ -373,9 +373,6 @@ class DataClusters:
         status = self.status
         self.reset_clusters()
 
-#        a = Animation(self)
-
-
         all_lines = []
         for i in self:
             canvas.restore_region(background)
@@ -383,12 +380,10 @@ class DataClusters:
             for i, b in enumerate(boundaries):
                 height = (b[1]-ymin)/(ymax-ymin)
                 if i < len(all_lines):
-                    #print "Using existing."
                     all_lines[i].set_xdata([b[0], b[0]])
                     all_lines[i].set_ydata([0, height])
                     ax.draw_artist(all_lines[i])
                 else:
-                    #print "Creating new."
                     l = plt.axvline(b[0], 0, height, color='k', animated=True)
                     ax.draw_artist(l)
                     all_lines.append(l)
@@ -401,45 +396,7 @@ class DataClusters:
         self.status = status
         return
 
-
-
 #End of class DataClusters
-
-#class Animation:
-#
-#    def __init__(self, dc):
-#        self.dc = dc
-#        plt.ioff()
-#        plt.figure()
-#        self.ax = plt.subplot(111)
-#        self.canvas = self.ax.figure.canvas
-#        plt.ion()
-#        plt.plot(dc.x, dc.y)
-#        self.background = self.canvas.copy_from_bbox(self.ax.bbox)
-#        plt.ioff()
-#
-#        self.all_lines = []
-#        (self.ymin, self.ymax) = self.ax.get_ylim()
-#        wx.EVT_IDLE(wx.GetApp(), self._animate(self))
-#
-#    def _animate(self, *args):
-#        self.canvas.restore_region(self.background)
-#        boundaries = self.dc.cluster_boundaries()
-#        for i, b in enumerate(boundaries):
-#            height = (b[1]-self.ymin)/(self.ymax-self.ymin)
-#            if i < len(self.all_lines):
-#                #print "Using existing."
-#                self.all_lines[i].set_xdata([b[0], b[0]])
-#                self.all_lines[i].set_ydata([0, height])
-#                self.ax.draw_artist(self.all_lines[i])
-#            else:
-#                #print "Creating new."
-#                l = plt.axvline(b[0], 0, height, color='k', animated=True)
-#                self.ax.draw_artist(l)
-#                self.all_lines.append(l)
-#        self.canvas.blit(self.ax.bbox)
-#        self.dc.next()
-#        wx.WakeUpIdle()
 
 
 # simple test code

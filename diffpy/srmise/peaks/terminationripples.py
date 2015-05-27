@@ -168,50 +168,6 @@ class TerminationRipples (PeakFunction):
                     jac[idx] = self.cut_freq(jac[idx], dr)[ext_slice][0]
             return jac
 
-#    def value(self, peak, r, rng=None):
-#        """Calculate (rippled) value of peak, possibly restricted by range.
-#
-#        This function overrides its counterpart in PeakFunction in order
-#        to minimize the impact of edge-effects from introducing termination
-#        ripples into an existing peak function.
-#
-#        peak: The Peak to be evaluated
-#        r: sequence or scalar over which peak is evaluated
-#        rng: Optional slice object restricts which r-values are evaluated.
-#               The output has same length as r, but unevaluated objects have
-#               a default value of 0.  If caching is enabled these may be
-#               previously calculated values instead.
-#        """
-#        if self is not peak._owner:
-#            raise ValueError("Argument 'peak' must be evaluated by the "
-#                             "PeakFunction subclass instance with which "
-#                             "it is associated.")
-#
-#        # normally r will be a sequence, but also allow single numeric values
-#        try:
-#            if len(r) > 1:
-#                dr = (r[-1]-r[0])/(len(r)-1)
-#            else:
-#                # dr is ad hoc if r is a single point
-#                dr = 2*np.pi/(self.supersample*self.qmax)
-#
-#            if rng is None:
-#                rng = slice(0, len(r))
-#            rpart = r[rng]
-#            (ext_r, ext_slice) = self.extend_grid(rpart, dr)
-#            value = self._valueraw(peak.pars, ext_r)
-#            value = self.cut_freq(value, dr)
-#            output = r * 0.
-#            output[rng] = value[ext_slice]
-#            return output
-#
-#        except (TypeError):
-#            # dr is ad hoc if r is a single point.
-#            dr = 2*np.pi/(self.supersample*self.qmax)
-#            (ext_r, ext_slice) = self.extend_grid(np.array([r]), dr)
-#            value = self._valueraw(peak.pars, ext_r)
-#            value = self.cut_freq(value, dr)
-#            return value[ext_slice][0]
 
     def value(self, peak, r, rng=None):
         """Calculate (rippled) value of peak, possibly restricted by range.

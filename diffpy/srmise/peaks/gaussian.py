@@ -276,13 +276,6 @@ class Gaussian (PeakFunction):
         else:
             raise ValueError("Argument 'out_format' must be one of %s." \
                               % self.parformats)
-        if np.isnan(temp).any():
-            print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-            print in_format, out_format
-            print pars
-            print temp
-            print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-        return temp
 
     def _valueraw(self, pars, r):
         """Return value of width-limited Gaussian for the given parameters and r values.

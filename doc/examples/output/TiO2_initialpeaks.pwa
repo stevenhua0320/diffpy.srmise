@@ -1,0 +1,67 @@
+Summary written: Wed May 20 14:09:03 2015
+produced by Luke
+diffpy.srmise version 0.4a1-25
+##### User comments
+# n/a
+##### PDF Peak Extraction Summary
+# The information below is not sufficient to replicate extraction.
+## PDF metadata
+filename=D:\Workspaces\MSU research\diffpy.srmise\doc\examples\data\TiO2_fine_qmax26.gr
+nyquist=True
+qmax=26.0
+qmax_reportedbypdf=26.0
+qmax_fromdata=25.891671185741703
+scale=False
+supersample=4.0
+
+## Peak extraction metadata
+Range=[1.5, 10.0]
+cres=0.05
+effective_dy=0.35 (mean)
+
+## Model Quality
+# Quality reported by ModelEvaluator: 112.219528563
+# Free parameters in extracted peaks: 54
+# Free parameters in baseline: 1
+# Length of data in final fit: 71
+ModelEvaluator=AIC
+
+## Baseline Functions
+# Index Type
+0 diffpy.srmise.baselines.polynomial 
+
+## Baseline
+# Parameters of baseline, followed by comment which
+# gives the index of corresponding Baseline Function.
+# a_1 a_0
+-0.65 0.0 # 0
+
+## Peak Functions
+# Index Type
+0 diffpy.srmise.peaks.gaussianoverr 
+1 diffpy.srmise.peaks.terminationripples (base=0)
+
+## Extracted Peaks
+# Parameters are given in the natural units of the data,
+# where width is measured as full-width at half maximum.
+# Each line is followd by a comment which gives the index
+# of the corresponding Peak Function.
+#L position fwhm area
+1.95575832607 0.2486529688 2.57963752718 # 1
+2.92665149947 0.292494208102 2.5629346498 # 1
+3.56105842307 0.263955527486 8.08679872866 # 1
+4.09192117455 0.442625147368 4.23063107791 # 1
+4.58810533087 0.308845607718 8.8424541128 # 1
+4.93576969984 0.277066598467 2.16764777973 # 1
+5.46752162106 0.300150262451 13.9538874693 # 1
+5.83586872541 0.355075385343 8.74918352133 # 1
+6.21887086274 0.265275943389 2.72734488 # 1
+6.46976561324 0.270343360206 3.76283064776 # 1
+6.84600059283 0.391145733434 16.266473836 # 1
+7.13563678886 0.247799926824 6.86130593861 # 1
+7.4423001844 0.369964036093 25.4971448156 # 1
+8.04254135243 0.418129779366 14.8898413884 # 1
+8.47872406019 0.350811498233 18.5271175625 # 1
+8.99469356375 0.699999998995 41.5610431733 # 1
+9.74255540235 0.7 27.9288668837 # 1
+10.0002892434 0.369458093839 18.5391248741 # 1

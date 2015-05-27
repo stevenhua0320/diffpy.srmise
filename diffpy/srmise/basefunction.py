@@ -44,7 +44,7 @@ class BaseFunction(object):
           additional functionality.
 
     Class methods (implemented by inheriting classes)
-    -------------
+    -------------------------------------------------
     actualize()
     estimate_parameters() (optional)
     _jacobianraw() (optional, but strongly recommended)

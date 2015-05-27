@@ -57,8 +57,6 @@ class GaussianOverR (PeakFunction):
 
         ### Useful constants ###
         #c1 and c2 help with function values
-#        self.c1 = self.maxwidth**2/(np.pi*np.log(2))
-#        self.c2 = self.maxwidth**2/(np.pi**2*np.log(2))
         self.c1 = self.maxwidth*np.sqrt(np.pi/(8*np.log(2)))
         self.c2 = self.maxwidth**2/(8*np.log(2))
 

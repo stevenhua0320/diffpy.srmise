@@ -44,7 +44,6 @@ class FromSequence (BaselineFunction):
          or
         file: Name of file with column of x values and column of y values.
         """
-        #print args, kwds
         if len(args)==1 and len(kwds)==0:
             # load from file
             x, y = self.readxy(args[0])

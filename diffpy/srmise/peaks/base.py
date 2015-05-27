@@ -37,7 +37,7 @@ class PeakFunction(BaseFunction):
                                         parameters for outside use.
 
     Class methods (implemented by inheriting classes)
-    -------------
+    -------------------------------------------------
     estimate_parameters()
     scale_at()
     _jacobianraw() (optional, but strongly recommended)
@@ -50,7 +50,7 @@ class PeakFunction(BaseFunction):
     actualize()
 
     Inherited methods
-    -------------
+    -----------------
     jacobian()
     value()
     transform_derivatives()
@@ -230,7 +230,6 @@ class Peak(ModelPart):
         if np.any((self.pars != adj_pars) & ~self.free):
             logger.debug("Cannot scale peak: a fixed parameter was changed")
             return False
-        #print "scale_at: ", (x, scale), "\n", self.pars, " -> ", adj_pars
         self.pars = adj_pars
         return True
 

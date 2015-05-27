@@ -122,7 +122,7 @@ class PDFPeakExtraction(PeakExtraction):
         error_method: ErrorEvaluator subclass instance used to compare models (default AIC)
         initial_peaks: Peaks instance.  These peaks are present at the start of extraction.
         rng: Sequence specifying the least and greatest x-values over which to extract peaks.
-        qmax: The qmax value for the pdf
+        qmax: The qmax value for the pdf. Using "automatic" will estimate it from data.
         nyquist: Use nyquist sampling or not (boolean)
         supersample: Degree of supersampling above Nyquist rate to use.
         scale: Scale uncertainties on recursion when nyquist is True (boolean)."""
@@ -133,18 +133,25 @@ class PDFPeakExtraction(PeakExtraction):
             else:
                 emsg = "Keyword 'dg' is alias for 'effective_dy', cannot specify both."
                 raise ValueError(emsg)
+        if "qmax" in kwds:
+            if kwds["qmax"] == "automatic":
+                if self.qmax_fromdata is not None:
+                    kwds["qmax"] = self.qmax_fromdata
+                else:
+                    emsg = "Qmax could not be automatically determined."
+                    raise SrMiseQmaxError(emsg)
         PeakExtraction.setvars(self, quiet, **kwds)
 
     def defaultvars(self, *args):
         """Set default values."""
         nargs = list(args)
 
-        # qmax preference: fromdata, then reported, then 0.
+        # qmax preference: reported, then fromdata, then 0.
         if self.qmax is None or "qmax" in args:
-            if self.qmax_fromdata is not None:
-                self.qmax = self.qmax_fromdata
-            elif self.qmax_reportedbypdf is not None:
+            if self.qmax_reportedbypdf is not None:
                 self.qmax = self.qmax_reportedbypdf
+            elif self.qmax_fromdata is not None:
+                self.qmax = self.qmax_fromdata
             else:
                 self.qmax = 0.
             if "qmax" in args: nargs.remove("qmax")
@@ -352,9 +359,6 @@ class PDFPeakExtraction(PeakExtraction):
                 except SrMiseStaticOwnerError:
                     pass
 
-            #ext.prune()
-            #print "Prune after term:\n", ext
-
             # Use Nyquist sampled data if desired
             if self.nyquist:
 
@@ -377,41 +381,10 @@ class PDFPeakExtraction(PeakExtraction):
 
                     logger.info("Data resampled at dr=%s. (Nyquist rate=%s)", dr_resample, dr_nyquist)
 
-#                    plt.ioff()
-#                    plt.figure(1)
-#                    plt.clf()
-#                    plt.plot(*ext.plottable())
-#                    plt.figure(2)
-#                    plt.clf()
-#                    plt.plot(*ext.plottable(joined=True))
-
-#                    titles = []
-#                    for i, p in enumerate(ext.model):
-#                        plt.figure(i+10)
-#                        titles.append(str(p))
-#                        plt.plot(ext.r_cluster, p.value(ext.r_cluster))
-
                     (r2, y2, r_error2, y_error2) = self.resampledata(dr_resample)
 
                     ext = ModelCluster(ext.model, bl, r2, y2, y_error2, None, self.error_method, self.pf)
                     ext.fit() # Clean up parameters after resampling.
-                    #print "Fitting after resampling:\n", ext
-
-#                    for i, p in enumerate(ext.model):
-#                        plt.figure(i+10)
-#                        plt.suptitle(titles[i]+"->"+str(p))
-#                        plt.plot(ext.r_cluster, p.value(ext.r_cluster))
-
-#                    plt.figure(3)
-#                    plt.clf()
-#                    plt.plot(*ext.plottable())
-#
-#                    plt.figure(4)
-#                    plt.clf()
-#                    plt.plot(*ext.plottable(joined=True))
-#                    plt.ion()
-#                    plt.show()
-#                    raw_input()
 
                     ext.prune()
 
@@ -436,14 +409,13 @@ class PDFPeakExtraction(PeakExtraction):
 
         # Fit model with baseline, report covariance matrix
         cov = ModelCovariance()
-        ext.fit(fitbaseline=True, cov=cov)
+        ext.fit(fitbaseline=True, cov=cov, cov_format="default_output")
         tracer.emit(ext)
 
         logger.info("Model after fitting with baseline:")
         try:
-            cov.transform(in_format="internal", out_format="default_output")
             logger.info(str(cov))
-            logger.info("Correlations > .8:\n%s", "\n".join(str(c) for c in cov.correlationwarning(.8)))
+            #logger.info("Correlations > .8:\n%s", "\n".join(str(c) for c in cov.correlationwarning(.8)))
         except SrMiseUndefinedCovarianceError as e:
             logger.warn("Covariance not defined for final model.  Fit may not have converged.")
             logger.info(str(ext))
@@ -754,10 +726,16 @@ def find_qmax(r, y, showgraphs=False):
     if len(r) != len(y):
         emsg = "Argument arrays must have the same length."
         raise ValueError(emsg)
+    
+    dr = (r[-1]-r[0])/(len(r)-1)
+    
+    # Nyquist-sampled PDFs already have the minimum number of data points, so
+    # they must be resampled so sudden changes in reciprocal space amplitudes
+    # can be observed.
+    new_r = np.linspace(r[0], r[-1], 2*len(r))
+    new_y = resample(r, y, new_r)
+    new_dr = (new_r[-1]-r[0])/(len(new_r)-1)
 
-    new_dr = (r[-1]-r[0])/(len(r)-1)
-    new_r = r
-    new_y = y
     yfft = np.imag(np.fft.fft(new_y))[:len(new_y)/2]
 
     d_ratio = stdratio(yfft)
@@ -779,6 +757,9 @@ def find_qmax(r, y, showgraphs=False):
 
     dq = 2*np.pi/((len(new_y)-1)*new_dr)
     qmax = dq * m_idx
+    
+    # Calculate dq again for original grid
+    dq = 2*np.pi/((len(y)-1)*dr)
 
     if showgraphs:
         import matplotlib.pyplot as plt
@@ -797,27 +778,6 @@ def find_qmax(r, y, showgraphs=False):
         plt.subplot(212) # over whole range
         plt.plot(dq*np.arange(len(yfft)), yfft)
         plt.axvline(x=qmax, color='r')
-
-#        # Ratio of standard deviations
-#        plt.figure()
-#        plt.subplot(211) # near obtained qmax
-#        plt.plot(np.arange(v1,v2), d_ratio[v1-1:v2-1])
-#        plt.subplot(212) # over whole range
-#        plt.plot(np.arange(len(d_ratio)), d_ratio)
-#
-#        # First differences of ratio
-#        plt.figure()
-#        plt.subplot(211) # near obtained qmax
-#        plt.plot(np.arange(v1,v2), np.diff(d_ratio)[v1-2:v2-2])
-#        plt.subplot(212) # over whole range
-#        plt.plot(np.arange(len(np.diff(d_ratio))), np.diff(d_ratio))
-#
-#        # Second differences of ratio
-#        plt.figure()
-#        plt.subplot(211) # near obtained qmax
-#        plt.plot(np.arange(v1,v2), dder[v1-2:v2-2])
-#        plt.subplot(212) # over whole range
-#        plt.plot(np.arange(len(dder)), dder)
 
         plt.show()
         plt.ioff()

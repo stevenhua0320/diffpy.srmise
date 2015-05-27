@@ -54,7 +54,7 @@ class ModelParts(list):
     def __init__(self, *args, **kwds):
         list.__init__(self, *args, **kwds)
 
-    def fit(self, r, y, y_error, range=None, ntrials=0, cov=None):
+    def fit(self, r, y, y_error, range=None, ntrials=0, cov=None, cov_format="default_output"):
         """Chi-square fit of all free parameters to given data.
 
         There must be at least as many free parameters as data points.
@@ -67,7 +67,8 @@ class ModelParts(list):
         range - Slice object specifying region of r and y over which to fit.
                 Fits over all the data by default.
         ntrials - The maximum number of function evaluations while fitting.
-        cov - Optional ModelCovariance object preserves covariance information
+        cov - Optional ModelCovariance object preserves covariance information.
+        cov_format - Parameterization to use in cov.
         """
         freepars = self.unpack_freepars()
         if len(freepars) >= len(r):
@@ -94,9 +95,7 @@ class ModelParts(list):
             plt.plot(r, (y-self.value(r, range=range))-1.1*(max(y) - min(y)), label="_nolabel_")
             for p in self:
                 plt.plot(r, p.value(r, range=range), label=str(p))
-            #plt.legend() #This isn't ready for primetime yet.
             plt.ion()
-            #plt.draw()
 
         try:
             f = leastsq(
@@ -127,12 +126,7 @@ class ModelParts(list):
                    traceback.format_exc() + "End original exception."
             raise SrMiseFitError(emsg)
 
-#        if np.isnan(f[0]).any():
-#            emsg = "One or more parameters became NaN or inf during fit."
-#            raise SrMiseFitError(emsg)
-
         result = f[0]
-        #if np.isscalar(result):
         if __oldleastsqbehavior__ and len(freepars) == 1:
             # leastsq returns a scalar when there is only one parameter
             result = np.array([result])
@@ -173,6 +167,11 @@ class ModelParts(list):
             fvec = f[2]["fvec"]
             dof = len(r) - len(freepars)
             cov.setcovariance(self, pcov*np.sum(fvec**2)/dof)
+            try:
+                cov.transform(in_format="internal", out_format=cov_format)
+            except SrMiseUndefinedCovarianceError as e:
+                logger.warn("Covariance not defined.  Fit may not have converged.")
+
 
         return
 #### Notes on the fit f
@@ -566,21 +565,6 @@ class ModelPart(object):
         return datastring
 
 # End of class ModelPart
-
-# TODO: Implement caching
-#class _CalculationWrapper(np.ndarray):
-#    """A wrapper for model part calculations (subclassed numpy array)."""
-#
-#    def __init__(self, in_data, in_startidx, in_stopidx):
-#        """Set instance members data, startidx, and stopidx.
-#
-#        startidx: first index in data that has been calculated
-#        stopidx: first index in data that has not been calculated
-#        """
-#        np.ndarray.__init__(self, in_data)
-#        self.startidx = in_startidx
-#        self.stopidx = in_stopidx
-## End of class _CalculationWrapper
 
 # simple test code
 if __name__ == '__main__':

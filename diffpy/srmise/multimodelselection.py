@@ -74,17 +74,6 @@ class MultimodelSelection(PeakStability):
 
         (r, y, dr, dy) = self.ppe.resampledata(dr)
 
-#        for i in range(len(self.results)):
-#            result = self.results[i]
-#
-#            print "Testing model %s of %s." %(i, len(self.results))
-#
-#            for dg in self.dgs:
-#                self.ppe.setvars(quiet=True, effective_dy=dg*np.ones(len(r)))
-#                self.ppe.extracted = ModelCluster(result[1], result[2], r, y, self.ppe.effective_dy, None, self.ppe.error_method, self.ppe.pf)
-#                aics[dg].append(self.ppe.extracted.quality())
-#                aics_out[dg].append(aics[dg][-1].stat)
-
         for model_idx in range(len(self.results)):
             print "Testing model %s of %s." %(model_idx, len(self.results))
 
@@ -310,7 +299,6 @@ class MultimodelSelection(PeakStability):
         ebsqval = {} # holds the squared value of each class exemplar baselines
 
         for i in range(len(self.results)):
-            #print "---------------------\nClassifying result %s" %i
             peaks = self.results[i][1]
             baseline = self.results[i][2]
             bsqval = baseline.value(r)**2
@@ -318,31 +306,25 @@ class MultimodelSelection(PeakStability):
             added_to_class = False
 
             for c in range(len(classes)):
-                #print "\n   Comparing to class %s" %c
                 exemplar_peaks = self.results[classes[c][0]][1]
                 exemplar_baseline = self.results[classes[c][0]][2]
 
                 # Check baseline type and number of parameters
                 if type(baseline) != type(exemplar_baseline):
-                    #print "break checking baseline type"
                     continue
                 if baseline.npars() != exemplar_baseline.npars():
-                    #print "break checking baseline npars"
                     continue
 
                 # check peak types and number of parameters
                 badpeak=False
                 if len(peaks) != len(exemplar_peaks):
-                    #print "break checking number of peaks"
                     continue
                 for p, ep in zip(peaks,exemplar_peaks):
                     if type(p) != type(ep):
                         badpeak = True
-                        #print "break checking type of peaks"
                         break
                     if p.npars() != ep.npars():
                         badpeak = True
-                        #print "break checking numpars in each peak"
                         break
                 if badpeak:
                     continue
@@ -354,7 +336,6 @@ class MultimodelSelection(PeakStability):
                     #if basediff > tolerance*np.sum(ep):
                     if basediff > tolerance*np.sum(ep) or basediff > tolerance*np.sum(p):
                         badpeak = True
-                        #print "break checking peak values"
                         break
                 if badpeak:
                     continue
@@ -363,14 +344,12 @@ class MultimodelSelection(PeakStability):
                 basediff = np.abs(np.sum(bsqval-ebsqval[c]))
                 #if basediff > tolerance*np.sum(ebsqval[c]):
                 if basediff > tolerance*np.sum(ebsqval[c]) or basediff > tolerance*np.sum(bsqval):
-                    #print "break checking baseline values"
                     continue
 
                 # that's all the checks, add to current class
                 added_to_class = True
                 classes[c].append(i)
                 classes_idx[i] = c
-                #print "Adding result %s to class %s" %(i,c)
                 break
 
             if added_to_class is False:
@@ -380,10 +359,7 @@ class MultimodelSelection(PeakStability):
                 classes_idx[i] = classnum
                 epsqval[classnum] = psqval
                 ebsqval[classnum] = bsqval
-                #print "Adding result %s to new class %s" %(i,classnum)
 
-        #print "Number of classes: ", len(classes)
-        #print [len(c) for c in classes]
         self.classes = classes
         self.classes_idx = classes_idx
         self.class_tolerance = tolerance

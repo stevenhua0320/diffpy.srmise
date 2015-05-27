@@ -150,7 +150,7 @@ class PeakExtraction(object):
                         value of appropriate length.
         pf -> [GaussianOverR(maxwidth=x[-1]-x[0])]
         baseline -> Flat baseline located at y=0.
-        error_method -> AIC (Aikake Information Criterion )
+        error_method -> AIC (Aikake Information Criterion)
         initial_peaks -> No initial peaks
         rng -> [x[0], x[-1]].  Partially set ranges like [None, 100.] replace None with
                the appropriate limit in the data.
@@ -647,36 +647,6 @@ class PeakExtraction(object):
             hi_idx -= 1
         return slice(low_idx, hi_idx)
 
-
-#    def safefunctionlist(self, fs):
-#        """Return list of BaseFunction instances where any dependencies occur earlier in list.
-#
-#        Any functions with hidden dependent functions (i.e. those not in fs)
-#        are included in the returned list.  This list provides an order that
-#        is guaranteed to be safe for saving/reinstantiating peak functions.
-#
-#        Parameters
-#        fs: List of BaseFunction instances."""
-#        fsafe = []
-#        for f in fs:
-#            self.safefunction(f, fsafe)
-#        return fsafe
-#
-#    def safefunction(self, f, fsafe):
-#        """Append BaseFunction instance f to fsafe, but adding dependent functions first.
-#
-#        Does not handle circular dependencies.
-#
-#        Parameters
-#        f: A BaseFunction instance
-#        fsafe: List of BaseFunction instances being built."""
-#        if f not in fsafe:
-#            if f.base is not None:
-#                self.safefunction(f.base, fsafe)
-#            fsafe.append(f)
-#
-#        return
-
     def estimate_peak(self, x, add=True):
         """Return new estimated peak near x.
 
@@ -870,7 +840,6 @@ class PeakExtraction(object):
 
             if step.lastpoint_idx == 0 or step.lastpoint_idx == len(step.x)-1:
                 logger.debug("Boundary full: %s", step.lastpoint_idx)
-                #print "Boundary full: ", step.lastpoint_idx
                 full_cluster = ModelCluster(mclusters[step.lastcluster_idx])
                 full_cluster.fit(True)
 
@@ -1057,9 +1026,7 @@ class PeakExtraction(object):
                 # Adjust cluster at border if there is at least one peak on
                 # either side.
                 if len(near_peaks) == 2:
-                    #print "Before reduce_to: ", adj_cluster1.model
                     adj_cluster1.reduce_to(border_x, border_y)
-                    #print "After reduce_to: ", adj_cluster1.model
 
                     # Recursively cluster/fit the residual
                     rec_r1 = adj_x

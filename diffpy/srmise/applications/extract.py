@@ -66,8 +66,8 @@ def main():
     parser = OptionParser(usage=usage, description=descr, epilog=epilog, version=version,
                           formatter=IndentedHelpFormatterWithNL())
 
-    parser.set_defaults(plot=False, liveplot=False, wait=False, performextraction=True, dg_mode='dG-fraction', verbosity="warning")
-    dg_defaults = {'absolute':None, 'max-fraction':.05, 'ptp-fraction':.05, 'dG-fraction':1.}
+    parser.set_defaults(plot=False, liveplot=False, wait=False, performextraction=True, verbosity="warning")
+    dg_defaults = {'absolute':None, 'data':None, 'max-fraction':.05, 'ptp-fraction':.05, 'dG-fraction':1.}
 
     parser.add_option("--peakfunction", dest="peakfunction", metavar="PF",
                       help="Fit peak function PF defined in diffpy.srmise.peaks. "
@@ -107,12 +107,13 @@ def main():
     group = OptionGroup(parser, "Uncertainty Options",
                         "May specify ")
     parser.add_option("--dg-mode", dest="dg_mode", type="choice",
-                      choices=['absolute', 'max-fraction', 'ptp-fraction', 'dG-fraction'],
+                      choices=['absolute', 'data', 'max-fraction', 'ptp-fraction', 'dG-fraction'],
                       help="Treat value for --dg as absolute, fraction of maximum value in range, fraction of peak-to-peak value in range, "
-                           "or fraction of reported dG.")
+                           "or fraction of reported dG.  If --dg is given but mode is not, mode is absolute. "
+                           "Otherwise, dG-fraction is default if the PDF reports uncertainties, and max-fraction is default if it does not.")
     parser.add_option("--dg", dest="dg", type="float",
                       help="Perform extraction assuming uncertainty dg. Defaults depend on --dg-mode as follows. "
-                      "absolute=%s, max-fraction=%s, ptp-fraction=%s, dG-fraction=%s"
+                      "absolute=%s, max-fraction=%s, ptp-fraction=%s, dG-fraction=%s."
                       %(dg_defaults['absolute'], dg_defaults['max-fraction'], dg_defaults['ptp-fraction'], dg_defaults['dG-fraction']))
 #    parser.add_option("--multimodel", nargs=3, dest="multimodel", type="float", metavar="dg_min dg_max n",
 #                      help="Generate n models from dg_min to dg_max (given by --dg-mode) and perform multimodel analysis. "
@@ -262,16 +263,23 @@ def main():
             pdict["baseline"] = options.baseline
         if options.cres is not None:
             pdict["cres"] = options.cres
+        if options.dg_mode is None:
+            if options.dg is not None:
+                options.dg_mode = "absolute"
+            elif ext.dy is None:
+                options.dg_mode = "max-fraction"
+            else:
+                options.dg_mode = "dG-fraction"
         if options.dg is None:
             options.dg = dg_defaults[options.dg_mode]
         if options.dg_mode == "absolute":
             pdict["effective_dy"] = options.dg*np.ones(len(ext.x))
         elif options.dg_mode == "max-fraction":
-            pdict["effective"] = options.dg*ext.y.max()*np.ones(len(ext.x))
+            pdict["effective_dy"] = options.dg*ext.y.max()*np.ones(len(ext.x))
         elif options.dg_mode == "ptp-fraction":
             pdict["effective_dy"] = options.dg*ext.y.ptp()*np.ones(len(ext.y))
         elif options.dg_mode == "dG-fraction":
-            pdict["effective_dy"] = options.dg*ext.dy
+            pdict["effective_dy"] = options.dg*ext.dy            
         if options.rng is not None:
             pdict["rng"] = list(options.rng)
         if options.qmax is not None:

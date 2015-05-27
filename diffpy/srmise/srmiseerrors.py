@@ -14,7 +14,7 @@
 
    Classes
    -------
-   SrMiseError: Subclass of Exception, and superclass of all diffpy.srmise.mise exceptions.
+   SrMiseError: Subclass of Exception, and superclass of all diffpy.srmise exceptions.
    SrMiseDataFormatError: Error in format of diffpy.srmise data.
    SrMiseEstimationError: Parameter estimation error.
    SrMiseFileError: Error while reading/writing files.
@@ -22,6 +22,7 @@
    SrMiseLogError: Error while logging.
    SrMiseModelEvaluatorError: Error while computing or comparing model quality.
    SrMisePDFKeyError: Error in key referencing component of PDF dataset.
+   SrMiseQmaxError: Error in value of Qmax.
    SrMiseScalingError: Error while scaling a peak function.
    SrMiseStaticOwnerError: Error when changing ModelPart instance owner.
    """
@@ -95,6 +96,14 @@ class SrMiseModelEvaluatorError(SrMiseError):
        info -- description string"""
        SrMiseError.__init__(self, info)
 
+
+class SrMiseQmaxError(SrMiseError):
+    """diffpy.srmise.modelevaluator exception class.  Error when setting qmax."""
+    def __init__(self, info):
+       """initialize
+
+       info -- description string"""
+       SrMiseError.__init__(self, info)
 
 class SrMiseScalingError(SrMiseError):
     """diffpy.srmise.peaks exception class.  Error when scaling a peak function."""

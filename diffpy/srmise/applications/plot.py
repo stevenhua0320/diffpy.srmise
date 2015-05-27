@@ -430,7 +430,6 @@ def on_draw(event):
     ax_main = plt.gcf().get_axes()[0]
     invisiblelabel = ax_main.axis["left"].label
     invisiblelabel.set_visible(True)
-    #for d in dir(invisiblelabel): print d
     visiblelabel = labeldict[plt.gcf()]
     bbox = invisiblelabel.get_window_extent(invisiblelabel._renderer)
     bbox = bbox.inverse_transformed(ax_main.transAxes)
@@ -453,7 +452,6 @@ def on_draw(event):
     invisiblelabel.set_visible(False)
     xpos_old = visiblelabel.get_position()[0]
     if abs(xpos - xpos_old) > .001:
-        #print "%s -> %s" %(xpos_old, xpos)
         labeldict[plt.gcf()].set_x(xpos)
         plt.draw()
     return

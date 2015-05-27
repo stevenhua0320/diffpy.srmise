@@ -11,7 +11,7 @@
 #
 ##############################################################################
 
-__all__ = ["base", "gaussianoverr", "terminationripples"]
+__all__ = ["base", "gaussian", "gaussianoverr", "terminationripples"]
 
 from base import Peak, Peaks
 from gaussian import Gaussian

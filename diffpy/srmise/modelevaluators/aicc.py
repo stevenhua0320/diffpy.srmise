@@ -72,12 +72,6 @@ class AICc (ModelEvaluator):
 
         self.stat = self.chisq + self.parpenalty(k, n)
 
-
-#        print "=========Testing Quality======="
-#        print "tested model:\n", fit.model
-#        print "chi: ", self.chisq
-#        print "stat: ", self.stat
-
         return self.stat
 
 
@@ -122,10 +116,6 @@ class AICc (ModelEvaluator):
 
         penalty=self.parpenalty(k_test, n) - self.parpenalty(k_actual, n)
 
-#        print "growth_justified():"
-#        print "chiSq: ", self.chisq
-#        print "penalty: ", penalty
-
         return penalty < self.chisq
 
     @staticmethod
@@ -142,7 +132,7 @@ class AICc (ModelEvaluator):
         aic_weights = AICc.akaikeweights(aics)
         return aic_weights/np.sum(aic_weights)
 
-# end of class ME_AIC
+# end of class AICc
 
 
 # simple test code

@@ -15,7 +15,7 @@
 Classes
 -------
 ModelCluster: Associate a region of data to a model that describes it.
-ModelCov: Helper class for model covariance.
+ModelCovariance: Helper class for model covariance.
 """
 
 import numpy as np
@@ -56,8 +56,11 @@ class ModelCovariance(object):
         # Map i->[n1,n2,...] of the jth ModelPart to the n_i parameters in cov.
         self.mmap = {}
 
-        # Map [i,j]->n of jth parameter of ith ModelPart to nth parameter in cov.
+        # Map (i,j)->n of jth parameter of ith ModelPart to nth parameter in cov.
         self.pmap = {}
+        
+        # Map n->(i,j), inverse of pmap.
+        self.ipmap = {}
 
     def clear(self):
         """Reset object."""
@@ -65,6 +68,7 @@ class ModelCovariance(object):
         self.model = None
         self.mmap = {}
         self.pmap = {}
+        self.ipmap = {}
 
     def setcovariance(self, model, cov):
         """Set model and covariance.
@@ -103,6 +107,7 @@ class ModelCovariance(object):
             self.mmap[i] = n + np.arange(m.npars(True))
             for j, p in enumerate(m):
                 self.pmap[(i,j)] = n
+                self.ipmap[n] = (i,j)
                 n += 1
 
         if n == tempcov.shape[0]:
@@ -147,14 +152,20 @@ class ModelCovariance(object):
 
         Keywords
         --------
-        parts - Specify which model part, by index, to transform.  Defaults to all parts.
+        parts - Specify which model part, by index, to transform.  Defaults to all parts.  Alternately,
+                "peaks" to transform all but the last part, and "baseline" to convert only the last part.
         """
         if self.cov is None:
             emsg = "Cannot transform undefined covariance matrix."
             raise SrMiseUndefinedCovarianceError(emsg)
 
         if "parts" in kwds:
-            parts = kwds["parts"]
+            if kwds["parts"] == "peaks":
+                parts = range(len(self.model)-1)
+            elif kwds["parts"] == "baseline":
+                parts = [-1]
+            else:
+                parts = kwds["parts"]
         else:
             parts = range(len(self.model))
 
@@ -200,24 +211,65 @@ class ModelCovariance(object):
 
     def getcorrelation(self, i, j):
         """Return the correlation between variables i and j, Corr_ij=Cov_ij/(sigma_i sigma_j)
-
-        Returns None if the correlation is not defined for a pair of parameters, usually
-        because one or both were considered fixed during optimization.
+        
+        The variables may be specified as integers, or as a two-component tuple of integers (l, m)
+        which indicate the mth parameter in peak l.
+        
+        The standard deviation of fixed parameters is 0, in which case the correlation is
+        undefined, but return 0 for simplicity.
         """
         if self.cov is None:
             emsg = "Cannot get correlation on undefined covariance matrix."
             raise SrMiseUndefinedCovarianceError(emsg)
-
-        if self.cov[i,i] == 0. or self.cov[j,j] == 0.:
-            return None
+        
+        # Map peak/parameter tuples to the proper index
+        i1 = self.pmap[i] if i in self.pmap else i
+        j1 = self.pmap[j] if j in self.pmap else j
+        
+        if self.cov[i1,i1] == 0. or self.cov[j1,j1] == 0.:
+            return 0. # Avoiding undefined quantities is sensible in this context.
         else:
-            return self.cov[i,j]/(np.sqrt(self.cov[i,i])*np.sqrt(self.cov[j,j]))
+            return self.cov[i1,j1]/(np.sqrt(self.cov[i1,i1])*np.sqrt(self.cov[j1,j1]))
+
+    def getvalue(self, i):
+        """Return value of parameter i.
+
+        The variable may be specified as an integer, or as a two-component tuple of integers (l, m)
+        which indicate the mth parameter of modelpart l.
+        """
+        (l, m) = i if i in self.pmap else self.ipmap[i]
+        return self.model[l][m]
+
+    def getcovariance(self, i, j):
+        """Return the covariance between variables i and j.
+        
+        The variables may be specified as integers, or as a two-component tuple of integers (l, m)
+        which indicate the mth parameter of modelpart l.
+        """
+        if self.cov is None:
+            emsg = "Cannot get correlation on undefined covariance matrix."
+            raise SrMiseUndefinedCovarianceError(emsg)
+        
+        # Map peak/parameter tuples to the proper index
+        i1 = self.pmap[i] if i in self.pmap else i
+        j1 = self.pmap[j] if j in self.pmap else j
+        
+        return self.cov[i1,j1]
+
+    def get(self, i):
+        """Return (value, uncertainty) tuple for parameter i.
+
+        The variable may be specified as an integer, or as a two-component tuple of integers (l, m)
+        which indicate the mth parameter of modelpart l.
+        """
+        return (self.getvalue(i), np.sqrt(self.getcovariance(i,i)))
 
     def correlationwarning(self, threshold=0.8):
         """Report distinct variables with magnitude of correlation greater than threshold.
 
-        Returns a list of tuples (i, j, c), where i and j are the indices of the correlated variables,
-        and c is their correlation.
+        Returns a list of tuples (i, j, c), where i and j are tuples indicating
+        the modelpart and parameter indices of the correlated variables, and
+        c is their correlation.
 
         Parameters
         ----------
@@ -233,7 +285,7 @@ class ModelCovariance(object):
             for j in range(i+1, self.cov.shape[0]):
                 c = self.getcorrelation(i,j)
                 if c and np.abs(c) > threshold: # filter out None values
-                    correlated.append((i, j, c))
+                    correlated.append((self.ipmap[i], self.ipmap[j], c))
         return correlated
 
     def __str__(self):
@@ -242,16 +294,19 @@ class ModelCovariance(object):
             return "Model and/or Covariance matrix undefined."
         lines = []
         for i, m in enumerate(self.model):
-            lines.append("  ".join([self.prettypar(i,j) for j in range(len(m))]))
+            lines.append("  ".join([self.prettypar((i,j)) for j in range(len(m))]))
         return "\n".join(lines)
 
-    def prettypar(self, i, j):
-        """Return string 'value (uncertainty)' for parameter j of model part i."""
+    def prettypar(self, i):
+        """Return string 'value (uncertainty)' for parameter i.
+        
+        The variable may be specified as an integer, or as a two-component tuple of integers (l, m)
+        which indicate the mth parameter of modelpart l.
+        """
         if self.model is None or self.cov is None:
             return "Model and/or Covariance matrix undefined."
-        k = self.pmap[(i,j)]
-        return "%f (%f)" %(self.model[i][j], np.sqrt(self.cov[k,k]))
-
+        k = i if i in self.ipmap else self.pmap[i]
+        return "%f (%f)" %(self.getvalue(k), np.sqrt(self.getcovariance(k,k)))
 
 # End of class ModelCovariance
 
@@ -273,6 +328,7 @@ class ModelCluster(object):
     join_adjacent: Static method to combine two ModelClusters.
     npars: Return total number of parameters in model.
     replacepeaks: Add and/or delete peaks in model
+    deletepeak: Delete a single peak in model.
     estimatepeak: Add single peak to model with no peaks.
     fit: Fit the model to the data
     plottable: Return list of arguments for convenient plotting with matplotlib
@@ -719,13 +775,6 @@ class ModelCluster(object):
                 right_slice = slice(old_slice.stop, self.slice.stop)
                 self.never_fit = max(y_data_nobl[right_slice] - self.y_error[right_slice]) < 0
 
-#        plt.figure(1)
-#        plt.clf()
-#        plt.plot(*self.plottable())
-#        plt.suptitle("Change_slice.  never_fit is "+str(self.never_fit)+" y-err is "+str(max(self.y_cluster - self.error_cluster)))
-#        plt.show()
-#        raw_input()
-
         return
 
     def npars(self, count_baseline=True, count_fixed=True):
@@ -755,6 +804,10 @@ class ModelCluster(object):
         self.model[delslice] = newpeaks
         self.model.sort(key="position")
         return
+        
+    def deletepeak(self, idx):
+        """Delete the peak at the given index."""
+        self.replacepeaks([], slice(idx,idx+1))
 
     def estimatepeak(self):
         """Attempt to add single peak to empty cluster.  Return True if successful."""
@@ -781,7 +834,7 @@ class ModelCluster(object):
         else:
             return False
 
-    def fit(self, justify=False, ntrials=0, fitbaseline=False, estimate=True, cov=None):
+    def fit(self, justify=False, ntrials=0, fitbaseline=False, estimate=True, cov=None, cov_format="default_output"):
         """Perform a chi-square fit of the model to data in cluster.
 
         Parameters
@@ -792,7 +845,8 @@ class ModelCluster(object):
                   '0' indicates the fitting algorithm's default.
         fitbaseline - Whether to fit baseline along with peaks
         estimate - Estimate a single peak from data if model is empty.
-        cov - An optional ModelCovariance object which preserves covariance of fit.
+        cov - Optional ModelCovariance object preserves covariance information.
+        cov_format - Parameterization to use in cov.
 
         If fitting changes a model, return ModelEvaluator instance.  Otherwise
         return None.
@@ -833,7 +887,8 @@ class ModelCluster(object):
                        self.y_error,
                        self.slice,
                        ntrials,
-                       cov)
+                       cov,
+                       cov_format)
         except SrMiseFitError, e:
             logger.debug("Error while fitting cluster: %s\nReverting to original model.", e)
             self.model = orig_model
@@ -1199,13 +1254,6 @@ class ModelCluster(object):
             for i in range(len(check_models)):
                 if check_models[i] is not None:
                     # Create model with ith peak removed, and distant peaks effectively fixed
-#                    lo = max(i-peak_range, 0)
-#                    hi = min(i+peak_range+1, len(orig_model))
-#                    check_models[i] = orig_model[lo:i].copy()
-#                    check_models[i].extend(orig_model[i+1:hi].copy())
-#                    prune_mc.model = check_models[i]
-#                    addpars = orig_model.npars() - check_models[i].npars() - orig_model[i].npars(count_fixed=False)
-
                     lo = max(i-peak_range, 0)
                     hi = min(i+peak_range+1, len(best_model))
                     check_models[i] = best_model[lo:i].copy()
@@ -1292,8 +1340,6 @@ class ModelCluster(object):
                 best_qual = prune_mc.quality()
                 best_model = prune_mc.model
 
-                # 12/25: Moved to main loop for tracer.
-                #        Should not cause any problems.
                 self.model = best_model
                 tracer.emit(self)
 
@@ -1315,10 +1361,6 @@ class ModelCluster(object):
             else:
                 break
 
-        # 12/25: Moved this into main loop to help tracer
-        #        Should not cause any issues.
-        #self.model = best_model
-
         msg = ["Best model after pruning is:",
                "%s",
                "w/ quality: %s",
@@ -1326,8 +1368,6 @@ class ModelCluster(object):
         logger.info("\n".join(msg),
                     self.model,
                     self.quality().stat)
-
-#        raw_input()
 
         tracer.popc()
 
