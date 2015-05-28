@@ -2,7 +2,7 @@ If you use this program to do productive scientific research that
 leads to publication, we ask that you acknowledge use of the
 program by citing the following paper in your publication:
 
-    L. Granlund, S.J.B. Billinge, P.M. Duxbury, Algorithm for
+    L. Granlund, S.J.L. Billinge, P.M. Duxbury, Algorithm for
     systematic peak extraction from atomic pair distribution
     functions, Acta Crystallographica A 71(4), ???-??? (2015).
     doi:10.1107/S2053273315005276
