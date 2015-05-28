@@ -123,11 +123,10 @@ for examples.
 Adding Peaks
 --------------------------
 
-Implementing a peak function is nearly identical to implementing a baseline.
 To add a new peak function, create a new module which defines a class
-inheriting from ``diffpy.srmise.peaks.base.PeakFunction``.  Implementing this
-peak function is very similar to implementing a baseline, with the following
-differences:
+inheriting from ``diffpy.srmise.peaks.base.PeakFunction``.  Implementing a peak
+function is nearly identical to implementing a baseline function, with the
+following differences:
 
 1) The ``estimate_parameters`` method is required.
 2) The "position" key must be defined in the ``parameterdict`` class member.

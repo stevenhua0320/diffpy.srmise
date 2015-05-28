@@ -67,20 +67,25 @@ in MacPorts::
 
    sudo port select --set python python27
 
-For Windows systems, it is recommended to install all dependencies using 
-prebuilt binaries.  Visit http://www.scipy.org and http://www.matplotlib.org 
-for instructions.  Alternately, install a full Python distribution such as 
-Python(x,y) or Enthought Canopy which already include the required 
-components. 
+For Windows systems, the easiest way to obtain ``setuptools`` if not already 
+installed is downloading the ``pip`` setup script `get-pip.py 
+<https://bootstrap.pypa.io/get-pip.py>`_ and running :: 
+
+    python get-pip.py
+    
+It is recommended to install all other dependencies using prebuilt binaries.  
+Visit http://www.scipy.org and http://www.matplotlib.org for instructions.  
+Alternately, install a full Python distribution such as Python(x,y) or 
+Enthought Canopy which already includes the required components. 
 
 INSTALLATION
 ------------------------------------------------------------------------
 
 The simplest way to obtain diffpy.srmise on Unix, Linux, and Mac systems is 
-using ``easy_install`` to download and install the latest release from 
-`Python Package Index <https://pypi.python.org>`_ :: 
+using ``easy_install`` or ``pip`` to download and install the latest release 
+from the `Python Package Index <https://pypi.python.org>`_. :: 
 
-   sudo easy_install diffpy.srmise
+   sudo pip diffpy.srmise
 
 If you prefer to install from sources, make sure all required software packages
 are in place and then run ::
@@ -93,9 +98,6 @@ administrator (root) access is not available, see the usage info from
 directories.
 
 To install on Windows run either of the commands above omitting ``sudo``.  
-While diffpy.srmise will run on Windows, note that Windows is not currently 
-supported in the official DiffPy-CMI release containing all diffpy 
-subpackages. 
 
 
 DEVELOPMENT
