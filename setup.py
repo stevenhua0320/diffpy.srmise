@@ -74,10 +74,11 @@ setup_args = dict(
 
     author = "Luke Granlund",
     author_email = "luke.r.granlund@gmail.com",
-    description = "SrMise - Peak extraction tool for pair distribution functions.",
-    license = 'BSD-like',
-    # url = "",
-    # keywords = "",
+    description = ("SrMise - Peak extraction and peak fitting tool for atomic "
+                  "pair distribution functions."),
+    license = 'BSD-style license',
+    url = "https://github.com/diffpy/diffpy.srmise/",
+    #keywords = "",
     classifiers = [
         # List of possible values at
         # http://pypi.python.org/pypi?:action=list_classifiers
@@ -89,6 +90,7 @@ setup_args = dict(
         'License :: OSI Approved :: BSD License',
         'Operating System :: MacOS',
         'Operating System :: POSIX',
+        'Operating System :: Microsoft :: Windows',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Topic :: Scientific/Engineering :: Chemistry',
