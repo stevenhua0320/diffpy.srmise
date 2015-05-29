@@ -1,12 +1,12 @@
-Summary written: Wed May 27 12:55:38 2015
-produced by Luke
-diffpy.srmise version 0.5a1
+Summary written: Thu May 28 23:55:45 2015
+produced by luke
+diffpy.srmise version 0.5
 ##### User comments
 # n/a
 ##### PDF Peak Extraction Summary
 # The information below is not sufficient to replicate extraction.
 ## PDF metadata
-filename=D:\Workspaces\MSU research\diffpy.srmise\doc\examples\data\Ag_nyquist_qmax30.gr
+filename=/home/luke/Workspaces/MSU_Research/diffpy.srmise/doc/examples/data/Ag_nyquist_qmax30.gr
 nyquist=True
 qmax=30.0
 qmax_reportedbypdf=30.0
@@ -20,7 +20,7 @@ cres=0.10472
 effective_dy=0.4137889 (mean)
 
 ## Model Quality
-# Quality reported by ModelEvaluator: 75.6547520153
+# Quality reported by ModelEvaluator: 75.6547612132
 # Free parameters in extracted peaks: 36
 # Free parameters in baseline: 2
 # Length of data in final fit: 77
@@ -34,7 +34,7 @@ ModelEvaluator=AIC
 # Parameters of baseline, followed by comment which
 # gives the index of corresponding Baseline Function.
 # a_1 a_0
--0.532482832587 6.68916281709e-05 # 0
+-0.53248235537 6.11515238448e-05 # 0
 
 ## Peak Functions
 # Index Type
@@ -47,15 +47,15 @@ ModelEvaluator=AIC
 # Each line is followd by a comment which gives the index
 # of the corresponding Peak Function.
 #L position fwhm area
-2.90080419907 0.268377178453 9.93052432246 # 1
-4.10830566426 0.300784691767 4.39283671722 # 1
-5.02721828444 0.298821023653 18.1347950849 # 1
-5.80865059051 0.285204099835 8.05156074029 # 1
-6.49309588327 0.316448194941 17.070424932 # 1
-7.12793424327 0.320296425577 6.1576816843 # 1
-7.67903972825 0.320039553821 34.7903497208 # 1
-8.22959318502 0.339695624031 4.44953276018 # 1
-8.71009345779 0.331777219524 26.3392212004 # 1
-9.18041939876 0.332853669677 17.5995534555 # 1
-9.63464699767 0.340658718799 19.2777950212 # 1
-10.0317348159 0.291006390828 15.4535051589 # 1
+2.90080420526 0.268377339284 9.93053286298 # 1
+4.10830567416 0.30078523693 4.39284878956 # 1
+5.02721828559 0.298821179794 18.1348089744 # 1
+5.80865059667 0.285204415039 8.0515745939 # 1
+6.49309587984 0.316448372405 17.0704404866 # 1
+7.12793423746 0.320296812298 6.15769615031 # 1
+7.6790397275 0.320039601259 34.7903624988 # 1
+8.22959323643 0.339696214846 4.44954852379 # 1
+8.71009342704 0.331777148405 26.3392232678 # 1
+9.18041960662 0.332854317375 17.5996003127 # 1
+9.63464586661 0.340656337796 19.2776218911 # 1
+10.0317474 0.291024876105 15.4551698998 # 1

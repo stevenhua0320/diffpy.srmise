@@ -1,16 +1,16 @@
-Summary written: Wed May 27 13:04:49 2015
-produced by Luke
-diffpy.srmise version 0.5a1
+Summary written: Fri May 29 00:03:18 2015
+produced by luke
+diffpy.srmise version 0.5
 ##### User comments
 # This is a best model determined by MultiModelSelection
 # Model: 5 (of 20)
 # Class: 5 (of 16, tolerance=0.200000)
-# Best model for uncertainties: 1717.335789-2821.337368
-# Max Akaike probability: 0.945289
+# Best model for uncertainties: 1165.335000-3925.338947
+# Max Akaike probability: 0.992381
 ##### PDF Peak Extraction Summary
 # The information below is not sufficient to replicate extraction.
 ## PDF metadata
-filename=D:\Workspaces\MSU research\diffpy.srmise\doc\examples\data\C60_fine_qmax21.gr
+filename=/home/luke/Workspaces/MSU_Research/diffpy.srmise/doc/examples/data/C60_fine_qmax21.gr
 nyquist=True
 qmax=21.299999
 qmax_reportedbypdf=21.299999
@@ -24,7 +24,7 @@ cres=0.05
 effective_dy=3925.33894737 (mean)
 
 ## Model Quality
-# Quality reported by ModelEvaluator: 98.4490686426
+# Quality reported by ModelEvaluator: 96.5626072137
 # Free parameters in extracted peaks: 42
 # Free parameters in baseline: 0
 # Length of data in final fit: 43
@@ -42,8 +42,8 @@ ModelEvaluator=AIC
 ## Peak Functions
 # Index Type
 0 diffpy.srmise.peaks.gaussianoverr 
-1 diffpy.srmise.peaks.gaussianoverr 
-2 diffpy.srmise.peaks.terminationripples (base=1)
+1 diffpy.srmise.peaks.terminationripples (base=0)
+2 diffpy.srmise.peaks.gaussianoverr 
 
 ## Extracted Peaks
 # Parameters are given in the natural units of the data,
@@ -51,17 +51,17 @@ ModelEvaluator=AIC
 # Each line is followd by a comment which gives the index
 # of the corresponding Peak Function.
 #L position fwhm area
-1.44159554213 0.137951405498 36205.3738127 # 2
-2.22631032245 0.0258903533908 3555.36132358 # 2
-2.44266678866 0.16661600496 69973.414697 # 2
-2.8399992951 0.13051913279 22702.7883431 # 2
-3.61439223013 0.195907602968 72661.4970542 # 2
-4.11550643596 0.231594420579 60139.3047425 # 2
-4.53927560344 0.146382708984 70979.3916617 # 2
-4.80060387007 0.0715844891779 28302.1318143 # 2
-5.10814879477 0.145536428681 19811.9019178 # 2
-5.42615158952 0.263722659178 99329.5221039 # 2
-5.8050650457 0.310590327336 82825.978444 # 2
-6.13137201 0.183187367868 72849.3258949 # 2
-6.65188022497 0.354939188487 139006.277664 # 2
-7.02480612721 0.218937623677 43994.7598726 # 2
+1.44110346987 0.135456358948 36202.906939 # 1
+1.85910261749 0.0299129147728 6407.46260508 # 1
+2.43889536058 0.201671787237 75785.6769551 # 1
+2.84291188616 0.0824984359593 21227.7617065 # 1
+3.61440983053 0.201428975693 73408.9554387 # 1
+4.11362922547 0.220373940693 58969.3619516 # 1
+4.54302058947 0.170533964583 74749.4035522 # 1
+4.81777072 0.085281210431 27221.6143413 # 1
+5.12913927175 0.127451603349 20576.4432256 # 1
+5.42971694303 0.248691124984 96953.1357297 # 1
+5.79376693867 0.284103815553 77848.5098896 # 1
+6.12529255114 0.198906954776 78369.1319389 # 1
+6.65121433953 0.349282262124 137434.884005 # 1
+7.02272235704 0.219351828024 44898.6629937 # 1
