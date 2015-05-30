@@ -481,10 +481,10 @@ class ModelPart(object):
         key_or_idx - An integer index, slice, or key from owner's parameter
                      dictionary.
         """
-        try:
-            return self.pars[key_or_idx]
-        except ValueError:
+        if key_or_idx in self._owner.parameterdict:
             return self.pars[self._owner.parameterdict[key_or_idx]]
+        else:
+            return self.pars[key_or_idx]
 
     def getfree(self, key_or_idx):
         """Return value of free corresponding with key_or_idx.
@@ -492,10 +492,10 @@ class ModelPart(object):
         Parameters
         key_or_idx - An integer index, slice, or key from owner's parameter
                      dictionary."""
-        try:
-            return self.free[key_or_idx]
-        except ValueError:
+        if key_or_idx in self._owner.parameterdict:
             return self.free[self._owner.parameterdict[key_or_idx]]
+        else:
+            return self.free[key_or_idx]
 
     def setfree(self, key_or_idx, value):
         """Set value of free corresponding with key_or_idx.
@@ -504,10 +504,10 @@ class ModelPart(object):
         key_or_idx - An integer index, slice, or key from owner's parameter
                      dictionary.
         value: A boolean"""
-        try:
-            self.free[key_or_idx] = value
-        except ValueError:
+        if key_or_idx in self._owner.parameterdict:
             self.free[self._owner.parameterdict[key_or_idx]] = value
+        else:
+            self.free[key_or_idx] = value
 
     def __len__(self):
         """Return number of parameters, including any fixed ones."""
