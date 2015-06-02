@@ -137,7 +137,7 @@ following differences:
     Return peak parameters such that the value at ``r`` is scaled by ``scale``
     while the position of the peak's maxima remains unchanged.
     
-    :param pars: The parameters of the baseline.
+    :param pars: The parameters of the peak.
     :param r: Position where the peak will be rescaled.
     :param scale: A scale factor > 0.
     :type pars: `Sequence(float)`
