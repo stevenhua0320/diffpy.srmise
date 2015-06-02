@@ -85,7 +85,7 @@ The simplest way to obtain diffpy.srmise on Unix, Linux, and Mac systems is
 using ``easy_install`` or ``pip`` to download and install the latest release 
 from the `Python Package Index <https://pypi.python.org>`_. :: 
 
-   sudo pip diffpy.srmise
+   sudo pip install diffpy.srmise
 
 If you prefer to install from sources, make sure all required software packages
 are in place and then run ::
