@@ -53,6 +53,24 @@ def scrubeol(directory, filerestr):
         updated.close()
         
         print "Updated %s to unix-style endlines." %f
+
+
+def rm(directory, filerestr):
+    """Delete files in directory matched by regex string.
+    
+    Parameters
+    ----------
+    directory - A directory to scrub
+    filerestr - A regex string defining which files to match."""
+    os.chdir(__basedir__)
+    os.chdir(directory)
+    files = [re.match(filerestr, f) for f in os.listdir(".")]
+    files = [f.group(0) for f in files if f]
+    
+    for f in files:
+        os.remove(f)
+        
+        print "Deleted %s." %f
     
 
 
@@ -61,6 +79,9 @@ if __name__ == "__main__":
     # Temporarily add examples to path
     lib_path = os.path.abspath(os.path.join('..','doc','examples'))
     sys.path.append(lib_path)
+    
+    # Delete existing files that don't necessarily have a fixed name.
+    rm("../doc/examples/output", r"C60_multimodel.*\.pwa")
 
     ### Testing examples
     examples = Test()
