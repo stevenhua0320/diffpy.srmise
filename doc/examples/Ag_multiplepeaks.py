@@ -81,8 +81,8 @@ def run(plot=True):
     # using the appropriate tuple of indices (i,j).  That is, (i,j) denotes
     # the jth parameter of the ith peak.  For example, the starred parameter
     # above is the area (index = 2) of the next nearest neighbor (index = 1)
-    # peak. Thus, this peak can be referenced as (1,2).  Several examples are
-    # presented below.
+    # peak. Thus, this parameter can be referenced as (1,2).  Several examples
+    # are presented below.
     print "\n------ Examples of accessing peak extraction results ------"
     
     # The value and uncertainties of the nearest-neighbor peak parameters.
