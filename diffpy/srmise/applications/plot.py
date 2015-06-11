@@ -105,7 +105,7 @@ def comparepositions(ppe, ip=None, **kwds):
     if ip is not None:
         plt.ylim(base+yideal, base+yext)
     else:
-        plt.ylim(base+yideal, base)
+        plt.ylim(base, base+yext)
 
     for tick in ax.yaxis.get_major_ticks():
         tick.tick1line.set_markersize(0)
