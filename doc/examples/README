@@ -44,15 +44,15 @@ Productively running SrMise requires, in basic, the following elements:
 2) The experimental uncertainties.  In principle these should be reported with
    the data, but in practice experimental uncertainties are frequently not
    reported, or are unreliable due to details of the data reduction process.
-   In these cases the user should specify an ad hoc value.  In peak extraction
-   an ad hoc uncertainty necessarily results in ad hoc model complexity, or,
+   In these cases the user should specify an *ad hoc* value.  In peak extraction
+   an *ad hoc* uncertainty necessarily results in *ad hoc* model complexity, or,
    more precisely, a reasonable model complexity if the provided uncertainty
    is presumed correct.  (Even when the uncertainties are known, specifying an
-   ad hoc value can be a pragmatic tool for exploring alternate models,
+   *ad hoc* value can be a pragmatic tool for exploring alternate models,
    especially in conjunction with multimodeling analysis.)  Note that for both
    peak extraction and peak fitting the estimated uncertainties of peak
    parameters (i.e. location, width, intensity) are dependent on the
-   experimental uncertainty
+   experimental uncertainty.
 3) The PDF baseline.  For crystalline samples the baseline is linear and can
    be readily estimated.  For nanoparticles more effort is required as SrMise
    includes explicit support for only a few basic shapes, although the user
@@ -95,7 +95,7 @@ Basic:
 * TiO2_parameterdetail.py_
     Introductory script demonstrating basic use of all SrMise parameters. Of
     particular interest, it covers defining a crystalline baseline with
-    explicit parameters, and assigning an ad hoc uncertainty when the
+    explicit parameters, and assigning an *ad hoc* uncertainty when the
     experimental uncertainties are unreliable or unreported.
 
 * TiO2_initialpeaks.py_
