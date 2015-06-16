@@ -19,7 +19,10 @@ transforming between different peak parameterizations.  Finally, it shows how
 to evaluate the model on an arbitrary grid.
 
 The peaks extracted by this script are equivalent to those obtained running
- srmise data/Ag_nyquist_qmax30.gr --range 2. 10. --bsrmise=output/Ag_singlepeak.srmise --save output/Ag_multiplepeaks.srmise --pwa output/Ag_multiplepeaks.pwa --plot
+srmise data/Ag_nyquist_qmax30.gr --range 2. 10. \
+    --bsrmise=output/Ag_singlepeak.srmise \
+    --save output/Ag_multiplepeaks.srmise \
+    --pwa output/Ag_multiplepeaks.pwa --plot
 at the command line.
 """
 
@@ -91,19 +94,23 @@ def run(plot=True):
     position = "%f +/- %f" %cov.get((0,0))
     width = "%f +/- %f" %cov.get((0,1))
     area = "%f +/- %f" %cov.get((0,2))
-    print  "Nearest-neighbor peak: position=%s, width=%s, area=%s" %(position, width, area)
-    print "Covariance of width and area for nearest-neighbor peak: ", cov.getcovariance((0,1),(0,2))
+    print  "Nearest-neighbor peak: position=%s, width=%s, area=%s" \
+           %(position, width, area)
+    print "Covariance of width and area for nearest-neighbor peak: ", \
+           cov.getcovariance((0,1),(0,2))
     
     # It is also possible to iterate over peaks directly without using indices.
     # For example, to calculate the total peak area:
     total_area = 0
     for peak in cov.model[:-1]: # Exclude last element, which is the baseline.
-        total_area += peak["area"]    # The "position" and "width" keywords are also
-                                # available for the GaussianOverR peak function.
+        total_area += peak["area"] # The "position" and "width" keywords are
+                                   # also available for the GaussianOverR peak
+                                   # function.
     print "Total area of extracted peaks: ", total_area
     
     # Baseline parameters.
-    print "The linear baseline B(r)=%f*r + %f" % tuple(par for par in cov.model[-1])
+    print "The linear baseline B(r)=%f*r + %f" \
+          % tuple(par for par in cov.model[-1])
     
     # Highly-correlated parameters can indicate difficulties constraining the
     # fit.  This function lists all pairs of parameters with an absolute value

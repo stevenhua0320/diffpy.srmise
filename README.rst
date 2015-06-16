@@ -1,5 +1,6 @@
+#########################
 diffpy.srmise
-========================================================================
+#########################
 
 Tool for unbiased peak extraction from atomic pair distribution functions.
 
@@ -39,21 +40,71 @@ must be specified.
 For more information about the diffpy.srmise library, see the users manual at
 http://diffpy.github.io/diffpy.srmise.
 
-REQUIREMENTS
-------------------------------------------------------------------------
+Getting Started
+=================
 
-The diffpy.srfit package requires Python 2.6 or 2.7 and the following software:
+The diffpy.srmise package requires Python 2.6 or 2.7 and the following software:
 
 * ``setuptools`` - software distribution tools for Python
 * ``NumPy`` - numerical mathematics and fast array operations for Python
 * ``SciPy`` - scientific libraries for Python
 * ``matplotlib`` - python plotting library
 
-On Ubuntu Linux, the required software can easily be installed using
-the system package manager::
+See the `SrMise license <LICENSE.txt>`__ for terms and conditions of use.
+Detailed installation instructions for the `Windows`_, `Mac OS X`_, and
+`Linux`_ platforms follow.
 
-   sudo apt-get install \
-      python-setuptools python-numpy python-scipy python-matplotlib
+Windows
+-------
+
+Several prebuilt Python distributions for Windows include all the
+prerequisite software required to run SrMise, and installing one of these is the
+simplest way to get started.  These distributions are usually free for
+individual and/or academic use, but some also have commercial version.  Links to
+executables, installation instructions, and licensing information
+for some popular options are listed below.
+
+* `Anaconda <http://www.continuum.io/downloads>`_
+* `Enthought Canopy <https://www.enthought.com/products/canopy/>`_
+* `Python(x,y) <https://code.google.com/p/pythonxy/>`_
+* `WinPython <http://winpython.github.io>`_
+
+Alternately, individual Windows executables for Python and the required
+components can be downloaded and installed.  The official Windows releases of
+Numpy and SciPy do not currently support 64-bit Python installations, so be
+sure to download the 32-bit versions of these packages.
+
+* `Python 2.6/2.7 <https://www.python.org/downloads/windows/>`_
+* `NumPy <http://sourceforge.net/projects/numpy/files/NumPy/>`_
+* `SciPy <http://sourceforge.net/projects/scipy/files/scipy/>`_
+* `matplotlib <http://matplotlib.org/downloads.html>`_
+
+After installing Python and the required packages, we can install SrMise.
+The simplest way to obtain diffpy.srmise on Windows systems
+is using ``pip`` to download and install the latest release from the
+`Python Package Index <https://pypi.python.org>`_ (PyPI).  To do so, open a
+command window by running ``cmd`` from the Start Menu's application search box
+(Windows 7/8/10) or Run command (Windows Vista and earlier).  Verify that the
+``pip`` program is installed by running ::
+
+    pip --version
+
+If this command is not found, download and run
+`get-pip.py <https://bootstrap.pypa.io/get-pip.py>`_, which will install both it
+and setuptools.  For example, if your Windows user name is ``MyName`` and you
+download the file to the desktop, you would run the following from the command
+line: ::
+
+    cd C:\Users\MyName\Desktop
+    python get-pip.py
+
+Finally, install the latest version of SrMise by running ::
+
+    pip install diffpy.srmise
+
+
+Mac OS X
+--------
 
 For Mac OS X systems with the MacPorts package manager, the required
 software can be installed with ::
@@ -67,28 +118,16 @@ in MacPorts::
 
    sudo port select --set python python27
 
-For Windows systems, the easiest way to obtain ``setuptools`` if not already 
-installed is downloading the ``pip`` setup script `get-pip.py 
-<https://bootstrap.pypa.io/get-pip.py>`_ and running :: 
-
-    python get-pip.py
-    
-It is recommended to install all other dependencies using prebuilt binaries.  
-Visit http://www.scipy.org and http://www.matplotlib.org for instructions.  
-Alternately, install a full Python distribution such as Python(x,y) or 
-Enthought Canopy which already includes the required components. 
-
-INSTALLATION
-------------------------------------------------------------------------
-
-The simplest way to obtain diffpy.srmise on Unix, Linux, and Mac systems is 
-using ``easy_install`` or ``pip`` to download and install the latest release 
-from the `Python Package Index <https://pypi.python.org>`_. :: 
+The simplest way to obtain diffpy.srmise on Mac OS X systems
+is using ``pip`` to download and install the latest release from
+`PyPI <https://pypi.python.org>`_. :: 
 
    sudo pip install diffpy.srmise
 
-If you prefer to install from sources, make sure all required software packages
-are in place and then run ::
+If you prefer to install from sources, download them from the
+`GitHub <https://github.com/diffpy/diffpy.srmise/releases>`__ or
+`PyPI <https://pypi.python.org/pypi/diffpy.srmise>`__ pages for SrMise.
+Uncompress them to a directory, and from that directory run ::
 
    sudo python setup.py install
 
@@ -97,11 +136,43 @@ administrator (root) access is not available, see the usage info from
 ``python setup.py install --help`` for options to install to user-writable 
 directories.
 
-To install on Windows run either of the commands above omitting ``sudo``.  
+
+Linux
+-----
+
+On Ubuntu and Debian Linux, the required software can easily be installed using
+the system package manager::
+
+   sudo apt-get install \
+      python-setuptools python-numpy python-scipy python-matplotlib
+
+Similarly, on Fedora::
+
+    sudo yum install python-setuptools numpy scipy python-matplotlib
+
+For other Linux distributions consult the appropriate package manager.
+
+The simplest way to obtain diffpy.srmise on Linux systems
+is using ``pip`` to download and install the latest release from the
+`PyPI <https://pypi.python.org>`_. :: 
+
+   sudo pip install diffpy.srmise
+
+If you prefer to install from sources, download them from the
+`GitHub <https://github.com/diffpy/diffpy.srmise/releases>`__ or
+`PyPI <https://pypi.python.org/pypi/diffpy.srmise>`__ pages for SrMise.
+Uncompress them to a directory, and from that directory run ::
+
+   sudo python setup.py install
+
+This installs diffpy.srmise for all users in the default system location. If 
+administrator (root) access is not available, see the usage info from 
+``python setup.py install --help`` for options to install to user-writable 
+directories. 
 
 
 DEVELOPMENT
-------------------------------------------------------------------------
+===========
 
 diffpy.srmise is open-source software developed with support of the Center of 
 Research Excellence in Complex Materials at Michigan State University, in 
@@ -117,13 +188,13 @@ copied to a package directory, use ::
 
 
 ACKNOWLEDGEMENT
-------------------------------------------------------------------------
+===============
 
 The source code of *pdfdataset.py* was derived from diffpy.pdfgui.
 
 
 CONTACTS
-------------------------------------------------------------------------
+========
 
 For more information on diffpy.srmise please visit the project web-page
 

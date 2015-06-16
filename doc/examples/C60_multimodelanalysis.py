@@ -96,15 +96,20 @@ def run(plot=True):
     for m in bm:
         filename = "output/C60_multimodel"+str(m)+".pwa"
         cls = ms.classes_idx[m] # Get index of class to which model belongs.
-        bestdgs = ms.modelbestdgs(m) # Get the uncertainties where this model has greatest Akaike probability.
-        maxprob = np.max([ms.classprobs[dg][cls] for dg in bestdgs]) # Get the model's greatest Akaike probability.
+        bestdgs = ms.modelbestdgs(m) # Get the uncertainties where this model
+                                     # has greatest Akaike probability.
+
+        # Get the model's greatest Akaike probability.
+        maxprob = np.max([ms.classprobs[dg][cls] for dg in bestdgs]) 
 
         msg = ["This is a best model determined by MultiModelSelection",
               "Model: %i (of %i)",
               "Class: %i (of %i, tolerance=%f)",
               "Best model for uncertainties: %f-%f",
               "Max Akaike probability: %g"]
-        msg = "\n".join(msg) %(m, len(ms.classes_idx), cls, len(ms.classes), tolerance, np.min(bestdgs), np.max(bestdgs), maxprob)
+        msg = "\n".join(msg) %(m, len(ms.classes_idx), cls, len(ms.classes),
+                               tolerance, np.min(bestdgs), np.max(bestdgs),
+                               maxprob)
         ms.setcurrent(m) # Make this the active model.
         ms.ppe.writepwa(filename, msg)
 
@@ -140,7 +145,7 @@ def run(plot=True):
             ms.setcurrent(bm)
             figdict = makeplot(ms, dcif)
             # Uncomment to save figure.
-            #plt.savefig("output/C60_multimodel"+str(bm)+".png", format="png")
+            # plt.savefig("output/C60_multimodel"+str(bm)+".png", format="png")
 
 
     if plot:

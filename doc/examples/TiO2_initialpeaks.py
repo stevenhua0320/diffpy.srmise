@@ -10,7 +10,7 @@
 # See LICENSE.txt for license information.
 #
 ##############################################################################
-"""Example of peak extraction demonstrating non-default values for many extraction parameters.
+"""Peak extraction with non-default values for many extraction parameters.
 
 This example shows how to specify initial peaks in order to guide the results of
 peak extraction.
@@ -61,9 +61,11 @@ def run(plot=True):
     # terms of position, width (fwhm), and area, and it is important to specify
     # that format is being used so they are correctly changed into the
     # internal parameterization.
-    explicit_guess = [[6.25, .3, 3], [6.5, .3, 3], [6.85, 0.3, 10], [7.1, 0.3, 10], [7.45, 0.3, 20]]
-    peak_function = ppe.pf[0]
-    explicit_peaks = Peaks([peak_function.actualize(e, removable=False, in_format="pwa") for e in explicit_guess])
+    explicit_guess = [[6.25, .3, 3], [6.5, .3, 3], [6.85, 0.3, 10],
+                      [7.1, 0.3, 10], [7.45, 0.3, 20]]
+    pf = ppe.pf[0]
+    explicit_peaks = Peaks([pf.actualize(e, removable=False, in_format="pwa") \
+                            for e in explicit_guess])
     ppe.addpeaks(explicit_peaks)
     if plot:
         plt.figure(2)

@@ -19,7 +19,9 @@ for diffpy.srmise, and covers initializing diffpy.srmise, defining extraction
 parameters, running peak extraction, and saving the results.
 
 This script is equivalent to running
- srmise data/Ag_nyquist_qmax30.gr --range 2. 3.5 --baseline=Polynomial(degree=1) --save output/Ag_singlepeak.srmise --pwa output/Ag_singlepeak.pwa --plot
+srmise data/Ag_nyquist_qmax30.gr --range 2. 3.5 \
+    --baseline=Polynomial(degree=1) --save output/Ag_singlepeak.srmise \
+    --pwa output/Ag_singlepeak.pwa --plot
 at the command line.
 """
 
@@ -27,6 +29,7 @@ import matplotlib.pyplot as plt
 
 from diffpy.srmise import PDFPeakExtraction
 from diffpy.srmise.baselines import Polynomial
+from diffpy.srmise.applications.plot import makeplot
 
 def run(plot=True):
     
@@ -77,10 +80,9 @@ def run(plot=True):
     # Display plot of extracted peak.  It is also possible to plot an existing
     # .srmise file from the command line using
     #     srmise output/Ag_singlepeak.srmise --no-extract --plot
-    # or, for a somewhat prettier plot,
-    #     srmiseplot output/Ag_singlepeak.srmise --show
+    # For additional plotting options, run "srmiseplot --help".
     if plot:
-        ppe.plot()
+        makeplot(ppe)
         plt.show()
 
 if __name__ == '__main__':

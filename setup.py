@@ -78,7 +78,7 @@ setup_args = dict(
                   "pair distribution functions."),
     license = 'BSD-style license',
     url = "https://github.com/diffpy/diffpy.srmise/",
-    #keywords = "",
+    keywords = "peak extraction fitting PDF AIC multimodeling",
     classifiers = [
         # List of possible values at
         # http://pypi.python.org/pypi?:action=list_classifiers

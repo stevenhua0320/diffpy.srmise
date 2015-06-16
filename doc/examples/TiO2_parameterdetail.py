@@ -10,14 +10,18 @@
 # See LICENSE.txt for license information.
 #
 ##############################################################################
-"""Example of peak extraction demonstrating non-default values for many extraction parameters.
+"""Peak extraction with non-default values for many extraction parameters.
 
 This example shows how to extract peaks from a crystalline PDF with unreliable
 uncertainties, and shows how various extraction variables may be set.  In
-particular, choosing a peak function and defining baseline parameters explicitly.
+particular, choosing a peak function and defining baseline parameters
+explicitly.
 
 This script is equivalent to running
- srmise data/TiO2_fine_qmax26.gr --range 1.5 10. --dg 0.35 --qmax 26 --resolution .05 --bpoly1=-0.65 0c --save output/TiO2_parameterdetail.srmise --pwa output/TiO2_parameterdetail.pwa --plot
+srmise data/TiO2_fine_qmax26.gr --range 1.5 10. --dg 0.35 --qmax 26 \
+    --resolution .05 --bpoly1=-0.65 0c \
+    --save output/TiO2_parameterdetail.srmise \
+    --pwa output/TiO2_parameterdetail.pwa --plot
 at the command line.
 """
 
@@ -26,6 +30,7 @@ import matplotlib.pyplot as plt
 from diffpy.srmise import PDFPeakExtraction
 from diffpy.srmise.baselines import Polynomial
 from diffpy.srmise.peaks import GaussianOverR
+from diffpy.srmise.applications.plot import makeplot
 
 def run(plot=True):
     
@@ -79,7 +84,8 @@ def run(plot=True):
     blfunc = Polynomial(degree=1)
     slope = -.65 # Play with this value!
     y_intercept = 0.
-    kwds["baseline"] = blfunc.actualize([slope, y_intercept], free=[True, False])
+    kwds["baseline"] = blfunc.actualize([slope, y_intercept],
+                                        free=[True, False])
 
     # The pf (peakfunction) parameter allows setting the shape of peaks to be
     # extracted.  Termination effects are added automatically to the peak
@@ -102,8 +108,8 @@ def run(plot=True):
     # If the PDF does not report qmax, diffpy.srmise attempts to estimate it
     # directly from the data.  This estimate can also be used by setting qmax
     # to "automatic".  An infinite qmax can be specified by setting qmax to 0,
-    # In that case the Nyquist rate is 0 (infinite resolution), and diffpy.srmise
-    # does not consider Nyquist sampling or termination effects.
+    # In that case the Nyquist rate is 0 (infinite resolution), and
+    # diffpy.srmise does not consider Nyquist sampling or termination effects.
     kwds["qmax"] = 26.0 
 
     # This parameter governs whether diffpy.srmise attempts to find a model
@@ -160,10 +166,8 @@ def run(plot=True):
     # Display plot of extracted peak.  It is also possible to plot an existing
     # .srmise file from the command line using
     #     srmise output/TiO2_parameterdetail.srmise --no-extract --plot
-    # or, for a somewhat prettier plot,
-    #     srmiseplot output/TiO2_parameterdetail.srmise --show
     if plot:
-        ppe.plot()
+        makeplot(ppe)
         plt.show()
 
 if __name__ == '__main__':
