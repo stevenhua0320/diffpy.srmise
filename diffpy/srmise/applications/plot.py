@@ -203,7 +203,7 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
 
     # Other options
     datalabel = kwds.get("datalabel", None)
-    dgformatstr = kwds.get("dgformatstr", r'$\delta$g=%s')
+    dgformatstr = kwds.get("dgformatstr", r'$\delta$g=%f')
     dgformatpost = kwds.get("dgformatpost", None) #->userfunction(string)
     show_fit = kwds.get("show_fit", True)
     show_individual = kwds.get("show_individual", True)
@@ -382,7 +382,7 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
         if len(ext.model) > 0:
             xpos = np.mean([xlo, ext.model[0]["position"]]) # OK for now.
         else:
-            xpos = xlo
+            xpos = xlo + .1*(xhi-xlo)
         if dg_height > 0 and cmp_height > 0:
             # Arrow, text in compare distances line
             ylo2, yhi2 = ax_dg.get_ylim()
