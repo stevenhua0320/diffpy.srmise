@@ -31,7 +31,8 @@ ab_authors = u'Luke Granlund'
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.ifconfig', 'sphinx.ext.autodoc', 'sphinx.ext.intersphinx']
+extensions = ['sphinx.ext.ifconfig', 'sphinx.ext.autodoc',
+              'sphinx.ext.intersphinx', 'sphinx.ext.extlinks']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -102,6 +103,12 @@ modindex_common_prefix = ['diffpy.srmise.']
 # Display all warnings for missing links.
 nitpicky = True
 
+# Define :source-release:`zip` and :source-release:`tar.gz` to point to the
+# GitHub source archive corresponding to the most recent release.
+lasttag = release.split("-")[0] # Drop post-release git version increment.
+extlinks = {'source-release': \
+    ('https://github.com/diffpy/diffpy.srmise/archive/v%s' %lasttag + '.%s','')}
+
 # -- Options for HTML output ---------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
@@ -111,8 +118,7 @@ html_theme = 'classic'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
-html_theme_options = {'collapsiblesidebar' : 'true'}
+html_theme_options = {'collapsiblesidebar' : 'true'} #classic
 
 # Add any paths that contain custom themes here, relative to this directory.
 #html_theme_path = []
