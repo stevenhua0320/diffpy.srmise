@@ -188,11 +188,6 @@ class PDFPeakExtraction(PeakExtraction):
             self.pf = [GaussianOverR(.7)]
             if "pf" in args: nargs.remove("pf")
 
-        if self.baseline is None or "baseline" in args:
-            from diffpy.srmise.baselines import Polynomial
-            self.baseline = Polynomial(degree = 1)
-            if "baseline" in args: nargs.remove("baseline")
-
         # Enable "dg" as alias for "effective_dy"
         if "dg" in args and "effective_dy" not in args:
             nargs.add("effective_dy")

@@ -15,8 +15,6 @@ from optparse import OptionParser, OptionGroup
 import numpy as np
 import matplotlib.pyplot as plt
 
-#import diffpy.srmise
-
 def main():
     """Default SrMise entry-point."""
 
@@ -38,8 +36,7 @@ def main():
               "file, as well as the usual defaults summarized here.\n\n"
               "Defaults (when qmax > 0)\n"
               "------------------------\n"
-              "Baseline - Try to estimate a linear (Polynomial(degree=1)) "
-              "baseline, otherwise baseline=0.\n"
+              "Baseline - None (identically 0).\n"
               "dg - The uncertainty reported in the PDF (if any), otherwise "
               "5% of maximum value of PDF.\n"
               "Nyquist - True\n"
@@ -72,6 +69,10 @@ def main():
               "implement an idle handler, so interaction with its window will "
               "likely cause a freeze.")
 
+    # TODO: Move to argparse (though not in 2.6 by default) to handle
+    # variable-length options without callbacks.  Longterm, the major
+    # value is using the same option to specify a baseline that should
+    # use estimation vs. one that should use explicitly provided pars.
     parser = OptionParser(usage=usage, description=descr, epilog=epilog,
                           version=version,
                           formatter=IndentedHelpFormatterWithNL())
@@ -107,21 +108,31 @@ def main():
                            "diffpy.srmise.modelevaluators, e.g. 'AIC'")
 
     group = OptionGroup(parser, "Baseline Options",
-                        "SrMise keeps the PDF baseline fixed at its initial "
-                        "value until the final stages of peak extraction, "
-                        "so results are frequently conditioned on that "
-                        "choice.  A good estimate is therefore important "
-                        "for best results.  SrMise can estimate initial "
-                        "parameters from the data for linear baselines in "
-                        "some situations (all peaks are positive, and the "
-                        "degree of overlap in the region of extraction is not "
-                        "too great), but in all other cases you will need to "
-                        "specify initial values.  See the SrMise documentation "
-                        "for details.")
+                        "SrMise cannot determine the appropriate type of "
+                        "baseline (e.g. crystalline vs. some nanoparticle) "
+                        "solely from the data, so the user should specify the "
+                        "appropriate type and/or parameters. (Default is "
+                        "identically 0, which is unphysical.) SrMise keeps the "
+                        "PDF baseline fixed at its initial value until the "
+                        "final stages of peak extraction, so results are "
+                        "frequently conditioned on that choice. (See the "
+                        "SrMise documentation for details.)  A good estimate "
+                        "is therefore important for best results.  SrMise can "
+                        "estimate initial parameters from the data for linear "
+                        "baselines in some situations (all peaks are positive, "
+                        "and the degree of overlap in the region of extraction "
+                        "is not too great), but in most cases it is best to "
+                        "provide reasonable initial parameters.  Run 'srmise "
+                        "pdf_file.gr [baseline_option] --no-extract --plot' "
+                        "for different values of the parameters for rapid "
+                        "visual estimation.")
     group.add_option("--baseline", dest="baseline", metavar="BL",
                      help="Estimate baseline from baseline function BL "
                           "defined in diffpy.srmise.baselines, e.g. "
-                          "'Polynomial(degree=1)'.  All parameters are free.")
+                          "'Polynomial(degree=1)'.  All parameters are free. "
+                          "(Many POSIX shells attempt to interpret the "
+                          "parentheses, and on these shells the option should "
+                          "be surrounded by quotation marks.)" )
     group.add_option("--bcrystal", dest="bcrystal", type="string",
                      metavar="rho0[c]",
                      help="Use linear baseline defined by crystal number "
@@ -291,7 +302,6 @@ def main():
         from diffpy.srmise.baselines import Polynomial
         bl = Polynomial(degree=0)
         options.baseline = parsepars(bl, [options.bpoly0])
-        #options.baseline = bl.actualize([options.bpoly0], "internal")
     elif options.bpoly1 is not None:
         from diffpy.srmise.baselines import Polynomial
         bl = Polynomial(degree=1)
