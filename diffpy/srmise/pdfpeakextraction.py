@@ -190,14 +190,7 @@ class PDFPeakExtraction(PeakExtraction):
 
         if self.baseline is None or "baseline" in args:
             from diffpy.srmise.baselines import Polynomial
-            bl = Polynomial(degree = 1)
-            try:
-                epars = bl.estimate_parameters(self.x, self.y)
-                self.baseline = bl.actualize(epars, "internal")
-            except (NotImplementedError, SrMiseEstimationError):
-                bl = Polynomial(degree = -1)
-                epars = np.array([])
-            self.baseline = bl.actualize(epars, "internal")
+            self.baseline = Polynomial(degree = 1)
             if "baseline" in args: nargs.remove("baseline")
 
         # Enable "dg" as alias for "effective_dy"
@@ -206,6 +199,7 @@ class PDFPeakExtraction(PeakExtraction):
 
         # Set other defaults
         PeakExtraction.defaultvars(self, *nargs)
+
 
     def resampledata(self, dr):
         """Return (x, y, error in x, effective error in y) resampled by interval dr.

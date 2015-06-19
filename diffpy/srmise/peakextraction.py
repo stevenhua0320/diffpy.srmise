@@ -176,6 +176,14 @@ class PeakExtraction(object):
             # TODO: Make a more useful default.
             self.pf = [GaussianOverR(self.x[-1]-self.x[0])]
 
+        if self.rng is None or "rng" in args:
+            self.rng = [self.x[0], self.x[-1]]
+        else:
+            if self.rng[0] is None:
+                self.rng[0] = self.x[0]
+            if self.rng[1] is None:
+                self.rng[1] = self.x[-1]
+
         # Set baseline where the type is given, but parameters must be estimated.
         if hasattr(self.baseline, "estimate_parameters"):
             try:
@@ -199,13 +207,6 @@ class PeakExtraction(object):
         if self.initial_peaks is None or "initial_peaks" in args:
             self.initial_peaks = Peaks()
 
-        if self.rng is None or "rng" in args:
-            self.rng = [self.x[0], self.x[-1]]
-        else:
-            if self.rng[0] is None:
-                self.rng[0] = self.x[0]
-            if self.rng[1] is None:
-                self.rng[1] = self.x[-1]
 
     def __str__(self):
         """Return string summary of PeakExtraction."""
