@@ -2,7 +2,7 @@
 
 # Installation script for diffpy.srmise
 
-"""diffpy.srmise - identify peaks and peak shoulders in PDF curve
+"""diffpy.srmise - Peak extraction/fitting tool for pair distribution functions
 
 Packages:   diffpy.srmise
 """
@@ -74,7 +74,7 @@ setup_args = dict(
 
     author = "Luke Granlund",
     author_email = "luke.r.granlund@gmail.com",
-    description = ("SrMise - Peak extraction and peak fitting tool for atomic "
+    description = ("Peak extraction and peak fitting tool for atomic "
                   "pair distribution functions."),
     license = 'BSD-style license',
     url = "https://github.com/diffpy/diffpy.srmise/",
