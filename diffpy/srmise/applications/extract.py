@@ -36,22 +36,22 @@ def main():
               "file, as well as the usual defaults summarized here.\n\n"
               "Defaults (when qmax > 0)\n"
               "------------------------\n"
-              "Baseline - None (identically 0).\n"
+              "baseline - None (identically 0).\n"
               "dg - The uncertainty reported in the PDF (if any), otherwise "
               "5% of maximum value of PDF.\n"
-              "Nyquist - True\n"
-              "Range - All the data\n"
-              "Resolution - The Nyquist rate.\n"
-              "Scale - (Deprecated) False\n\n"
+              "nyquist - True\n"
+              "range - All the data\n"
+              "cres - The Nyquist rate.\n"
+              "scale - (Deprecated) False\n\n"
               "Defaults (when qmax = 0)\n"
               "------------------------\n"
-              "Baseline - as above\n"
+              "baseline - as above\n"
               "dg - as above\n"
-              "Nyquist - False (and no effect if True)\n"
-              "Range - as above\n"
-              "Resolution - Four times the average distance between data "
+              "nyquist - False (and no effect if True)\n"
+              "range - as above\n"
+              "cres - Four times the average distance between data "
               "points\n"
-              "Scale - (Deprecated) False, and no effect if True\n\n"
+              "scale - (Deprecated) False, and no effect if True\n\n"
               "Known issues\n"
               "------------\n"
               "1) Peak extraction works best when the data are moderately "
@@ -101,8 +101,8 @@ def main():
                       help="Fit peak function PF defined in "
                            "diffpy.srmise.peaks, e.g. "
                            "'GaussianOverR(maxwidth=0.7)'")
-    parser.add_option("--resolution", dest="cres", type="float", metavar="cres",
-                      help="Cluster resolution.")
+    parser.add_option("--cres", dest="cres", type="float", metavar="cres",
+                      help="Clustering resolution.")
     parser.add_option("--me", "-m", dest="modelevaluator", metavar="ME",
                       help="ModelEvaluator defined in "
                            "diffpy.srmise.modelevaluators, e.g. 'AIC'")
@@ -152,8 +152,8 @@ def main():
                      metavar="a2[c] a1[c] a0[c]",
                      help="Use baseline given by y=a2*x^2+a1*x + a0.  Append "
                           "'c' to make parameter constant.")
-    group.add_option("--bseq", dest="bseq", type="string", metavar="file",
-                      help="Use baseline interpolated from x,y values in file."
+    group.add_option("--bseq", dest="bseq", type="string", metavar="FILE",
+                      help="Use baseline interpolated from x,y values in FILE. "
                            "This baseline has no free parameters.")
     group.add_option("--bspherical", dest="bspherical", type="string", nargs=2,
                      metavar="s[c] r[c]",
@@ -190,7 +190,7 @@ def main():
                           "'dG-fraction' - Fraction of dG reported by PDF.\n"
                           "If '--dg' is specified but mode is not, then mode "
                           "ia absolute.  Otherwise, 'dG-fraction' is default "
-                          "id the PDF reports uncertaintes, and 'max-fraction' "
+                          "if the PDF reports uncertaintes, and 'max-fraction' "
                           "ia default if it does not.")
     group.add_option("--dg", dest="dg", type="float",
                      help="Perform extraction assuming uncertainty dg. "
