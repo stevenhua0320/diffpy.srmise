@@ -420,6 +420,70 @@ class PDFPeakExtraction(PeakExtraction):
 
         return cov
 
+
+    def fit(self, **kwds):
+        """Fit peaks in the PDF. Returns ModelCovariance instance summarizing results."""
+
+        self.clearcalc()
+
+        # Make sure all required extraction variables have some value
+        self.defaultvars()
+
+        # Determine grid spacing
+        dr_raw = (self.x[-1]-self.x[0])/(len(self.x)-1)
+
+        logger.info("Fit using qmax=%s", self.qmax)
+
+        if self.qmax > 0:
+            dr_nyquist = np.pi/self.qmax
+            if dr_raw > dr_nyquist:
+                # Technically I should yell for dr_raw >= dr_nyquist, since information
+                # loss may occur at equality.
+                logger.warn("The input PDF appears to be missing information: The "
+                            "sampling interval of the input PDF (%s) is larger than "
+                            "the Nyquist interval (%s) defined by qmax=%s.  This information "
+                            "is irretrievable." %(dr_raw, dr_nyquist, self.qmax))
+        else:
+            # Do I actually need this?
+            dr_nyquist = dr_raw # not actually Nyquist sampling, natch
+
+        # Define grids
+        rngslice = self.getrangeslice()
+        if self.qmax == 0 or not self.nyquist:
+            r1 = self.x[rngslice]
+            y1 = self.y[rngslice]
+            y_error1 = self.effective_dy[rngslice]
+        else:
+            (r1, y1, r_error1, y_error1) = self.resampledata(dr_nyquist)
+
+        # Set up ModelCluster
+        ext = ModelCluster(self.initial_peaks, self.baseline, r1, y1, \
+                           y_error1, None, self.error_method, self.pf)
+
+        msg = ["Performing peak fitting",
+               "-----------------------"]
+        logger.info("\n".join(msg))
+
+
+        # Fit model with baseline, report covariance matrix
+        cov = ModelCovariance()
+        ext.fit(fitbaseline=True, estimate=False, cov=cov, cov_format="default_output")
+
+        logger.info("Model after fitting with baseline:")
+        try:
+            logger.info(str(cov))
+            #logger.info("Correlations > .8:\n%s", "\n".join(str(c) for c in cov.correlationwarning(.8)))
+        except SrMiseUndefinedCovarianceError as e:
+            logger.warn("Covariance not defined for final model.  Fit may not have converged.")
+            logger.info(str(ext))
+
+        # Update calculated instance variables
+        self.extraction_type = "fit"
+        self.extracted = ext
+
+        return cov
+
+
     def writemetadata(self):
         """Return string representation of peak extraction from PDF."""
         lines = []
