@@ -240,6 +240,15 @@ class ModelCovariance(object):
         (l, m) = i if i in self.pmap else self.ipmap[i]
         return self.model[l][m]
 
+    def getuncertainty(self, i):
+        """Return uncertainty of parameter i.
+
+        The variable may be specified as an integer, or as a two-component tuple of integers (l, m)
+        which indicate the mth parameter of modelpart l.
+        """
+        (l, m) = i if i in self.pmap else self.ipmap[i]
+        return np.sqrt(self.getcovariance(i,i))
+
     def getcovariance(self, i, j):
         """Return the covariance between variables i and j.
         
@@ -262,7 +271,7 @@ class ModelCovariance(object):
         The variable may be specified as an integer, or as a two-component tuple of integers (l, m)
         which indicate the mth parameter of modelpart l.
         """
-        return (self.getvalue(i), np.sqrt(self.getcovariance(i,i)))
+        return (self.getvalue(i), self.getuncertainty(i))
 
     def correlationwarning(self, threshold=0.8):
         """Report distinct variables with magnitude of correlation greater than threshold.
