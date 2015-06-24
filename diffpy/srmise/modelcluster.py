@@ -126,7 +126,7 @@ class ModelCovariance(object):
                     for j in range(n):
                         if free[j]:
                             self.cov[i,j] = cov[rawi,rawj]
-                        rawj += 1
+                            rawj += 1
                     rawi += 1
 
 
