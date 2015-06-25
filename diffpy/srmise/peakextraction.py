@@ -698,7 +698,7 @@ class PeakExtraction(object):
         if len(mcluster.model) > 0:
             if add:
                 logger.info("Adding peak: %s" %mcluster.model[0])
-                self.addpeaks(mcluster.model)
+                self.add_peaks(mcluster.model)
             else:
                 logger.info("Found peak: %s" %mcluster.model[0])
             return mcluster.model[0]
@@ -706,7 +706,7 @@ class PeakExtraction(object):
             logger.info("No peaks found.")
             return None
 
-    def addpeaks(self, peaks):
+    def add_peaks(self, peaks):
         """Add peaks to extracted peaks, or initial_peaks if no extracted peaks exist.
 
         Parameters
