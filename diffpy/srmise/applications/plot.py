@@ -161,7 +161,21 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
     else:
         stability = None
         ppe = ppe_or_stability
-    ext = ppe.extracted
+
+    if ppe.extracted is None:
+        # Makeplot requires a ModelCluster, so whip one up.
+        from diffpy.srmise import ModelCluster
+        ppe.defaultvars() # Make sure everything has some setting.  This
+                          # shouldn't have harmful side effects.
+        rangeslice = ppe.getrangeslice()
+        x = ppe.x[rangeslice]
+        y = ppe.y[rangeslice]
+        dy = ppe.dy[rangeslice]
+        mcluster = ModelCluster(ppe.initial_peaks, ppe.baseline, x, y, \
+                                dy, None, ppe.error_method, ppe.pf)
+        ext = mcluster
+    else:
+        ext = ppe.extracted
 
     figdict = {}
 

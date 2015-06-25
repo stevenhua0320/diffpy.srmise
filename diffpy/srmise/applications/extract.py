@@ -410,22 +410,7 @@ def main():
 
         if options.plot:
             from diffpy.srmise.applications.plot import makeplot
-
-            if ext.extracted is None:
-                # Makeplot requires a ModelCluster, so whip one up. No side
-                # effects since any saving has already occurred.
-                from diffpy.srmise import ModelCluster
-                ext.defaultvars() # Make sure everything has some setting.
-                rangeslice = ext.getrangeslice()
-                x = ext.x[rangeslice]
-                y = ext.y[rangeslice]
-                dy = ext.dy[rangeslice]
-                mcluster = ModelCluster(ext.initial_peaks, ext.baseline, x, y, \
-                                        dy, None, ext.error_method, ext.pf)
-                ext.extracted = mcluster
-
             makeplot(ext)
-
             plt.show()
         elif options.liveplot:
             plt.show()
