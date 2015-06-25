@@ -42,6 +42,7 @@ def main():
               "nyquist - True\n"
               "range - All the data\n"
               "cres - The Nyquist rate.\n"
+              "supersample - 4.0\n"
               "scale - (Deprecated) False\n\n"
               "Defaults (when qmax = 0)\n"
               "------------------------\n"
@@ -49,8 +50,8 @@ def main():
               "dg - as above\n"
               "nyquist - False (and no effect if True)\n"
               "range - as above\n"
-              "cres - Four times the average distance between data "
-              "points\n"
+              "cres - Four times the average distance between data points\n"
+              "supersample - Parameter has no effect.\n"
               "scale - (Deprecated) False, and no effect if True\n\n"
               "Known issues\n"
               "------------\n"
@@ -103,6 +104,10 @@ def main():
                            "'GaussianOverR(maxwidth=0.7)'")
     parser.add_option("--cres", dest="cres", type="float", metavar="cres",
                       help="Clustering resolution.")
+    parser.add_option("--supersample", dest="supersample", type="float",
+                      metavar="SS",
+                      help="Minimum initial oversampling rate as multiple of "
+                           "Nyquist rate.")
     parser.add_option("--me", "-m", dest="modelevaluator", metavar="ME",
                       help="ModelEvaluator defined in "
                            "diffpy.srmise.modelevaluators, e.g. 'AIC'")
@@ -366,6 +371,8 @@ def main():
             pdict["qmax"] = options.qmax if options.qmax == "automatic" else float(options.qmax)
         if options.nyquist is not None:
             pdict["nyquist"] = options.nyquist
+        if options.supersample is not None:
+            pdict["supersample"] = options.supersample
         if options.scale is not None:
             pdict["scale"] = options.scale
         if options.modelevaluator is not None:

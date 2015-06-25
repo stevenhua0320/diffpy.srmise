@@ -140,6 +140,10 @@ class PDFPeakExtraction(PeakExtraction):
                 else:
                     emsg = "Qmax could not be automatically determined."
                     raise SrMiseQmaxError(emsg)
+        if "supersample" in kwds:
+            if kwds["supersample"] < 1.:
+                emsg = "Supersample must be a value greater than 1."
+                raise ValueError(emsg)
         PeakExtraction.setvars(self, quiet, **kwds)
 
     def defaultvars(self, *args):
