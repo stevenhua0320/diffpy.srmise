@@ -170,7 +170,7 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
         rangeslice = ppe.getrangeslice()
         x = ppe.x[rangeslice]
         y = ppe.y[rangeslice]
-        dy = ppe.dy[rangeslice]
+        dy = ppe.effective_dy[rangeslice]
         mcluster = ModelCluster(ppe.initial_peaks, ppe.baseline, x, y, \
                                 dy, None, ppe.error_method, ppe.pf)
         ext = mcluster
