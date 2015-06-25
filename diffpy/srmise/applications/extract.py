@@ -98,7 +98,7 @@ def main():
                       help="Use Nyquist resampling if qmax > 0.")
     parser.add_option("--no-nyquist", action="store_false", dest="nyquist",
                       help="Do not use Nyquist resampling.")
-    parser.add_option("--peakfunction", dest="peakfunction", metavar="PF",
+    parser.add_option("--pf", dest="peakfunction", metavar="PF",
                       help="Fit peak function PF defined in "
                            "diffpy.srmise.peaks, e.g. "
                            "'GaussianOverR(maxwidth=0.7)'")
