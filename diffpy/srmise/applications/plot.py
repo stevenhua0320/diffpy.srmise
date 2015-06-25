@@ -287,6 +287,7 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
 
 
     fig = kwds.get("figure", plt.gcf())
+    fig.clf()
     ax_data = AA.Subplot(fig, 111)
     fig.add_subplot(ax_data)
     figdict["fig"] = fig
