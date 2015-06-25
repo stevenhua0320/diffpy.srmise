@@ -91,7 +91,7 @@ def main():
     parser.add_option("--range", nargs=2, dest="rng", type="float",
                       metavar="rmin rmax",
                       help="Extract over the range (rmin, rmax).")
-    parser.add_option("--qmax", dest="qmax", type="float", metavar="QMAX",
+    parser.add_option("--qmax", dest="qmax", type="string", metavar="QMAX",
                       help="Model peaks with this maximum q value.")
     parser.add_option("--nyquist", action="store_true", dest="nyquist",
                       help="Use Nyquist resampling if qmax > 0.")
@@ -363,7 +363,7 @@ def main():
         if options.rng is not None:
             pdict["rng"] = list(options.rng)
         if options.qmax is not None:
-            pdict["qmax"] = options.qmax
+            pdict["qmax"] = options.qmax if options.qmax == "automatic" else float(options.qmax)
         if options.nyquist is not None:
             pdict["nyquist"] = options.nyquist
         if options.scale is not None:
