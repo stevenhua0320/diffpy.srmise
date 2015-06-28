@@ -315,7 +315,8 @@ class ModelCovariance(object):
         if self.model is None or self.cov is None:
             return "Model and/or Covariance matrix undefined."
         k = i if i in self.ipmap else self.pmap[i]
-        return "%f (%f)" %(self.getvalue(k), np.sqrt(self.getcovariance(k,k)))
+        return "%.5e (%.5e)" %(self.getvalue(k), np.sqrt(self.getcovariance(k,k)))
+
 
 # End of class ModelCovariance
 
