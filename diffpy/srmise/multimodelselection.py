@@ -407,6 +407,11 @@ class MultimodelSelection(PeakStability):
         for dg in self.dgs:
             self.sortedclassprobs[dg] = np.argsort(self.classprobs[dg]).tolist()
 
+    def dg_key(self, dg_in):
+        """Return the dg value usable as a key nearest to dg_in."""
+        idx = (np.abs(self.dgs-dg_in)).argmin()
+        return self.dgs[idx]
+
     def bestclasses(self, dgs=None):
         if dgs is None:
             dgs = self.dgs
