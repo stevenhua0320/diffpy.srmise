@@ -413,9 +413,6 @@ class PDFPeakExtraction(PeakExtraction):
             logger.warn("Covariance not defined for final model.  Fit may not have converged.")
             logger.info(str(ext))
 
-
-
-
         # Update calculated instance variables
         self.extraction_type = "extract"
         self.extracted = ext
@@ -460,26 +457,29 @@ class PDFPeakExtraction(PeakExtraction):
         else:
             (r1, y1, r_error1, y_error1) = self.resampledata(dr_nyquist)
 
-        # Set up ModelCluster
-        ext = ModelCluster(self.initial_peaks, self.baseline, r1, y1, \
-                           y_error1, None, self.error_method, self.pf)
+
+        # Set up for fit_single
+        pe = PeakExtraction()
+        pe.setdata(r1, y1, None, None)
 
         msg = ["Performing peak fitting",
                "-----------------------"]
         logger.info("\n".join(msg))
 
+        pe.setvars(cres=self.cres, pf=self.pf, effective_dy = y_error1,
+                   baseline=self.baseline, error_method=self.error_method,
+                   initial_peaks=self.initial_peaks)
 
-        # Fit model with baseline, report covariance matrix
-        cov = ModelCovariance()
-        ext.fit(fitbaseline=True, estimate=False, cov=cov, cov_format="default_output")
+        # Perform fit
+        cov = pe.fit_single()
+        ext = pe.extracted
 
         logger.info("Model after fitting with baseline:")
+        logger.info(str(ext))
         try:
             logger.info(str(cov))
-            #logger.info("Correlations > .8:\n%s", "\n".join(str(c) for c in cov.correlationwarning(.8)))
         except SrMiseUndefinedCovarianceError as e:
             logger.warn("Covariance not defined for final model.  Fit may not have converged.")
-            logger.info(str(ext))
 
         # Update calculated instance variables
         self.extraction_type = "fit"

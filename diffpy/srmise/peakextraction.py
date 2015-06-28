@@ -1147,6 +1147,36 @@ class PeakExtraction(object):
         if recursion_depth == 1:
             return cov
 
+    def fit_single(self):
+        """Fit peaks in initial_peaks with baseline. Return ModelCovariance
+        instance summarizing results."""
+
+        self.clearcalc()
+
+        # Make sure all required extraction variables have some value
+        self.defaultvars()
+
+        # Define grids
+        rngslice = self.getrangeslice()
+        x = self.x[rngslice]
+        y = self.y[rngslice]
+        dy = self.effective_dy[rngslice]
+
+        # Set up ModelCluster
+        ext = ModelCluster(self.initial_peaks, self.baseline, x, y, dy, None,
+                           self.error_method, self.pf)
+
+        # Fit model with baseline and calculate covariance matrix
+        cov = ModelCovariance()
+        ext.fit(fitbaseline=True, estimate=False, cov=cov,
+                cov_format="default_output")
+
+        # Update calculated instance variables
+        self.extraction_type = "fit_single"
+        self.extracted = ext
+
+        return cov
+
 #end PeakExtraction class
 
 
