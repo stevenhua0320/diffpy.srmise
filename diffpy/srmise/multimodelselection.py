@@ -621,13 +621,59 @@ class MultimodelSelection(PeakStability):
         if "cls" in kwds:
             cls = kwds["cls"]
         else:
-            cls = self.sortedclassprobs[dG][-1-corder] # index of corderth best class
+            #cls = self.sortedclassprobs[dG][-1-corder] # index of corderth best class
+            cls = self.getclass(dG, corder=corder)
 
         if cls is None:
             return self.sortedprobs[dG][-1-morder]
         else:
             return self.sortedclasses[dG][cls][-1-morder]
 
+    def getclass(self, dG, **kwds):
+        """Return index of best class at given dG.
+
+        Parameters:
+        dG - The uncertainty used to calculate probabilities
+
+
+        Keywords:
+        corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default)."""
+        corder = kwds.pop("corder", 0)
+        return self.sortedclassprobs[dG][-1-corder] # index of corderth best class
+
+    def getprob(self, dG, **kwds):
+        """Return Akaike probability of best model of best class at given dG.
+
+        Parameters:
+        dG - The uncertainty used to calculate probabilities
+
+
+        Keywords:
+        corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).
+        morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).
+                 Returns a model from a class, or from the collection of all models if classes are ignored.
+        cls - Override corder with a specific class index, or None to ignore classes entirely."""
+        idx = self.getmodel(dG, **kwds)
+        if "cls" in kwds and kwds["cls"] is None:
+            return self.aicprobs[dG][idx]
+        else:
+            cls_idx = self.classes_idx[idx]
+            return self.classprobs[dG][cls_idx]
+
+    def get(self, dG, **kwds):
+        """Return (model index, class index, Akaike probability) of best model of best class at given dG.
+
+        Parameters:
+        dG - The uncertainty used to calculate probabilities
+
+
+        Keywords:
+        corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).
+        morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).
+                 Returns a model from a class, or from the collection of all models if classes are ignored.
+        cls - Override corder with a specific class index, or None to ignore classes entirely."""
+        cls = kwds["cls"] if "cls" in kwds else self.getclass(dG, **kwds)
+        return (self.getmodel(dG, **kwds), cls, self.getprob(dG, **kwds))
 
     def maxprobdG_byclass(self, model):
         """Return the post-hoc dG for which the given model's Akaike probability is maximized.
