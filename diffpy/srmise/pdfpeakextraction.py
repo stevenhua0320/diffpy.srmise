@@ -200,7 +200,7 @@ class PDFPeakExtraction(PeakExtraction):
         PeakExtraction.defaultvars(self, *nargs)
 
 
-    def resampledata(self, dr):
+    def resampledata(self, dr, **kwds):
         """Return (x, y, error in x, effective error in y) resampled by interval dr.
 
         Uses values of self.x, self.y, self.dx, self.effective_dy.  The range is
@@ -213,14 +213,20 @@ class PDFPeakExtraction(PeakExtraction):
         new grid.
 
         Parameters
-        dr: The sampling interval"""
+        dr: The sampling interval
+
+        Keywords
+        eps: [10^-6] Suppress information lost warning when dr-dr_nyquist < eps"""
         self.defaultvars() # Find correct range if necessary.
+        eps = kwds.get("eps", 10**-6)
 
         if self.qmax == 0:
             logger.warning("Resampling when qmax=0.  Information may be lost!")
         else:
             dr_nyquist = np.pi/self.qmax
-            if dr > dr_nyquist:
+
+            # Not a robust epsilon test, but all physical Nyquist rates in same oom.
+            if dr - dr_nyquist > eps:
                 logger.warning("Resampling at %s, below Nyquist rate of %s.  Information will be lost!" %(dr, dr_nyquist))
 
         r = np.arange(max(self.x[0], self.rng[0]), min(self.x[-1], self.rng[1]), dr)
