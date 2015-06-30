@@ -464,6 +464,7 @@ class MultimodelSelection(PeakStability):
                If equal to "auto" determined by the number of models in displayed classes.
         cmap - A colormap or registered colormap name.  Default is cm.jet.  If class_size is "number" and norm is either "auto"
                or "full" the map is converted to an indexed colormap.
+        highlight_cmap - A colormap or registered colormap name for coloring highlights.  Default is cm.gray.
         title - True, False, or a string.  Defaults to True, which displays some basic information about the graph.
         p_alpha - Probability graph alpha. (Colorbar remains opaque).  Default is 0.7.
         figure - A matplotlib.figure.Figure instance.  Default is the current figure.
@@ -498,6 +499,7 @@ class MultimodelSelection(PeakStability):
         class_size = kwds.pop("class_size", "number")
         norm = kwds.pop("norm", "auto")
         cmap = kwds.pop("cmap", cm.jet)
+        highlight_cmap = kwds.pop("highlight_cmap", cm.gray)
         title = kwds.pop("title", True)
         p_alpha = kwds.pop("p_alpha", 0.7)
         scale = kwds.pop("scale", 1.)
@@ -554,10 +556,10 @@ class MultimodelSelection(PeakStability):
         cax = ax.add_collection3d(poly, zs=zs, zdir='y')
 
         # Highlight values of interest
-        for dG in highlight:
-            #ax.plot([dG, dG], [zs[0], zs[-1]], [0, 0], color='k')
-            for i, z in enumerate(zs):
-                ax.plot([dG, dG], [z, z], [0, self.classprobs[dG][i]], color='k', alpha=p_alpha)
+        color_idx = np.linspace(0, 1, len(highlight))
+        for dG, ci in zip(highlight, color_idx):
+            for z_logical, z_plot in zip(zlabels, zs):
+                ax.plot([dG, dG], [z_plot, z_plot], [0, self.classprobs[dG][z_logical]], color=highlight_cmap(ci), alpha=p_alpha)
 
         ax.set_xlabel('dG')
         ax.set_xlim3d(dGs[0]*scale, dGs[-1]*scale)
@@ -703,8 +705,8 @@ class MultimodelSelection(PeakStability):
         Parameters:
         dG - The uncertainty used to calculate probabilities
 
-        Permissible arguments: "aic", "class", "model", "nfree", "prob"
-
+        Permissible arguments: "aic", "class", "dG", "model", "nfree", "prob"
+        ("dG" simply returns the provided dG value)
 
         Keywords:
         corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).
@@ -713,6 +715,7 @@ class MultimodelSelection(PeakStability):
         cls - Override corder with a specific class index, or None to ignore classes entirely."""
         fdict = {"aic": self.get_aic,
                  "class": self.get_class,
+                 "dg": lambda x: x,
                  "model": self.get_model,
                  "nfree": self.get_nfree,
                  "prob": self.get_prob}
