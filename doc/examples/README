@@ -26,13 +26,12 @@ with goodness-of-fit.
 
 Three primary use cases are envisioned for SrMise:
 
-1) Peak extraction, where peak parameters and their number is determined
-   solely from the experimental data.
-2) Peak fitting, where a user-specified model of peaks is fit to the
-   experimental data.
-3) Multimodel selection, where multiple models fitting the data are compared
-   in an AIC-driven analysis to determine a set of most plausible models to
-   guide additional investigation.
+1) Peak fitting, where user-specified peaks are fit to the experimental data.
+2) Peak extraction, where the number of peaks and their parameters are
+   estimated solely from the experimental data.
+3) Multimodel selection, where multiple sets of peaks are ranked in an
+   AIC-driven analysis to determine the most plausible sets to guide
+   additional investigation.
 
 Productively running SrMise requires, in basic, the following elements:
 
