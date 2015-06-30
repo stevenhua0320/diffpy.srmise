@@ -1,0 +1,5 @@
+.. Links to PDF information. Compatible with chemical formula substitutions.
+
+.. _Ag: index.html#ag
+.. _C60: index.html#c60
+.. _TiO2: index.html#tio2

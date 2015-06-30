@@ -1,0 +1,44 @@
+.. Abbreviations and definitions for SrMise tutorial.
+
+.. The README file in the doc/examples directory of the SrMise source
+   distribution should be readable without generating the full Sphinx docs.
+   To do this, the amount of markup is kept to a bare minimum, and the markup
+   that does appear shouldn't get in the way of understanding.
+
+.. Substitutions point to SrMise sources matching this version of the docs.
+.. |zip| replace:: :source-release:`zip`
+.. |tar.gz| replace:: :source-release:`tar.gz`
+
+.. Image substitutions
+.. |images/extract_single_peak1.png| image:: ../../../examples/images/extract_single_peak1.png
+.. |images/extract_single_peak2.png| image:: ../../../examples/images/extract_single_peak2.png
+.. |images/extract_single_peak3.png| image:: ../../../examples/images/extract_single_peak3.png
+.. |images/parameter_summary1.png| image:: ../../../examples/images/parameter_summary1.png
+.. |images/parameter_summary2.png| image:: ../../../examples/images/parameter_summary2.png
+.. |images/parameter_summary3.png| image:: ../../../examples/images/parameter_summary3.png
+.. |images/parameter_summary4.png| image:: ../../../examples/images/parameter_summary4.png
+.. |images/fit_initial1.png| image:: ../../../examples/images/fit_initial1.png
+.. |images/fit_initial2.png| image:: ../../../examples/images/fit_initial2.png
+.. |images/query_results1.png| image:: ../../../examples/images/query_results1.png
+.. |images/query_results2.png| image:: ../../../examples/images/query_results2.png
+.. |images/query_results3.png| image:: ../../../examples/images/query_results3.png
+
+.. Links to non-tutorial parts of documentation.
+.. |Extending SrMise| replace:: :ref:`extending-srmise`
+
+.. External links
+.. _ParSCAPE algorithm: https://dx.doi.org/10.1107/S2053273315005276
+.. _PDFgetX2: http://www.pa.msu.edu/cmp/billinge-group/programs/PDFgetX2/
+.. _FIT2D: http://www.esrf.eu/computing/scientific/FIT2D/
+.. _SrXplanar: http://github.com/diffpy/diffpy.srxplanar
+
+.. Math defs
+.. |C60| replace:: C\ :sub:`60`
+.. |TiO2| replace:: TiO\ :sub:`2`
+.. |angstrom^-1| replace:: Å\ :sup:`-1`
+.. |Qmax| replace:: Q\ :sub:`max`
+.. |Qmin| replace:: Q\ :sub:`min`
+.. |d_c| replace:: d\ :sub:`c`
+.. |pi/Qmax| replace:: π/Q\ :sub:`max`
+
+.. Links to PDF information defined in sample_links.txt

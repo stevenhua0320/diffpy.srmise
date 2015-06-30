@@ -1,0 +1,65 @@
+Summary written: Tue Jun 30 13:36:14 2015
+produced by luke
+diffpy.srmise version 0.5.1-35
+##### User comments
+# Multimodeling Summary
+# ---------------------
+# Evaluated at dG: 0.414460564103
+# Model: 0 (of 15)
+# Class: 0 (of 4, tol=0.2)
+# Akaike probability: 0.116014
+# Rank: 3
+##### PDF Peak Extraction Summary
+# The information below is not sufficient to replicate extraction.
+## PDF metadata
+filename=/home/luke/Workspaces/MSU_Research/diffpy.srmise/doc/examples/data/Ag_nyquist_qmax30.gr
+nyquist=True
+qmax=30.0
+qmax_reportedbypdf=30.0
+qmax_fromdata=29.729728241905356
+scale=False
+supersample=4.0
+
+## Peak extraction metadata
+Range=[10.9, 15]
+cres=0.10472
+effective_dy=0.207230282051 (mean)
+
+## Model Quality
+# Quality reported by ModelEvaluator: 62.302748451
+# Free parameters in extracted peaks: 27
+# Free parameters in baseline: 2
+# Length of data in final fit: 40
+ModelEvaluator=AIC
+
+## Baseline Functions
+# Index Type
+0 diffpy.srmise.baselines.polynomial 
+
+## Baseline
+# Parameters of baseline, followed by comment which
+# gives the index of corresponding Baseline Function.
+# a_1 a_0
+-0.510418401742 0.00840743355082 # 0
+
+## Peak Functions
+# Index Type
+0 diffpy.srmise.peaks.gaussianoverr 
+1 diffpy.srmise.peaks.gaussianoverr 
+2 diffpy.srmise.peaks.terminationripples (base=1)
+
+## Extracted Peaks
+# Parameters are given in the natural units of the data,
+# where width is measured as full-width at half maximum.
+# Each line is followd by a comment which gives the index
+# of the corresponding Peak Function.
+#L position fwhm area
+11.2310491383 0.29009226516 19.2512559254 # 2
+11.4396028801 0.699999999983 27.0749215956 # 2
+11.9917737278 0.362929903251 35.1440957376 # 2
+12.2970626245 0.246439663133 11.2573010498 # 2
+12.6468606943 0.420659409723 59.0581484285 # 2
+13.3022057364 0.561794132185 56.019285676 # 2
+13.9271227928 0.461410605827 46.9264650576 # 2
+14.5144826305 0.383957447583 62.6172758881 # 2
+15.2120923348 0.640989083839 148.197881104 # 2

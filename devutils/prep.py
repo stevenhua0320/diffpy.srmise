@@ -81,17 +81,27 @@ if __name__ == "__main__":
     sys.path.append(lib_path)
     
     # Delete existing files that don't necessarily have a fixed name.
-    rm("../doc/examples/output", r"C60_multimodel.*\.pwa")
+    rm("../doc/examples/output", r"known_dG.*\.pwa")
+    rm("../doc/examples/output", r"unknown_dG.*\.pwa")
 
     ### Testing examples
     examples = Test()
-    import Ag_singlepeak, Ag_multiplepeaks, TiO2_parameterdetail, TiO2_initialpeaks, C60_multimodelextraction, C60_multimodelanalysis
-    examples.test(Ag_singlepeak.run, plot=False)
-    examples.test(Ag_multiplepeaks.run, plot=False)
-    examples.test(TiO2_parameterdetail.run, plot=False)
-    examples.test(TiO2_initialpeaks.run, plot=False)
-    examples.test(C60_multimodelextraction.run, plot=False)
-    examples.test(C60_multimodelanalysis.run, plot=False)
+    test_names = ["extract_single_peak",
+                  "parameter_summary",
+                  "fit_initial", 
+                  "query_results",
+                  "multimodel_known_dG1",
+                  "multimodel_known_dG2",
+                  "multimodel_unknown_dG1",
+                  "multimodel_unknown_dG2"]
+
+    test_modules = []
+    for test in test_names:
+        test_modules.append(__import__(test))
+
+    for test in test_modules:
+        examples.test(test.run, plot=False)
+
     examples.report()
     
     ### Convert output of example files to Unix-style endlines for sdist.

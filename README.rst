@@ -1,32 +1,33 @@
 #########################
-diffpy.srmise
+SrMise
 #########################
 
-Tool for unbiased peak extraction from atomic pair distribution functions.
+`DiffPy project <http://www.diffpy.org>`_ tool for unbiased peak extraction from
+atomic pair distribution functions.
 
-The diffpy.srmise package is an implementation of the `ParSCAPE algorithm  
+SrMise is an implementation of the `ParSCAPE algorithm  
 <https://dx.doi.org/10.1107/S2053273315005276>`_ for peak extraction from 
 atomic pair distribution functions (PDFs).  It is designed to function even 
 when *a priori* knowledge of the physical sample is limited, utilizing the 
 Akaike Information Criterion (AIC) to estimate whether peaks are 
 statistically justified relative to alternate models.  Three basic use cases 
-are anticipated for diffpy.srmise.  The first is peak fitting a user-supplied 
+are anticipated for SrMise.  The first is peak fitting a user-supplied 
 collections of peaks.  The second is peak extraction from a PDF with no (or 
 only partial) user-supplied peaks.  The third is an AIC-driven multimodeling 
-analysis where the output of multiple diffpy.srmise trials are ranked. 
+analysis where the output of multiple SrMise trials are ranked. 
 
 The framework for peak extraction defines peak-like clusters within the data, 
 extracts a single peak within each cluster, and iteratively combines nearby 
 clusters while performing a recursive search on the residual to identify 
 occluded peaks.  Eventually this results in a single global cluster 
 containing many peaks fit over all the data.  Over- and underfitting are 
-discouraged by use of the AIC when adding or removing (during a pruning step) 
+discouraged by use of the AIC when adding or, during a pruning step, removing
 peaks.  Termination effects, which can lead to physically spurious peaks in 
 the PDF, are incorporated in the mathematical peak model and the pruning step 
 attempts to remove peaks which are fit better as termination ripples due to 
 another peak. 
 
-Where possible, diffpy.srmise provides physically reasonable default values 
+Where possible, SrMise provides physically reasonable default values 
 for extraction parameters.  However, the PDF baseline should be estimated by 
 the user before extraction, or by performing provisional peak extraction with 
 varying baseline parameters.  The package defines a linear (crystalline) 
@@ -34,10 +35,10 @@ baseline, arbitrary polynomial baseline, a spherical nanoparticle baseline,
 and an arbitrary baseline interpolated from a list of user-supplied values.  
 In addition, PDFs with accurate experimentally-determined uncertainties are 
 necessary to provide the most reliable results, but historically such PDFs 
-are rare.  In the absence of accurate uncertainties an ad hoc uncertainty 
+are rare.  In the absence of accurate uncertainties an *ad hoc* uncertainty 
 must be specified. 
 
-For more information about the diffpy.srmise library, see the users manual at
+For more information about SrMise, see the users manual at
 http://diffpy.github.io/diffpy.srmise.
 
 Getting Started
@@ -79,20 +80,19 @@ sure to download the 32-bit versions of these packages.
 * `SciPy <http://sourceforge.net/projects/scipy/files/scipy/>`_
 * `matplotlib <http://matplotlib.org/downloads.html>`_
 
-After installing Python and the required packages, we can install SrMise.
-The simplest way to obtain diffpy.srmise on Windows systems
-is using ``pip`` to download and install the latest release from the
-`Python Package Index <https://pypi.python.org>`_ (PyPI).  To do so, open a
-command window by running ``cmd`` from the Start Menu's application search box
-(Windows 7/8/10) or Run command (Windows Vista and earlier).  Verify that the
+After installing Python and the required packages, the simplest way to obtain
+SrMise is using ``pip`` to download and install the latest release from the
+`Python Package Index <https://pypi.python.org>`_ (PyPI).  Open a command window
+by running ``cmd`` from the Start Menu's application search box (Windows 7/8/10)
+or Run command (Windows Vista and earlier).  Verify that the
 ``pip`` program is installed by running ::
 
     pip --version
 
 If this command is not found, download and run
 `get-pip.py <https://bootstrap.pypa.io/get-pip.py>`_, which will install both it
-and setuptools.  For example, if your Windows user name is ``MyName`` and you
-download the file to the desktop, you would run the following from the command
+and setuptools.  For example, if the file were downloaded to the desktop, a
+Windows user named ``MyName`` should run the following from the command
 line: ::
 
     cd C:\Users\MyName\Desktop
@@ -124,7 +124,7 @@ is using ``pip`` to download and install the latest release from
 
    sudo pip install diffpy.srmise
 
-If you prefer to install from sources, download them from the
+Those who prefer to install from sources may download them from the
 `GitHub <https://github.com/diffpy/diffpy.srmise/releases>`__ or
 `PyPI <https://pypi.python.org/pypi/diffpy.srmise>`__ pages for SrMise.
 Uncompress them to a directory, and from that directory run ::
@@ -158,7 +158,7 @@ is using ``pip`` to download and install the latest release from the
 
    sudo pip install diffpy.srmise
 
-If you prefer to install from sources, download them from the
+Those who prefer to install from sources may download them from the
 `GitHub <https://github.com/diffpy/diffpy.srmise/releases>`__ or
 `PyPI <https://pypi.python.org/pypi/diffpy.srmise>`__ pages for SrMise.
 Uncompress them to a directory, and from that directory run ::
@@ -196,8 +196,8 @@ The source code of *pdfdataset.py* was derived from diffpy.pdfgui.
 CONTACTS
 ========
 
-For more information on diffpy.srmise please visit the project web-page
+For more information on SrMise please visit the DiffPy project web-page
 
-http://www.diffpy.org
+http://www.diffpy.org/
 
 or email Prof. Simon Billinge at sb2896@columbia.edu.

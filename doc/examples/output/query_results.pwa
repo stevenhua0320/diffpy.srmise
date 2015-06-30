@@ -1,0 +1,61 @@
+Summary written: Tue Jun 30 13:01:58 2015
+produced by luke
+diffpy.srmise version 0.5.1-35
+##### User comments
+# n/a
+##### PDF Peak Extraction Summary
+# The information below is not sufficient to replicate extraction.
+## PDF metadata
+filename=/home/luke/Workspaces/MSU_Research/diffpy.srmise/doc/examples/data/Ag_nyquist_qmax30.gr
+nyquist=True
+qmax=30.0
+qmax_reportedbypdf=30.0
+qmax_fromdata=29.729728241905356
+scale=False
+supersample=4.0
+
+## Peak extraction metadata
+Range=[2.0, 10.0]
+cres=0.10472
+effective_dy=0.4137889 (mean)
+
+## Model Quality
+# Quality reported by ModelEvaluator: 75.6547612132
+# Free parameters in extracted peaks: 36
+# Free parameters in baseline: 2
+# Length of data in final fit: 77
+ModelEvaluator=AIC
+
+## Baseline Functions
+# Index Type
+0 diffpy.srmise.baselines.polynomial 
+
+## Baseline
+# Parameters of baseline, followed by comment which
+# gives the index of corresponding Baseline Function.
+# a_1 a_0
+-0.53248235537 6.11515238448e-05 # 0
+
+## Peak Functions
+# Index Type
+0 diffpy.srmise.peaks.gaussianoverr 
+1 diffpy.srmise.peaks.terminationripples (base=0)
+
+## Extracted Peaks
+# Parameters are given in the natural units of the data,
+# where width is measured as full-width at half maximum.
+# Each line is followd by a comment which gives the index
+# of the corresponding Peak Function.
+#L position fwhm area
+2.90080420526 0.268377339284 9.93053286298 # 1
+4.10830567416 0.30078523693 4.39284878956 # 1
+5.02721828559 0.298821179794 18.1348089744 # 1
+5.80865059667 0.285204415039 8.0515745939 # 1
+6.49309587984 0.316448372405 17.0704404866 # 1
+7.12793423746 0.320296812298 6.15769615031 # 1
+7.6790397275 0.320039601259 34.7903624988 # 1
+8.22959323643 0.339696214846 4.44954852379 # 1
+8.71009342704 0.331777148405 26.3392232678 # 1
+9.18041960662 0.332854317375 17.5996003127 # 1
+9.63464586661 0.340656337796 19.2776218911 # 1
+10.0317474 0.291024876105 15.4551698998 # 1

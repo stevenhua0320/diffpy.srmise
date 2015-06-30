@@ -1,7 +1,7 @@
-.. _developers-guide-index:
+.. _srmise-documentation-index:
 
 ####################################################
-SrMise developer's documentation
+SrMise Documentation
 ####################################################
 
 Software version |release|.
@@ -69,7 +69,7 @@ The source code of *pdfdataset.py* was derived from diffpy.pdfgui.
 Installation
 ======================================
 
-See the `README.rst <https://github.com/diffpy/diffpy.srmise#requirements>`_
+See the `README.rst <https://github.com/diffpy/diffpy.srmise#getting-started>`_
 file included with the distribution.
 
 ======================================
@@ -79,7 +79,7 @@ Where next?
 .. toctree::
    :maxdepth: 2
 
-   examples.rst
+   tutorial/index.rst
    extending.rst
    
 ======================================

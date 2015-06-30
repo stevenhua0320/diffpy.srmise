@@ -1,15 +1,14 @@
-.. _developers-guide-extending:
+.. _extending-srmise:
 
 ===================
 Extending SrMise
 ===================
 
-The :ref:`developers-guide-examples` give an overview of how to
-use SrMise with the existing peak and baseline functions.  These inherit from
-classes providing generic peak and baseline functionality, and from which
-additional peaks and baselines can be implemented.  The process for adding
-new peaks and baselines is summarized below, but see the source code for
-additional details.
+The :ref:`tutorial` gives an overview of how to use SrMise with the existing
+peak and baseline functions.  These inherit from classes providing generic peak
+and baseline functionality, and from which additional peaks and baselines can be
+implemented.  The process for adding new peaks and baselines is summarized
+below, but see the source code for additional details.
 
 If you implement a peak or baseline likely to be of broad interest to the PDF
 community, please consider submitting a pull request to the GitHub
