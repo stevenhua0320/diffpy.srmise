@@ -439,13 +439,14 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
 # its x-position based on invisiblelabel.  Of course,
 # invisiblelabel must be temporarily made visible to update
 # its values.
-_lastxpos = 0
+_lastxpos = {}
 def on_draw(event):
     global _lastxpos
-    ax_main = plt.gcf().get_axes()[0]
+    fig = event.canvas.figure
+    ax_main = fig.get_axes()[0]
     invisiblelabel = ax_main.axis["left"].label
     invisiblelabel.set_visible(True)
-    visiblelabel = labeldict[plt.gcf()]
+    visiblelabel = labeldict[fig]
     bbox = invisiblelabel.get_window_extent(invisiblelabel._renderer)
     bbox = bbox.inverse_transformed(ax_main.transAxes)
     bbox = bbox.get_points()
@@ -458,16 +459,16 @@ def on_draw(event):
     # If it is kept visible the whole time this problem doesn't occur.
     # This problem doesn't occur onscreen (TkAgg) or printing PDFs, and
     # didn't occur in matplotlib 1.0.0.
-    if abs(xpos - _lastxpos) > .001:
-        _lastxpos = xpos
+    if abs(xpos - _lastxpos.get(fig, 0)) > .001:
+        _lastxpos[fig] = xpos
         plt.draw()
     else:
-        _lastxpos = xpos
+        _lastxpos[fig] = xpos
 
     invisiblelabel.set_visible(False)
     xpos_old = visiblelabel.get_position()[0]
     if abs(xpos - xpos_old) > .001:
-        labeldict[plt.gcf()].set_x(xpos)
+        labeldict[fig].set_x(xpos)
         plt.draw()
     return
 
