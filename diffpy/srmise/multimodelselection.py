@@ -455,6 +455,7 @@ class MultimodelSelection(PeakStability):
 
         Keywords:
         dGs - Sequence of dG values to plot. Default is all values.
+        highlight - Sequence of dG values to highlight on plot.  Default is [].
         classes - Sequence of indices of classes to plot. Default is all classes.
         probfilter - [float1, float2].  Only show classes with maximum probability in given range.  Default is [0., 1.]
         class_size - Report the size of each class as a "number" or "fraction".  Default is "number".
@@ -491,6 +492,7 @@ class MultimodelSelection(PeakStability):
 
         # Resolve keywords (title resolved later)
         dGs = kwds.pop("dGs", self.dgs)
+        highlight = kwds.pop("highlight", [])
         classes = kwds.pop("classes", range(len(self.classes)))
         probfilter = kwds.pop("probfilter", [0.,1.])
         class_size = kwds.pop("class_size", "number")
@@ -551,14 +553,18 @@ class MultimodelSelection(PeakStability):
         poly.set_alpha(p_alpha)
         cax = ax.add_collection3d(poly, zs=zs, zdir='y')
 
+        # Highlight values of interest
+        for dG in highlight:
+            #ax.plot([dG, dG], [zs[0], zs[-1]], [0, 0], color='k')
+            for i, z in enumerate(zs):
+                ax.plot([dG, dG], [z, z], [0, self.classprobs[dG][i]], color='k', alpha=p_alpha)
+
         ax.set_xlabel('dG')
         ax.set_xlim3d(dGs[0]*scale, dGs[-1]*scale)
         ax.set_ylabel('Class')
         ax.set_ylim3d(zs[0], zs[-1])
-        if len(zlabels) < len(self.classes):
-            # Some classes are not displayed, so each must be labeled.
-            ax.set_yticks(zs)
-            ax.set_yticklabels([str(z) for z in zlabels])
+        ax.set_yticks(zs)
+        ax.set_yticklabels([str(z) for z in zlabels])
         ax.set_zlabel('Akaike probability')
         ax.set_zlim3d(0, 1)
 
@@ -604,7 +610,7 @@ class MultimodelSelection(PeakStability):
 
         return {"fig":fig, "axis":ax,  "cb":cb, "cbaxis": cbaxis}
 
-    def getmodel(self, dG, **kwds):
+    def get_model(self, dG, **kwds):
         """Return index of best model of best class at given dG.
 
         Parameters:
@@ -621,15 +627,14 @@ class MultimodelSelection(PeakStability):
         if "cls" in kwds:
             cls = kwds["cls"]
         else:
-            #cls = self.sortedclassprobs[dG][-1-corder] # index of corderth best class
-            cls = self.getclass(dG, corder=corder)
+            cls = self.get_class(dG, corder=corder)
 
         if cls is None:
             return self.sortedprobs[dG][-1-morder]
         else:
             return self.sortedclasses[dG][cls][-1-morder]
 
-    def getclass(self, dG, **kwds):
+    def get_class(self, dG, **kwds):
         """Return index of best class at given dG.
 
         Parameters:
@@ -641,7 +646,7 @@ class MultimodelSelection(PeakStability):
         corder = kwds.pop("corder", 0)
         return self.sortedclassprobs[dG][-1-corder] # index of corderth best class
 
-    def getprob(self, dG, **kwds):
+    def get_prob(self, dG, **kwds):
         """Return Akaike probability of best model of best class at given dG.
 
         Parameters:
@@ -653,15 +658,15 @@ class MultimodelSelection(PeakStability):
         morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).
                  Returns a model from a class, or from the collection of all models if classes are ignored.
         cls - Override corder with a specific class index, or None to ignore classes entirely."""
-        idx = self.getmodel(dG, **kwds)
+        idx = self.get_model(dG, **kwds)
         if "cls" in kwds and kwds["cls"] is None:
             return self.aicprobs[dG][idx]
         else:
             cls_idx = self.classes_idx[idx]
             return self.classprobs[dG][cls_idx]
 
-    def get(self, dG, **kwds):
-        """Return (model index, class index, Akaike probability) of best model of best class at given dG.
+    def get_nfree(self, dG, **kwds):
+        """Return number of free parameters of best model of best class at given dG.
 
         Parameters:
         dG - The uncertainty used to calculate probabilities
@@ -672,8 +677,49 @@ class MultimodelSelection(PeakStability):
         morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).
                  Returns a model from a class, or from the collection of all models if classes are ignored.
         cls - Override corder with a specific class index, or None to ignore classes entirely."""
-        cls = kwds["cls"] if "cls" in kwds else self.getclass(dG, **kwds)
-        return (self.getmodel(dG, **kwds), cls, self.getprob(dG, **kwds))
+        idx = self.get_model(dG, **kwds)
+        model = self.results[idx][1]
+        baseline = self.results[idx][2]
+        return model.npars(count_fixed=False) + baseline.npars(count_fixed=False)
+
+    def get_aic(self, dG, **kwds):
+        """Return number of free parameters of best model of best class at given dG.
+
+        Parameters:
+        dG - The uncertainty used to calculate probabilities
+
+
+        Keywords:
+        corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).
+        morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).
+                 Returns a model from a class, or from the collection of all models if classes are ignored.
+        cls - Override corder with a specific class index, or None to ignore classes entirely."""
+        idx = self.get_model(dG, **kwds)
+        return self.aics[dG][idx].stat
+
+    def get(self, dG, *args, **kwds):
+        """Return tuple of values corresponding to string arguments for best model of best class at given dG.
+
+        Parameters:
+        dG - The uncertainty used to calculate probabilities
+
+        Permissible arguments: "aic", "class", "model", "nfree", "prob"
+
+
+        Keywords:
+        corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).
+        morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).
+                 Returns a model from a class, or from the collection of all models if classes are ignored.
+        cls - Override corder with a specific class index, or None to ignore classes entirely."""
+        fdict = {"aic": self.get_aic,
+                 "class": self.get_class,
+                 "model": self.get_model,
+                 "nfree": self.get_nfree,
+                 "prob": self.get_prob}
+        values = []
+        for a in args:
+            values.append(fdict[a].__call__(dG, **kwds))
+        return tuple(values)
 
     def maxprobdG_byclass(self, model):
         """Return the post-hoc dG for which the given model's Akaike probability is maximized.
