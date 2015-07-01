@@ -3,9 +3,10 @@ include AUTHORS.txt LICENSE*.txt README.rst
 exclude MANIFEST.in
 include diffpy/srmise/version.cfg
 
-recursive-include doc/examples *.py *.gr *.srmise *.pwa *.dat
+recursive-include doc/examples *.py *.gr *.srmise *.pwa *.dat *.png
+include doc/examples/README
 
-recursive-include doc/manual *.rst
+recursive-include doc/manual *.rst *.txt
 include doc/manual/source/conf.py
 include doc/manual/Makefile
 
