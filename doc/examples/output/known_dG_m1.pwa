@@ -1,6 +1,6 @@
-Summary written: Tue Jun 30 13:36:15 2015
+Summary written: Wed Jul  1 09:54:31 2015
 produced by luke
-diffpy.srmise version 0.5.1-35
+diffpy.srmise version 0.5.2
 ##### User comments
 # Multimodeling Summary
 # ---------------------
@@ -45,8 +45,8 @@ ModelEvaluator=AIC
 ## Peak Functions
 # Index Type
 0 diffpy.srmise.peaks.gaussianoverr 
-1 diffpy.srmise.peaks.terminationripples (base=0)
-2 diffpy.srmise.peaks.gaussianoverr 
+1 diffpy.srmise.peaks.gaussianoverr 
+2 diffpy.srmise.peaks.terminationripples (base=1)
 
 ## Extracted Peaks
 # Parameters are given in the natural units of the data,
@@ -54,12 +54,12 @@ ModelEvaluator=AIC
 # Each line is followd by a comment which gives the index
 # of the corresponding Peak Function.
 #L position fwhm area
-11.2529285169 0.364905691879 35.069510576 # 1
-11.6049995958 0.242603175181 5.75251157226 # 1
-11.9810995228 0.395837076343 41.2543174499 # 1
-12.301949991 0.23763791237 9.95499038734 # 1
-12.6464816828 0.421778331973 59.2512366853 # 1
-13.3021821206 0.560737418698 55.9130337232 # 1
-13.9270960895 0.462233109053 47.0245789698 # 1
-14.5135618376 0.382520817816 61.9638372907 # 1
-15.2395954065 0.673266802865 163.664297749 # 1
+11.2529285169 0.364905691879 35.069510576 # 2
+11.6049995958 0.242603175181 5.75251157226 # 2
+11.9810995228 0.395837076343 41.2543174499 # 2
+12.301949991 0.23763791237 9.95499038734 # 2
+12.6464816828 0.421778331973 59.2512366853 # 2
+13.3021821206 0.560737418698 55.9130337232 # 2
+13.9270960895 0.462233109053 47.0245789698 # 2
+14.5135618376 0.382520817816 61.9638372907 # 2
+15.2395954065 0.673266802865 163.664297749 # 2
