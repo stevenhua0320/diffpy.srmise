@@ -25,7 +25,7 @@ NOTE: The multimodeling API used here is expected to change drastically in a
 future version of diffpy.srmise.
 
 For more information on the multimodeling approach taken here see
-[1] Granlund, et al. (2015) Acta Crystallographica A, 71(4), ?-?.
+[1] Granlund, et al. (2015) Acta Crystallographica A, 71(4), 392-409.
     doi:10.1107/S2053273315005276
 The standard reference of AIC-based multimodel selection is
 [2] Burnham and Anderson. (2002). Model Selection and Multimodel Inference.

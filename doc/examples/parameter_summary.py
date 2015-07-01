@@ -73,7 +73,7 @@ def run(plot=True):
     # discussion of this subtle yet important issue see:
     # [1] Egami and Billinge. (2012). Underneath the Bragg Peaks: Structural
     #     Analysis of Complex Materials (2nd ed.). Oxford: Pergamon Press.
-    # [2] Granlund, et al. (2015) Acta Crystallographica A, 71(4), ?-?.
+    # [2] Granlund, et al. (2015) Acta Crystallographica A, 71(4), 392-409.
     #     doi:10.1107/S2053273315005276
     # [3] Yang, et al. (2014). Journal of Applied Crystallography, 47(4),
     #     1273-1283. doi:10.1107/S1600576714010516
