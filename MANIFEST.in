@@ -6,7 +6,7 @@ include diffpy/srmise/version.cfg
 recursive-include doc/examples *.py *.gr *.srmise *.pwa *.dat *.png
 include doc/examples/README
 
-recursive-include doc/manual *.rst *.txt
+recursive-include doc/manual/source *.rst *.txt
 include doc/manual/source/conf.py
 include doc/manual/Makefile
 
