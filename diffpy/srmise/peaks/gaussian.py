@@ -276,6 +276,7 @@ class Gaussian (PeakFunction):
         else:
             raise ValueError("Argument 'out_format' must be one of %s." \
                               % self.parformats)
+        return temp
 
     def _valueraw(self, pars, r):
         """Return value of width-limited Gaussian for the given parameters and r values.
