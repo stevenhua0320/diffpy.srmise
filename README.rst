@@ -65,7 +65,7 @@ individual and/or academic use, but some also have commercial version.  Links to
 executables, installation instructions, and licensing information
 for some popular options are listed below.
 
-* `Anaconda <http://www.continuum.io/downloads>`_
+* `Anaconda <https://www.anaconda.com/download>`_
 * `Enthought Canopy <https://www.enthought.com/products/canopy/>`_
 * `Python(x,y) <https://code.google.com/p/pythonxy/>`_
 * `WinPython <http://winpython.github.io>`_
