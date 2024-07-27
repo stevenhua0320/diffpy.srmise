@@ -659,7 +659,7 @@ class ModelCluster(object):
                     emsg = ("Number of value fields does not match that given by '%s'" %start_data_info)
                 for a, v in zip(arrays, line.split()):
                     a.append(float(v))
-        except (ValueError, IndexError), err:
+        except (ValueError, IndexError) as err:
             raise SrMiseDataFormatError(err)
         if hasr:
             r_data = np.array(r_data)
@@ -868,7 +868,7 @@ class ModelCluster(object):
             if estimate:
                 try:
                     self.estimatepeak()
-                except SrMiseEstimationError, e:
+                except SrMiseEstimationError as e:
                     logger.info("Fit: No model to fit, estimation not possible.")
                     return
             else:
@@ -899,7 +899,7 @@ class ModelCluster(object):
                        ntrials,
                        cov,
                        cov_format)
-        except SrMiseFitError, e:
+        except SrMiseFitError as e:
             logger.debug("Error while fitting cluster: %s\nReverting to original model.", e)
             self.model = orig_model
             self.baseline = orig_baseline
@@ -1406,13 +1406,13 @@ if __name__ == '__main__':
     guess_peaks = Peaks([pf.actualize(p, "pwa") for p in guesspars])
     cluster = ModelCluster(guess_peaks, None, r, y, err, None, AICc, [pf])
 
-    print "--- Actual Peak parameters ---"
-    print ideal_peaks
+    print("--- Actual Peak parameters ---")
+    print(ideal_peaks)
 
-    print "\n--- Before fit ---"
-    print cluster
+    print("\n--- Before fit ---")
+    print(cluster)
 
     cluster.fit()
 
-    print "\n--- After fit ---"
-    print cluster
+    print("\n--- After fit ---")
+    print(cluster)
