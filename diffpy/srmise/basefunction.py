@@ -16,6 +16,8 @@ import sys
 import re
 
 import numpy as np
+from fontTools.unicode import Unicode
+
 from diffpy.srmise.srmiseerrors import *
 from diffpy.srmise.modelparts import ModelParts, ModelPart
 
@@ -89,7 +91,7 @@ class BaseFunction(object):
         # arbitrary types, parameters are indexed by these keys as well as
         # integer indices.  Restricting keys to strings keeps things sane.
         for p in self.parameterdict.keys():
-            if type(p) not in (str, unicode):
+            if type(p) not in (str, Unicode):
                 emsg = "Argument parameterdict's keys must be strings."
                 raise ValueError(emsg)
         vals = self.parameterdict.values()
@@ -376,7 +378,7 @@ class BaseFunction(object):
         for (k, v) in ddict.items():
             try:
                 pdict[k] = eval(v)
-            except Exception, e:
+            except Exception as e:
                 logger.exception(e)
                 emsg = ("Invalid parameter: %s=%s" %(k,v))
                 raise SrMiseDataFormatError(emsg)
@@ -450,7 +452,7 @@ if __name__ == '__main__':
 
     pt = TerminationRipples(p, 20)
     outstr2 = pt.writestr([p])
-    print outstr
+    print(outstr)
 
     pt2 = BaseFunction.factory(outstr2, [p])
-    print type(pt2)
+    print(type(pt2))
