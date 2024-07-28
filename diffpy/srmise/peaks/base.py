@@ -11,12 +11,15 @@
 #
 ##############################################################################
 
-import numpy as np
-from diffpy.srmise.srmiseerrors import *
-from diffpy.srmise.basefunction import BaseFunction
-from diffpy.srmise.modelparts import ModelParts, ModelPart
+import logging
 
-import logging, diffpy.srmise.srmiselog
+import numpy as np
+
+import diffpy.srmise.srmiselog
+from diffpy.srmise.basefunction import BaseFunction
+from diffpy.srmise.modelparts import ModelPart, ModelParts
+from diffpy.srmise.srmiseerrors import *
+
 logger = logging.getLogger("diffpy.srmise")
 
 class PeakFunction(BaseFunction):
@@ -273,10 +276,11 @@ class Peak(ModelPart):
 # simple test code
 if __name__ == '__main__':
 
-    from numpy.random import randn
     import matplotlib.pyplot as plt
-    from diffpy.srmise.modelevaluators import AICc
+    from numpy.random import randn
+
     from diffpy.srmise.modelcluster import ModelCluster
+    from diffpy.srmise.modelevaluators import AICc
     from diffpy.srmise.peaks import GaussianOverR
 
     res = .01

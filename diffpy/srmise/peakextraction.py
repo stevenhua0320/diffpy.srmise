@@ -11,24 +11,25 @@
 #
 ##############################################################################
 
-import numpy as np
+import logging
 import os.path
 import re
 import sys
 
+import matplotlib.pyplot as plt
+import numpy as np
+
+from diffpy.srmise.baselines import Baseline
 from diffpy.srmise.dataclusters import DataClusters
 from diffpy.srmise.modelcluster import ModelCluster, ModelCovariance
 from diffpy.srmise.modelparts import ModelPart, ModelParts
-from diffpy.srmise.srmiseerrors import *
 from diffpy.srmise.peaks import Peak, Peaks
-from diffpy.srmise.baselines import Baseline
+from diffpy.srmise.srmiseerrors import *
 
-import matplotlib.pyplot as plt
-
-import logging
 logger = logging.getLogger("diffpy.srmise")
 
 from diffpy.srmise import srmiselog
+
 
 class PeakExtraction(object):
     """Class for peak extraction.
@@ -173,6 +174,7 @@ class PeakExtraction(object):
 
         if self.pf is None or "pf" in args:
             from diffpy.srmise.peaks import GaussianOverR
+
             # TODO: Make a more useful default.
             self.pf = [GaussianOverR(self.x[-1]-self.x[0])]
 
@@ -491,8 +493,9 @@ class PeakExtraction(object):
         """Return string representation of PeakExtraction object."""
         import time
         from getpass import getuser
-        from diffpy.srmise.basefunction import BaseFunction
+
         from diffpy.srmise import __version__
+        from diffpy.srmise.basefunction import BaseFunction
 
         lines = []
 
@@ -1185,9 +1188,9 @@ if __name__ == '__main__':
 
     from numpy.random import randn
 
+    from diffpy.srmise import srmiselog
     from diffpy.srmise.modelevaluators import AICc
     from diffpy.srmise.peaks import GaussianOverR
-    from diffpy.srmise import srmiselog
 
     srmiselog.setlevel("info")
     srmiselog.liveplotting(False)

@@ -19,13 +19,14 @@ extraction, it does not attempt to add or remove peaks, apply termination
 ripples, or otherwise do anything beyond chi-square fitting using the specified
 grid."""
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
 from diffpy.srmise import PDFPeakExtraction
-from diffpy.srmise.baselines import FromSequence
-from diffpy.srmise.peaks import TerminationRipples, Peaks
 from diffpy.srmise.applications.plot import makeplot
+from diffpy.srmise.baselines import FromSequence
+from diffpy.srmise.peaks import Peaks, TerminationRipples
+
 
 def run(plot=True):
 
@@ -58,11 +59,11 @@ def run(plot=True):
     # "cres" - Estimation of peak parameters given an approximate position uses
     #          clustering for peak finding.  No other effect on peak fitting.
     # "supersample" - No effect.
-    kwds={}
-    kwds["rng"] = [1., 7.25]
+    kwds = {}
+    kwds["rng"] = [1.0, 7.25]
     kwds["baseline"] = bl
     kwds["cres"] = 0.05
-    kwds["dg"] = 5000 # ad hoc, but gives each point equal weight in fit.
+    kwds["dg"] = 5000  # ad hoc, but gives each point equal weight in fit.
     ppe.setvars(**kwds)
 
     ## Set up termination ripples
@@ -82,9 +83,8 @@ def run(plot=True):
 
     # Specify some peaks explicitly.  These may be constructed from any peak
     # function, or combination of peak functions.
-    explicit_guess = [[6.7, .3, 100000], [7.0, .15, 50000]]
-    explicit_peaks = Peaks([pf.actualize(eg, in_format="pwa") \
-        for eg in explicit_guess])
+    explicit_guess = [[6.7, 0.3, 100000], [7.0, 0.15, 50000]]
+    explicit_peaks = Peaks([pf.actualize(eg, in_format="pwa") for eg in explicit_guess])
     ppe.add_peaks(explicit_peaks)
 
     # Plot initial peaks
@@ -104,5 +104,6 @@ def run(plot=True):
         makeplot(ppe)
         plt.show()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     run()

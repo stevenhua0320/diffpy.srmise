@@ -11,11 +11,11 @@
 #
 ##############################################################################
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
-from diffpy.srmise import PDFPeakExtraction
-from diffpy.srmise import ModelCluster
+from diffpy.srmise import ModelCluster, PDFPeakExtraction
+
 
 # This is a total hack-job right now, and isn't suitable for
 # general use. Limitations include:

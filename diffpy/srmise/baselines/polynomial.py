@@ -11,12 +11,15 @@
 #
 ##############################################################################
 
+import logging
+
+import matplotlib.pyplot as plt
 import numpy as np
+
+import diffpy.srmise.srmiselog
 from diffpy.srmise.baselines.base import BaselineFunction
 from diffpy.srmise.srmiseerrors import SrMiseEstimationError
-import matplotlib.pyplot as plt
 
-import logging, diffpy.srmise.srmiselog
 logger = logging.getLogger("diffpy.srmise")
 
 class Polynomial (BaselineFunction):

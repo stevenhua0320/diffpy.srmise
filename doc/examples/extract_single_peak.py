@@ -28,15 +28,16 @@ at the command line.
 import matplotlib.pyplot as plt
 
 from diffpy.srmise import PDFPeakExtraction
-from diffpy.srmise.baselines import Polynomial
 from diffpy.srmise.applications.plot import makeplot
+from diffpy.srmise.baselines import Polynomial
+
 
 def run(plot=True):
-    
+
     ## Initialize peak extraction
     # Create peak extraction object
     ppe = PDFPeakExtraction()
-    
+
     # Load the PDF from a file
     ppe.loadpdf("data/Ag_nyquist_qmax30.gr")
 
@@ -53,16 +54,16 @@ def run(plot=True):
     # linear for a crystal.  If a linear baseline is specified without
     # numerical parameters diffpy.srmise attempts to estimate them from the
     # data, and this is usually sufficient when peaks do not overlap much.
-    kwds = {} 
+    kwds = {}
     kwds["rng"] = [2.0, 3.5]
     kwds["baseline"] = Polynomial(degree=1)
-    
+
     # Apply peak extraction parameters.
     ppe.setvars(**kwds)
 
     ## Perform peak extraction
     ppe.extract()
-    
+
     ## Save output
     # The write() method saves a file which preserves all aspects of peak
     # extraction and its results, by convention using the .srmise extension,
@@ -85,5 +86,6 @@ def run(plot=True):
         makeplot(ppe)
         plt.show()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     run()

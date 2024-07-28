@@ -26,22 +26,22 @@ srmise data/Ag_nyquist_qmax30.gr --range 2. 10. \
 at the command line.
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
-from diffpy.srmise import PDFPeakExtraction
-from diffpy.srmise import ModelCovariance
+from diffpy.srmise import ModelCovariance, PDFPeakExtraction
 from diffpy.srmise.applications.plot import makeplot
 
+
 def run(plot=True):
-    
+
     ## Initialize peak extraction
     # Create peak extraction object
     ppe = PDFPeakExtraction()
-    
+
     # Load the PDF from a file
     ppe.loadpdf("data/Ag_nyquist_qmax30.gr")
-    
+
     # Obtain baseline from a saved diffpy.srmise trial.  This is not the
     # initial baseline estimate from the previous example, but the baseline
     # after both it and the extracted peaks have been fit to the data.
@@ -52,17 +52,17 @@ def run(plot=True):
     ## Set up extraction parameters.
     # Peaks are extracted between 2 and 10 angstroms, using the baseline
     # from the isolated peak example.
-    kwds = {} 
+    kwds = {}
     kwds["rng"] = [2.0, 10.]
     kwds["baseline"] = baseline
-    
+
     # Apply peak extraction parameters.
     ppe.setvars(**kwds)
 
     ## Perform peak extraction, and retain object containing a copy of the
     # model and the full covariance matrix.
     cov = ppe.extract()
-    
+
 
     print "\n======= Accessing SrMise Results ========"
     ## Accessing results of extraction
@@ -89,7 +89,7 @@ def run(plot=True):
     # above is the area (index = 2) of the next nearest neighbor (index = 1)
     # peak. Thus, this parameter can be referenced as (1,2).  Several examples
     # are presented below.
-    
+
 
     print "\n------ Parameter values and uncertainties ------"
     # ModelCovariance.get() returns a (value, uncertainty) tuple for a given
@@ -175,7 +175,7 @@ def run(plot=True):
     # Reference for number of atoms in coordination shells for FCC.
     # http://chem-faculty.lsu.edu/watkins/MERLOT/cubic_neighbors/cubic_near_neighbors.html
     ideal_intensity = [12, 6, 24, 12, 24, 8, 48, 6, 36, 24, 24, 24]
-    
+
     # Calculated the scaled intensities and uncertainties.
     intensity = []
     for i in range(0, len(cov.model)-1):
@@ -183,7 +183,7 @@ def run(plot=True):
         area *= scale
         darea = area*np.sqrt((dscale/scale)**2 + (darea/area)**2)
         intensity.append((ideal_intensity[i], area, darea))
-    
+
     print "\nIntensity"
     print "Ideal: Estimated"
     for i in intensity:

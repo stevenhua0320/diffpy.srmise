@@ -12,10 +12,13 @@
 ##############################################################################
 """Defines class to partition sequences representing the x and y axis into peak-like clusters."""
 
-import numpy as np
-import matplotlib.pyplot as plt
+import logging
 
-import logging, diffpy.srmise.srmiselog
+import matplotlib.pyplot as plt
+import numpy as np
+
+import diffpy.srmise.srmiselog
+
 logger = logging.getLogger("diffpy.srmise")
 
 class DataClusters:

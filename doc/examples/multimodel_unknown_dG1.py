@@ -35,9 +35,10 @@ The standard reference of AIC-based multimodel selection is
 
 import numpy as np
 
-from diffpy.srmise import PDFPeakExtraction, MultimodelSelection
-from diffpy.srmise.baselines import FromSequence
 import diffpy.srmise.srmiselog as sml
+from diffpy.srmise import MultimodelSelection, PDFPeakExtraction
+from diffpy.srmise.baselines import FromSequence
+
 
 def run(plot=True):
 
@@ -58,8 +59,8 @@ def run(plot=True):
     # calculated by approximating the C60 sample as a face-centered cubic
     # lattice of hollow spheres.
     blfunc = FromSequence("data/C60baseline.dat")
-    kwds={}
-    kwds["rng"] = [1., 7.25]
+    kwds = {}
+    kwds["rng"] = [1.0, 7.25]
     kwds["baseline"] = blfunc.actualize([])
     kwds["cres"] = 0.05
     ppe.setvars(**kwds)
@@ -74,7 +75,7 @@ def run(plot=True):
     # For the purpose of illustration use 20 evenly-spaced values of dg where
     # 1% < dg < 10% of max gr value between r=1 and 7.25.
     grmax = np.max(ppe.y[ppe.getrangeslice()])
-    dgs = np.linspace(.01*grmax, .10*grmax, 20)
+    dgs = np.linspace(0.01 * grmax, 0.10 * grmax, 20)
 
     ## Perform peak extraction for each of the assumed uncertainties.
     ms.run(dgs)
@@ -84,9 +85,10 @@ def run(plot=True):
     # C60_aics.dat saves the value of the AIC of each model when evaluated
     # on a Nyquist-sampled grid using each of the dg values used to generate
     # the models in the first place.
-    dr = np.pi/ppe.qmax
+    dr = np.pi / ppe.qmax
     ms.save("output/unknown_dG_models.dat")
     ms.makeaics(dgs, dr, filename="output/unknown_dG_aics.dat")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     run()

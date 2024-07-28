@@ -1,7 +1,7 @@
 Purpose
 =======
 
-This tutorial is an introduction to the SrMise library and command-line tool, 
+This tutorial is an introduction to the SrMise library and command-line tool,
 intended to expose new users and developers to the major use cases and options
 anticipated for SrMise.
 
@@ -70,11 +70,11 @@ Getting Started
 
 The examples are contained in the *doc/examples/* directory of the SrMise
 `source distribution <https://github.com/diffpy/diffpy.srmise/releases>`_,
-available as both a |zip| and |tar.gz| archive.  Download one of these files 
+available as both a |zip| and |tar.gz| archive.  Download one of these files
 (Windows users will generally favor the .zip, while Linux/Mac users the .tar.gz)
-to a directory of your choosing.  
+to a directory of your choosing.
 
-Uncompress the archive.  If the downloaded file is *archivename.zip* or 
+Uncompress the archive.  If the downloaded file is *archivename.zip* or
 *archivename.tar.gz* this will create a new directory *archivename* in its
 current directory.  On Windows this can be accomplished by right-clicking
 and choosing "Extract all".  On Linux/Mac OS X run, from the containing
@@ -144,7 +144,7 @@ First, plot the data without performing peak extraction.  The first argument
 must be either a PDF (as here) or a .srmise file (described later) saved by
 SrMise. ::
 
-    srmise data/Ag_nyquist_qmax30.gr --no-extract --plot    
+    srmise data/Ag_nyquist_qmax30.gr --no-extract --plot
 
 This should result in an image very similar to the one below.  The top shows the
 experimental data in blue.  The bottom shows the difference curve, which is
@@ -196,7 +196,7 @@ the Gaussian divided by radius which is the actual function being fit to the
 PDF.
 
 SrMise has two basic formats for saving data.  The first are .srmise files,
-which record all information about the parameters and results of peak 
+which record all information about the parameters and results of peak
 extraction.  These files may be loaded by ``srmise`` and in Python scripts.  The
 second are .pwa files, which are intended as a human readable summary, but do
 not contain enough information to reproduce peak extraction results.  These
@@ -437,7 +437,7 @@ nyquist
 | Whether to evaluate results on Nyquist-sampled grid with dr = |pi/Qmax| .
 | *Accepts* - True or False
 | *Default* - True when |Qmax|>0, otherwise False.
-    
+
 When nyquist is False, the PDF's original sampling rate is used.  By the
 Nyquist-Shannon sampling theorem, all PDFs sampled faster than the Nyquist
 rate contain all the information which the experiment can provide.  Points
@@ -631,7 +631,7 @@ basic methods for querying SrMise objects about their parameters and values
 within scripts.
 
 First, visually check that the baseline obtained in the earlier silver example
-(set using the ``--bsrmise filename.srmise`` option) is reasonable over a 
+(set using the ``--bsrmise filename.srmise`` option) is reasonable over a
 larger range. ::
 
     srmise data/Ag_nyquist_qmax30.gr --no-extract --plot --range 2 10
@@ -664,13 +664,13 @@ area.  Thus, the area of the nearest-neighbor peak is denoted by the tuple
 the baseline. The methods of greatest interest are as follows. ::
 
     # Get (value, uncertainty) tuple for this parameter
-    cov.get((i,j))                      
+    cov.get((i,j))
 
     # Get just the value of the parameter
     cov.getvalue((i,j))
 
     # Get just the uncertainty of the parameter
-    cov.getuncertainty((i,j))              
+    cov.getuncertainty((i,j))
 
     # Get the covariance between two parameters
     cov.getcovariance((i1,j1), (i2,j2))
@@ -708,7 +708,7 @@ usual methods are ::
 
     # The baseline evaluated on r
     ppe.extracted.baseline.value(r)
-    
+
 
 .. ~Example 5~ ..
 
@@ -847,7 +847,7 @@ propagated uncertainties was obtained using `FIT2D`_.  All other data reduction
 was performed using `PDFgetX2`_.  This PDF is unnormalized, so the scale of the
 y-axis is arbitrary.  The nanoparticle baseline used for testing this PDF with
 SrMise is a fit to the observed interparticle contribution using an empirical
-model of thin spherical shells of constant density in an FCC lattice. 
+model of thin spherical shells of constant density in an FCC lattice.
 
 This PDF has unreliable uncertainties.  Since the 1D pattern reports no
 uncertainty, PDFgetX2 treats the uncertainty as equal to the square-root of the

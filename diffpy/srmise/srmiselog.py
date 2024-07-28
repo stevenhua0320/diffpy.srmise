@@ -37,9 +37,12 @@ setlevel: Set logging level of default logger.
 gettracer: Get a TracePeaks instance for tracing peak extraction.
 """
 
-import sys, os.path, re
 import logging
-from diffpy.srmise.srmiseerrors import SrMiseLogError, SrMiseDataFormatError, SrMiseFileError
+import os.path
+import re
+import sys
+
+from diffpy.srmise.srmiseerrors import SrMiseDataFormatError, SrMiseFileError, SrMiseLogError
 
 ### Default settings ###
 defaultformat = "%(message)s"

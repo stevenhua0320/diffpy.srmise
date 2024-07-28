@@ -9,4 +9,3 @@ include doc/examples/README
 recursive-include doc/manual/source *.rst *.txt
 include doc/manual/source/conf.py
 include doc/manual/Makefile
-
