@@ -12,14 +12,15 @@
 ##############################################################################
 """Defines BaseFunction, the base class for mathematical functions in srmise."""
 
-import sys
+import logging
 import re
+import sys
 
 import numpy as np
-from diffpy.srmise.srmiseerrors import *
-from diffpy.srmise.modelparts import ModelParts, ModelPart
 
-import logging
+from diffpy.srmise.modelparts import ModelPart, ModelParts
+from diffpy.srmise.srmiseerrors import *
+
 logger = logging.getLogger("diffpy.srmise")
 
 class BaseFunction(object):

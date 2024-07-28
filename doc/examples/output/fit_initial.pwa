@@ -28,7 +28,7 @@ ModelEvaluator=AIC
 
 ## Baseline Functions
 # Index Type
-0 diffpy.srmise.baselines.fromsequence 
+0 diffpy.srmise.baselines.fromsequence
 
 ## Baseline
 # Parameters of baseline, followed by comment which
@@ -37,7 +37,7 @@ ModelEvaluator=AIC
 
 ## Peak Functions
 # Index Type
-0 diffpy.srmise.peaks.gaussianoverr 
+0 diffpy.srmise.peaks.gaussianoverr
 1 diffpy.srmise.peaks.terminationripples (base=0)
 
 ## Extracted Peaks

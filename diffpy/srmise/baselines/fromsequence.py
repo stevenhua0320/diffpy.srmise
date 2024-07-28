@@ -11,13 +11,15 @@
 #
 ##############################################################################
 
-import numpy as np
-import scipy.interpolate as spi
-from diffpy.srmise.baselines.base import BaselineFunction
+import logging
 
 import matplotlib.pyplot as plt
+import numpy as np
+import scipy.interpolate as spi
 
-import logging, diffpy.srmise.srmiselog
+import diffpy.srmise.srmiselog
+from diffpy.srmise.baselines.base import BaselineFunction
+
 logger = logging.getLogger("diffpy.srmise")
 
 class FromSequence (BaselineFunction):

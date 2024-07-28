@@ -38,14 +38,14 @@ The standard reference of AIC-based multimodel selection is
 [2] Burnham and Anderson. (2002). Model Selection and Multimodel Inference.
     New York, NY: Springer. doi:10.1007/b97636
 """
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
+import diffpy.srmise.srmiselog as sml
 from diffpy.srmise import MultimodelSelection
 from diffpy.srmise.applications.plot import makeplot
-import diffpy.srmise.srmiselog as sml
 
-# distances from ideal (unrefined) C60 
+# distances from ideal (unrefined) C60
 dcif = np.array([1.44, 2.329968944, 2.494153163, 2.88, 3.595985339,
                  3.704477734, 4.132591264, 4.520339129, 4.659937888,
                  4.877358006, 5.209968944, 5.405310018, 5.522583786,
@@ -82,7 +82,7 @@ def run(plot=True):
     # to redundant poor models (since they contribute very little to the Akaike
     # probabilities in any case), but redundant good models can significantly
     # alter how models are ranked.  See Granlund (2015) for details.
-    tolerance = 0.2 
+    tolerance = 0.2
     ms.classify(r, tolerance)
 
     ## Summarize various facts about the analysis.

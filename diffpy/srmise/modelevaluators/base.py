@@ -39,20 +39,24 @@
 #
 ########################################################################
 
+import logging
+
 import numpy as np
+
+import diffpy.srmise.srmiselog
 from diffpy.srmise.srmiseerrors import SrMiseModelEvaluatorError
 
-import logging, diffpy.srmise.srmiselog
 logger = logging.getLogger("diffpy.srmise")
+
 
 class ModelEvaluator:
     """Class for evaluating the quality of a fit.  Comparison between different
-       models of the same type is defined so that better models are 'greater than'
-       worse models."""
+    models of the same type is defined so that better models are 'greater than'
+    worse models."""
 
     def __init__(self, method, higher_is_better):
         """method = name of method (string)
-           higher_is_better = boolean
+        higher_is_better = boolean
         """
         self.method = method
         self.higher_is_better = higher_is_better
@@ -61,10 +65,12 @@ class ModelEvaluator:
         return
 
     def __lt__(self, other):
-        """   """
+        """ """
 
-        assert self.method == other.method #Comparison between same types required
-        assert self.stat != None and other.stat != None #The statistic must already be calculated
+        assert self.method == other.method  # Comparison between same types required
+        assert (
+            self.stat != None and other.stat != None
+        )  # The statistic must already be calculated
 
         if self.higher_is_better:
             return self.stat < other.stat
@@ -72,10 +78,12 @@ class ModelEvaluator:
             return other.stat < self.stat
 
     def __le__(self, other):
-        """   """
+        """ """
 
-        assert self.method == other.method #Comparison between same types required
-        assert self.stat != None and other.stat != None #The statistic must already be calculated
+        assert self.method == other.method  # Comparison between same types required
+        assert (
+            self.stat != None and other.stat != None
+        )  # The statistic must already be calculated
 
         if self.higher_is_better:
             return self.stat <= other.stat
@@ -83,26 +91,32 @@ class ModelEvaluator:
             return other.stat <= self.stat
 
     def __eq__(self, other):
-        """   """
+        """ """
 
-        assert self.method == other.method #Comparison between same types required
-        assert self.stat != None and other.stat != None #The statistic must already be calculated
+        assert self.method == other.method  # Comparison between same types required
+        assert (
+            self.stat != None and other.stat != None
+        )  # The statistic must already be calculated
 
         return self.stat == other.stat
 
     def __ne__(self, other):
-        """   """
+        """ """
 
-        assert self.method == other.method #Comparison between same types required
-        assert self.stat != None and other.stat != None #The statistic must already be calculated
+        assert self.method == other.method  # Comparison between same types required
+        assert (
+            self.stat != None and other.stat != None
+        )  # The statistic must already be calculated
 
         return self.stat != other.stat
 
     def __gt__(self, other):
-        """   """
+        """ """
 
-        assert self.method == other.method #Comparison between same types required
-        assert self.stat != None and other.stat != None #The statistic must already be calculated
+        assert self.method == other.method  # Comparison between same types required
+        assert (
+            self.stat != None and other.stat != None
+        )  # The statistic must already be calculated
 
         if self.higher_is_better:
             return self.stat > other.stat
@@ -110,21 +124,23 @@ class ModelEvaluator:
             return other.stat > self.stat
 
     def __ge__(self, other):
-        """   """
+        """ """
 
-        assert self.method == other.method #Comparison between same types required
-        assert self.stat != None and other.stat != None #The statistic must already be calculated
+        assert self.method == other.method  # Comparison between same types required
+        assert (
+            self.stat != None and other.stat != None
+        )  # The statistic must already be calculated
 
         if self.higher_is_better:
             return self.stat >= other.stat
         else:
             return other.stat >= self.stat
 
-
     def chi_squared(self, expected, observed, error):
         """Calculates chi-squared statistic."""
 
-        self.chisq = np.sum((expected-observed)**2/error**2)
+        self.chisq = np.sum((expected - observed) ** 2 / error**2)
         return self.chisq
+
 
 # end of class ModelEvaluator

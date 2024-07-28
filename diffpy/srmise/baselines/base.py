@@ -11,13 +11,17 @@
 #
 ##############################################################################
 
+import logging
+
 import numpy as np
-from diffpy.srmise.srmiseerrors import *
+
+import diffpy.srmise.srmiselog
 from diffpy.srmise.basefunction import BaseFunction
 from diffpy.srmise.modelparts import ModelPart
+from diffpy.srmise.srmiseerrors import *
 
-import logging, diffpy.srmise.srmiselog
 logger = logging.getLogger("diffpy.srmise")
+
 
 class BaselineFunction(BaseFunction):
     """Base class for functions which represent some data's baseline term.
@@ -55,7 +59,15 @@ class BaselineFunction(BaseFunction):
     transform_parameters()
     """
 
-    def __init__(self, parameterdict, parformats, default_formats, metadict, base=None, Cache=None):
+    def __init__(
+        self,
+        parameterdict,
+        parformats,
+        default_formats,
+        metadict,
+        base=None,
+        Cache=None,
+    ):
         """Set parameterdict defined by subclass
 
         parameterdict: A dictionary mapping string keys to their index in a
@@ -71,22 +83,31 @@ class BaselineFunction(BaseFunction):
               additional functionality.
         Cache: A class (not instance) which implements caching of BaseFunction
                evaluations."""
-        BaseFunction.__init__(self, parameterdict, parformats, default_formats, metadict, base, Cache)
-
+        BaseFunction.__init__(
+            self, parameterdict, parformats, default_formats, metadict, base, Cache
+        )
 
     #### "Virtual" class methods ####
 
-
     #### Methods required by BaseFunction ####
 
-    def actualize(self, pars, in_format="default_input", free=None, removable=False, static_owner=False):
+    def actualize(
+        self,
+        pars,
+        in_format="default_input",
+        free=None,
+        removable=False,
+        static_owner=False,
+    ):
         converted = self.transform_parameters(pars, in_format, out_format="internal")
         return Baseline(self, converted, free, removable, static_owner)
 
     def getmodule(self):
         return __name__
 
-#end of class BaselineFunction
+
+# end of class BaselineFunction
+
 
 class Baseline(ModelPart):
     """Represents a baseline associated with a BaselineFunction subclass."""
@@ -129,10 +150,10 @@ class Baseline(ModelPart):
                 try:
                     pdict[l[0]] = eval(l[1])
                 except Exception:
-                    emsg = ("Invalid parameter: %s" %d)
+                    emsg = "Invalid parameter: %s" % d
                     raise SrMiseDataFormatError(emsg)
             else:
-                emsg = ("Invalid parameter: %s" %d)
+                emsg = "Invalid parameter: %s" % d
                 raise SrMiseDataFormatError(emsg)
 
         # Correctly initialize the base function, if one exists.
@@ -144,23 +165,25 @@ class Baseline(ModelPart):
 
         return Baseline(**pdict)
 
+
 # End of class Baseline
 
 # simple test code
-if __name__ == '__main__':
+if __name__ == "__main__":
 
-    from numpy.random import randn
     import matplotlib.pyplot as plt
-    from diffpy.srmise.modelevaluators import AICc
+    from numpy.random import randn
+
     from diffpy.srmise.modelcluster import ModelCluster
+    from diffpy.srmise.modelevaluators import AICc
     from diffpy.srmise.peaks import GaussianOverR
 
-    res = .01
-    r = np.arange(2,4,res)
-    err = np.ones(len(r)) #default unknown errors
-    pf = GaussianOverR(.7)
+    res = 0.01
+    r = np.arange(2, 4, res)
+    err = np.ones(len(r))  # default unknown errors
+    pf = GaussianOverR(0.7)
     evaluator = AICc()
 
-    pars = [[3, .2, 10], [3.5, .2, 10]]
+    pars = [[3, 0.2, 10], [3.5, 0.2, 10]]
     ideal_peaks = Peaks([pf.createpeak(p, "pwa") for p in pars])
-    y = ideal_peaks.value(r) + .1*randn(len(r))
+    y = ideal_peaks.value(r) + 0.1 * randn(len(r))

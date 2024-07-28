@@ -11,12 +11,15 @@
 #
 ##############################################################################
 
+import logging
+
+import matplotlib.pyplot as plt
 import numpy as np
+
+import diffpy.srmise.srmiselog
 from diffpy.srmise.peaks.base import PeakFunction
 from diffpy.srmise.srmiseerrors import SrMiseEstimationError, SrMiseScalingError, SrMiseTransformationError
-import matplotlib.pyplot as plt
 
-import logging, diffpy.srmise.srmiselog
 logger = logging.getLogger("diffpy.srmise")
 
 class Gaussian (PeakFunction):
@@ -314,10 +317,11 @@ class Gaussian (PeakFunction):
 # simple test code
 if __name__ == '__main__':
 
-    from numpy.random import randn
     import matplotlib.pyplot as plt
-    from diffpy.srmise.modelevaluators import AICc
+    from numpy.random import randn
+
     from diffpy.srmise.modelcluster import ModelCluster
+    from diffpy.srmise.modelevaluators import AICc
     from diffpy.srmise.peaks import Peaks
 
     res = .01

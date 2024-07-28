@@ -11,14 +11,16 @@
 #
 ##############################################################################
 
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import transforms
-from diffpy.srmise.modelevaluators.base import ModelEvaluator
-from diffpy.srmise import ModelCluster
-from diffpy.srmise import PeakStability
+import logging
 
-import logging, diffpy.srmise.srmiselog
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import transforms
+
+import diffpy.srmise.srmiselog
+from diffpy.srmise import ModelCluster, PeakStability
+from diffpy.srmise.modelevaluators.base import ModelEvaluator
+
 logger = logging.getLogger("diffpy.srmise")
 
 def eatkwds(*args, **kwds):
@@ -482,9 +484,9 @@ class MultimodelSelection(PeakStability):
         "cbaxis" - The colorbar axis, if it exists.
         "cb" - The colorbar, if it exists."""
 
-        from mpl_toolkits.mplot3d import Axes3D
+        from matplotlib import cm, colorbar, colors
         from matplotlib.collections import PolyCollection
-        from matplotlib import cm, colors, colorbar
+        from mpl_toolkits.mplot3d import Axes3D
 
         fig = kwds.pop("figure", plt.gcf())
         ax = fig.add_subplot(kwds.pop("subplot",111), projection='3d')

@@ -12,18 +12,17 @@
 ##############################################################################
 """plot extracted peaks and comparison to ideal distances (if given)"""
 
-import sys
 import optparse
+import sys
+
+import matplotlib.pyplot as plt
+import mpl_toolkits.axisartist as AA
+import numpy as np
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 from diffpy.srmise import PDFPeakExtraction, PeakStability
 from diffpy.srmise.pdfpeakextraction import resample
-
-import matplotlib.pyplot as plt
-import numpy as np
-
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-import mpl_toolkits.axisartist as AA
 
 # For a given figure, returns a label of interest
 labeldict = {}

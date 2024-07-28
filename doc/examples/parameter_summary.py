@@ -30,16 +30,17 @@ initial_peaks (peaks already assumed to exist during extraction)"""
 import matplotlib.pyplot as plt
 
 from diffpy.srmise import PDFPeakExtraction
+from diffpy.srmise.applications.plot import makeplot
 from diffpy.srmise.baselines import Polynomial
 from diffpy.srmise.peaks import GaussianOverR
-from diffpy.srmise.applications.plot import makeplot
+
 
 def run(plot=True):
-    
+
     ## Initialize peak extraction
     # Create peak extraction object
     ppe = PDFPeakExtraction()
-    
+
     # Load the PDF from a file
     ppe.loadpdf("data/TiO2_fine_qmax26.gr")
 
@@ -48,12 +49,12 @@ def run(plot=True):
     # diffpy.srmise strives to provide reasonable default values for these
     # parameters.  For normal use setting the range, baseline, and uncertainty
     # should be sufficient.
-    kwds = {}     
-    
+    kwds = {}
+
     ## Range
     # Range defaults to the entire PDF if not specified.
-    kwds["rng"] = [1.5, 10.]
-    
+    kwds["rng"] = [1.5, 10.0]
+
     ## dg
     # diffpy.srmise selects model complexity based primarily on the uncertainty
     # of the PDF.  Note that very small uncertainties (<1%) can make peak
@@ -87,10 +88,9 @@ def run(plot=True):
     # rho0 is the number density.  Nevertheless, imperfect normalization of the
     # PDF means the experimental baseline is proportional to that value.
     blfunc = Polynomial(degree=1)
-    slope = -.65 # Play with this value!
-    y_intercept = 0.
-    kwds["baseline"] = blfunc.actualize([slope, y_intercept],
-                                        free=[True, False])
+    slope = -0.65  # Play with this value!
+    y_intercept = 0.0
+    kwds["baseline"] = blfunc.actualize([slope, y_intercept], free=[True, False])
     ## pf
     # The pf (peakfunction) parameter allows setting the shape of peaks to be
     # extracted.  Termination effects are added automatically to the peak
@@ -107,7 +107,7 @@ def run(plot=True):
     # are strong signs that diffpy.srmise is having difficulty finding peaks
     # which are sufficiently constrained by the data.
     pf = GaussianOverR(0.7)
-    kwds["pf"] = [pf] # Despite the list, only one entry is currently supported.
+    kwds["pf"] = [pf]  # Despite the list, only one entry is currently supported.
 
     ## qmax
     # PDFs typically report the value of qmax (i.e. the maximum momentum
@@ -117,7 +117,7 @@ def run(plot=True):
     # to "automatic".  An infinite qmax can be specified by setting qmax to 0,
     # In that case the Nyquist rate is 0 (infinite resolution), and
     # diffpy.srmise does not consider Nyquist sampling or termination effects.
-    kwds["qmax"] = 26.0 
+    kwds["qmax"] = 26.0
 
     ## nyquist
     # This parameter governs whether diffpy.srmise attempts to find a model
@@ -131,7 +131,7 @@ def run(plot=True):
     # [4] Farrow et al. (2011). Physical Review B, 84(13), 134105.
     #     doi:10.1103/PhysRevB.84.134105
     kwds["nyquist"] = True
-    
+
     ## supersample
     # This parameter dictates the data be oversampled by at least this factor
     # (relative to the Nyquist rate) during the early stages of peak
@@ -140,7 +140,7 @@ def run(plot=True):
     # been empirically sufficient.  Increasing this value may help the peak-
     # finding and clustering process, but reduces speed.
     kwds["supersample"] = 4.0
-    
+
     ## cres
     # The cres (clustering resolution) parameter governs the sensitivity of the
     # clustering method used by diffpy.srmise.  In short, when the data are
@@ -152,7 +152,7 @@ def run(plot=True):
     # help the peak-finding process.  Here it is roughly half the Nyquist
     # interval.
     kwds["cres"] = 0.05
-    
+
     # Apply peak extraction parameters.
     ppe.setvars(**kwds)
 
@@ -175,7 +175,7 @@ def run(plot=True):
     # existing initial peaks into account during estimation.
     positions = [2.0, 4.5]
     for p in positions:
-        ppe.estimate_peak(p) # adds to initial_peaks
+        ppe.estimate_peak(p)  # adds to initial_peaks
 
     ## Initial peaks from explicit parameters.
     # Adding initial peaks explicitly is similar to defining a baseline.
@@ -188,11 +188,11 @@ def run(plot=True):
     # internal parameterization.  Here two peaks are added in a region of
     # overlap, and the width parameter is fixed at a reasonable value to aid
     # convergence in this region.
-    pars = [[6.2, 0.25, 2.6],[6.45, 0.25, 2.7],[7.15, 0.25, 5]]
+    pars = [[6.2, 0.25, 2.6], [6.45, 0.25, 2.7], [7.15, 0.25, 5]]
     peaks = []
     for p in pars:
         peaks.append(pf.actualize(p, free=[True, False, True], in_format="pwa"))
-    ppe.add_peaks(peaks) # adds to initial_peaks
+    ppe.add_peaks(peaks)  # adds to initial_peaks
 
     ## Initial peaks and pruning
     # While initial peaks condition what other peaks can be extracted, by
@@ -206,11 +206,9 @@ def run(plot=True):
         makeplot(ppe)
         plt.title("Initial Peaks")
 
-
     ###### Perform peak extraction
     ppe.extract()
 
-    
     ## Save output
     # The write() method saves a file which preserves all aspects of peak
     # extraction and its results, by convention using the .srmise extension,
@@ -233,5 +231,6 @@ def run(plot=True):
         makeplot(ppe)
         plt.show()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     run()
