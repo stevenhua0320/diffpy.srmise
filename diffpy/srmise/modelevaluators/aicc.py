@@ -11,11 +11,14 @@
 #
 ##############################################################################
 
+import logging
+
 import numpy as np
+
+import diffpy.srmise.srmiselog
 from diffpy.srmise.modelevaluators.base import ModelEvaluator
 from diffpy.srmise.srmiseerrors import SrMiseModelEvaluatorError
 
-import logging, diffpy.srmise.srmiselog
 logger = logging.getLogger("diffpy.srmise")
 
 class AICc (ModelEvaluator):

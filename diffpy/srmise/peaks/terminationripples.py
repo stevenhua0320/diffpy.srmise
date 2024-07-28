@@ -11,11 +11,14 @@
 #
 ##############################################################################
 
+import logging
+
 import numpy as np
 import scipy.fftpack as fp
+
+import diffpy.srmise.srmiselog
 from diffpy.srmise.peaks.base import PeakFunction
 
-import logging, diffpy.srmise.srmiselog
 logger = logging.getLogger("diffpy.srmise")
 
 class TerminationRipples (PeakFunction):
@@ -267,13 +270,14 @@ class TerminationRipples (PeakFunction):
 # simple test code
 if __name__ == '__main__':
 
-    from numpy.random import randn
     import matplotlib.pyplot as plt
-    from diffpy.srmise.modelevaluator import AICc
+    from numpy.random import randn
+
     from diffpy.srmise.modelcluster import ModelCluster
+    from diffpy.srmise.modelevaluator import AICc
     from diffpy.srmise.peakfunctions.gaussianoverr import GaussianOverR
-    from diffpy.srmise.peakfunctions.terminationripples import TerminationRipples
     from diffpy.srmise.peakfunctions.peaks import Peaks
+    from diffpy.srmise.peakfunctions.terminationripples import TerminationRipples
 
     res = .01
     r = np.arange(2,4,res)

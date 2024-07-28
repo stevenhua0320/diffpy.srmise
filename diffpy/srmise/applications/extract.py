@@ -11,9 +11,11 @@
 #
 ##############################################################################
 
-from optparse import OptionParser, OptionGroup
-import numpy as np
+from optparse import OptionGroup, OptionParser
+
 import matplotlib.pyplot as plt
+import numpy as np
+
 
 def main():
     """Default SrMise entry-point."""
@@ -78,7 +80,7 @@ def main():
                           version=version,
                           formatter=IndentedHelpFormatterWithNL())
 
-    parser.set_defaults(plot=False, liveplot=False, wait=False, 
+    parser.set_defaults(plot=False, liveplot=False, wait=False,
                         performextraction=True, verbosity="warning")
     dg_defaults = {'absolute':None, 'data':None, 'max-fraction':.05,
                    'ptp-fraction':.05, 'dG-fraction':1.}
@@ -203,7 +205,7 @@ def main():
                           "'absolute'=%s\n"
                           "'max-fraction'=%s\n"
                           "'ptp-fraction'=%s\n"
-                          "'dG-fraction'=%s" %(dg_defaults['absolute'], 
+                          "'dG-fraction'=%s" %(dg_defaults['absolute'],
                                                dg_defaults['max-fraction'],
                                                dg_defaults['ptp-fraction'],
                                                dg_defaults['dG-fraction']))
@@ -269,8 +271,7 @@ def main():
     srmiselog.setlevel(options.verbosity)
 
     from diffpy.srmise.pdfpeakextraction import PDFPeakExtraction
-    from diffpy.srmise.srmiseerrors import SrMiseDataFormatError, \
-                                           SrMiseFileError
+    from diffpy.srmise.srmiseerrors import SrMiseDataFormatError, SrMiseFileError
 
     if options.peakfunction is not None:
         from diffpy.srmise import peaks
@@ -364,7 +365,7 @@ def main():
         elif options.dg_mode == "ptp-fraction":
             pdict["effective_dy"] = options.dg*ext.y.ptp()*np.ones(len(ext.y))
         elif options.dg_mode == "dG-fraction":
-            pdict["effective_dy"] = options.dg*ext.dy            
+            pdict["effective_dy"] = options.dg*ext.dy
         if options.rng is not None:
             pdict["rng"] = list(options.rng)
         if options.qmax is not None:
@@ -403,7 +404,7 @@ def main():
                 print err
                 print "Could not save pwa summary to '%s'." %options.pwafile
 
-        
+
         print ext
         if cov is not None:
             print cov
@@ -442,8 +443,9 @@ def parsepars(mp, parseq):
 # Borrowed, with minor changes, from
 # http://groups.google.com/group/comp.lang.python/browse_frm/thread/6df6e6b541a15bc2/09f28e26af0699b1
 
-from optparse import IndentedHelpFormatter
 import textwrap
+from optparse import IndentedHelpFormatter
+
 
 class IndentedHelpFormatterWithNL(IndentedHelpFormatter):
   def _format_text(self, text):

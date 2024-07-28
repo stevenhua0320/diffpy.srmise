@@ -36,9 +36,10 @@ The standard reference of AIC-based multimodel selection is
 
 import numpy as np
 
-from diffpy.srmise import PDFPeakExtraction, MultimodelSelection
-from diffpy.srmise.applications.plot import makeplot
 import diffpy.srmise.srmiselog as sml
+from diffpy.srmise import MultimodelSelection, PDFPeakExtraction
+from diffpy.srmise.applications.plot import makeplot
+
 
 def run(plot=True):
 
@@ -57,8 +58,8 @@ def run(plot=True):
     ## Set up extraction parameters
     # All parameters loaded from .srmise file.
     # Setting new values will override the previous values.
-    kwds={}
-    kwds["rng"] = [10.9, 15] # Region of PDF with some overlap.
+    kwds = {}
+    kwds["rng"] = [10.9, 15]  # Region of PDF with some overlap.
     ppe.setvars(**kwds)
 
     ## Create multimodel selection object.
@@ -71,7 +72,7 @@ def run(plot=True):
     # For the purpose of illustration use 15 evenly-spaced values of dg where
     # 50% < dg < 120% of mean experimental dG in extraction range.
     dg_mean = np.mean(ppe.dy[ppe.getrangeslice()])
-    dgs = np.linspace(.5*dg_mean, 1.2*dg_mean, 15)
+    dgs = np.linspace(0.5 * dg_mean, 1.2 * dg_mean, 15)
 
     ## Perform peak extraction for each of the assumed uncertainties.
     ms.run(dgs)
@@ -81,9 +82,10 @@ def run(plot=True):
     # known_dG_aics.dat saves the value of the AIC of each model when evaluated
     # on a Nyquist-sampled grid using each of the dg values used to generate
     # the models in the first place.
-    dr = np.pi/ppe.qmax
+    dr = np.pi / ppe.qmax
     ms.save("output/known_dG_models.dat")
     ms.makeaics(dgs, dr, filename="output/known_dG_aics.dat")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     run()

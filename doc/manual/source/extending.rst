@@ -144,4 +144,3 @@ following differences:
     :type scale: `float`
     :returns: The adjusted peak parameters.
     :rtype: `numpy.ndarray(float)`.
-

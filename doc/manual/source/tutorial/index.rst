@@ -31,5 +31,3 @@ Examples
 
 .. include:: ../../../examples/README
    :start-after: ~PDF Info~
-
-
