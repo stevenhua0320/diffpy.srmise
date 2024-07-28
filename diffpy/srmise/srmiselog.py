@@ -223,7 +223,7 @@ class TracePeaks(object):
         "recursion" - The recursion level of mc"""
         try:
             return self.readstr(open(filename,'rb').read())
-        except SrMiseDataFormatError, err:
+        except SrMiseDataFormatError as err:
             logger.exception("")
             basename = os.path.basename(filename)
             emsg = ("Could not open '%s' due to unsupported file format " +
