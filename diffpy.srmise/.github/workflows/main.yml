@@ -45,6 +45,7 @@ jobs:
           conda install --file requirements/run.txt
           conda install --file requirements/test.txt
           pip install .
+
       - name: Validate diffpy.srmise
         shell: bash -l {0}
         run: |
