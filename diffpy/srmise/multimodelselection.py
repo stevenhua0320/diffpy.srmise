@@ -27,7 +27,7 @@ def eatkwds(*args, **kwds):
     """Convenience function to remove all keywords in args from kwds."""
     for k in args:
         if k in kwds:
-            print "Keyword %s=%s ignored." %(k, kwds.pop(k))
+            print("Keyword %s=%s ignored." %(k, kwds.pop(k)))
     return kwds
 
 class MultimodelSelection(PeakStability):
@@ -77,7 +77,7 @@ class MultimodelSelection(PeakStability):
         (r, y, dr, dy) = self.ppe.resampledata(dr)
 
         for model_idx in range(len(self.results)):
-            print "Testing model %s of %s." %(model_idx, len(self.results))
+            print("Testing model %s of %s." %(model_idx, len(self.results)))
 
             result = self.results[model_idx]
             em = self.ppe.error_method
@@ -208,7 +208,7 @@ class MultimodelSelection(PeakStability):
             plt.ion()
             plt.draw()
             if step:
-                raw_input()
+                input()
             if duration > 0:
                 time.sleep(sleeptime)
 
@@ -269,7 +269,7 @@ class MultimodelSelection(PeakStability):
             plt.ion()
             plt.draw()
             if step:
-                raw_input()
+                input()
             if duration > 0:
                 time.sleep(sleeptime)
 

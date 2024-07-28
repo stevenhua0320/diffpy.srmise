@@ -150,8 +150,8 @@ class ModelParts(list):
             plt.draw()
 
             if srmiselog.wait:
-                print "Press 'Enter' to continue...",
-                raw_input()
+                print("Press 'Enter' to continue...",)
+                input()
 
         if f[4] not in (1,2,3,4):
             emsg = "Fit did not succeed -- " + str(f[3])

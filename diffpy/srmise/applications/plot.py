@@ -16,6 +16,7 @@ import optparse
 import sys
 
 import matplotlib.pyplot as plt
+from matplotlib.pyplot import MultipleLocator
 import mpl_toolkits.axisartist as AA
 import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
@@ -147,7 +148,7 @@ def labelallsubplots():
         s = "(%s)" % c
         ht = plt.text(0.04, 0.95, s,
                 horizontalalignment='left', verticalalignment='top',
-                transform=gca().transAxes, weight='bold')
+                transform=plt.gca().transAxes, weight='bold')
         rv.append(ht)
     return rv
 
@@ -478,7 +479,7 @@ def readcompare(filename):
     # TODO: Make this safer
     try:
         datastring = open(filename,'rb').read()
-    except Exception, err:
+    except Exception as err:
         raise err
 
     import re
@@ -491,8 +492,8 @@ def readcompare(filename):
     try:
         for line in datastring.split("\n"):
             distances.append(float(line))
-    except (ValueError, IndexError), err:
-        print "Could not read distances from '%s'. Ignoring file." %filename
+    except (ValueError, IndexError) as err:
+        print("Could not read distances from '%s'. Ignoring file." %filename)
 
     if len(distances) == 0:
         return None
@@ -539,14 +540,14 @@ def main():
             try:
                 toplot.load(filename)
             except Exception:
-                print "File '%s' is not a .srmise or PeakStability data file." %filename
+                print("File '%s' is not a .srmise or PeakStability data file." %filename)
                 return
 
     if opts.model is not None:
         try:
             toplot.setcurrent(opts.model)
         except (Exception):
-            print "Ignoring model, %s is not a PeakStability file." %filename
+            print("Ignoring model, %s is not a PeakStability file." %filename)
 
     distances = None
     if opts.compare is not None:

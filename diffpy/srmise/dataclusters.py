@@ -376,6 +376,11 @@ class DataClusters:
         status = self.status
         self.reset_clusters()
 
+        fig, ax = plt.subplots()
+        canvas = fig.canvas
+        background = canvas.copy_from_bbox(ax.bbox)
+        ymin, ymax = ax.get_ylim()
+
         all_lines = []
         for i in self:
             canvas.restore_region(background)
@@ -411,9 +416,9 @@ if __name__ == '__main__':
     testcluster = DataClusters(x, y, .1)
     testcluster.makeclusters()
 
-    print testcluster.clusters
+    print(testcluster.clusters)
     adj = testcluster.find_adjacent_clusters()
-    print adj
+    print(adj)
     if len(adj) >0:
         testcluster.combine_clusters(adj)
-    print testcluster.clusters
+    print(testcluster.clusters)

@@ -150,7 +150,7 @@ class PDFDataSet(PDFComponent):
         """
         try:
             self.readStr(open(filename,'rb').read())
-        except PDFDataFormatError, err:
+        except PDFDataFormatError as err:
             basename = os.path.basename(filename)
             emsg = ("Could not open '%s' due to unsupported file format " +
                 "or corrupted data. [%s]") % (basename, err)
@@ -274,7 +274,7 @@ class PDFDataSet(PDFComponent):
                 self.drobs = len(self.robs) * [0.0]
             if not has_dGobs:
                 self.dGobs = len(self.robs) * [0.0]
-        except (ValueError, IndexError), err:
+        except (ValueError, IndexError) as err:
             raise PDFDataFormatError(err)
         self.rmin = self.robs[0]
         self.rmax = self.robs[-1]
@@ -378,21 +378,21 @@ if __name__ == '__main__':
     filename = sys.argv[1]
     dataset = PDFDataSet("test")
     dataset.read(filename)
-    print "== metadata =="
+    print("== metadata ==")
     for k, v in dataset.metadata.iteritems():
-        print k, "=", v
-    print "== data members =="
+        print(k, "=", v)
+    print("== data members ==")
     for k, v in dataset.__dict__.iteritems():
         if k in ('metadata', 'robs', 'Gobs', 'drobs', 'dGobs') or k[0] == "_":
             continue
-        print k, "=", v
-    print "== robs Gobs drobs dGobs =="
+        print(k, "=", v)
+    print("== robs Gobs drobs dGobs ==")
     for i in range(len(dataset.robs)):
-        print dataset.robs[i], dataset.Gobs[i], dataset.drobs[i], dataset.dGobs[i]
-    print "== writeStr() =="
-    print dataset.writeStr()
-    print "== datasetcopy.writeStr() =="
+        print(dataset.robs[i], dataset.Gobs[i], dataset.drobs[i], dataset.dGobs[i])
+    print("== writeStr() ==")
+    print(dataset.writeStr())
+    print("== datasetcopy.writeStr() ==")
     datasetcopy = dataset.copy()
-    print datasetcopy.writeStr()
+    print(datasetcopy.writeStr())
 
 # End of file

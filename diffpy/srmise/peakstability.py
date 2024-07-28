@@ -142,7 +142,7 @@ class PeakStability:
             plt.ion()
             plt.draw()
             if step:
-                raw_input()
+                input()
 
         self.setcurrent(oldcurrent)
 
@@ -153,7 +153,7 @@ class PeakStability:
         self.results = []
         covs = []
         for i, e in enumerate(err):
-            print "---- Running for uncertainty %s (%i/%i) ----" %(e, i, len(err))
+            print("---- Running for uncertainty %s (%i/%i) ----" %(e, i, len(err)))
             self.ppe.clearcalc()
             self.ppe.setvars(effective_dy=e)
             if savecovs:
@@ -164,7 +164,7 @@ class PeakStability:
             self.results.append([e, self.ppe.extracted.model, self.ppe.extracted.baseline, dr])
 
         for e, r, bl, dr in self.results:
-            print "---- Results for uncertainty %s ----" %e
-            print r
+            print("---- Results for uncertainty %s ----" %e)
+            print(r)
 
         return covs
