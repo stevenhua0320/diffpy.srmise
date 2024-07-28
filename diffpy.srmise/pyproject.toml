@@ -7,6 +7,7 @@ name = "diffpy.srmise"
 dynamic=['version']
 authors = [
   { name="Simon J.L. Billinge group", email="simon.billinge@gmail.com" },
+        {name="Luke Granlund", email="granlund@pa.msu.edu"}
 ]
 maintainers = [
   { name="Simon J.L. Billinge group", email="simon.billinge@gmail.com" },
