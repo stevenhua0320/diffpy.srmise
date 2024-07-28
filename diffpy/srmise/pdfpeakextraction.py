@@ -913,7 +913,7 @@ def find_qmax(r, y, showgraphs=False):
 
         plt.show()
         plt.ioff()
-        raw_input()
+        input()
 
     return (qmax, dq)
 

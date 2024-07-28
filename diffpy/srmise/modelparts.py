@@ -18,12 +18,14 @@ ModelPart: Superclass of Peak and Baseline
 ModelParts: Collection (list) of ModelPart instances.
 """
 
+import logging
+
 import numpy as np
 from scipy.optimize import leastsq
-from diffpy.srmise.srmiseerrors import *
-from diffpy.srmise import srmiselog
 
-import logging
+from diffpy.srmise import srmiselog
+from diffpy.srmise.srmiseerrors import *
+
 logger = logging.getLogger("diffpy.srmise")
 
 import matplotlib.pyplot as plt
@@ -31,6 +33,7 @@ import matplotlib.pyplot as plt
 # Output of scipy.optimize.leastsq for a single parameter changed in scipy 0.8.0
 # Before it returned a scalar, later it returned an array of length 1.
 import pkg_resources as pr
+
 __spv__ = pr.get_distribution('scipy').version
 __oldleastsqbehavior__ = (pr.parse_version(__spv__) < pr.parse_version('0.8.0'))
 

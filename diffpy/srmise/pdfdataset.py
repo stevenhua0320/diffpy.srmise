@@ -10,7 +10,7 @@
 # See LICENSE.txt for license information.
 #
 # This file uses source code from the PDFgui files pdfdataset.py and
-# pdfcomponent.py, (c) 2006 trustees of the Michigan State University.  See 
+# pdfcomponent.py, (c) 2006 trustees of the Michigan State University.  See
 # LICENSE_PDFgui.txt for the full PDFgui license.
 #
 ##############################################################################
@@ -20,28 +20,27 @@
 """
 
 
+import copy
 import os.path
 import re
-import copy
 import time
 from getpass import getuser
 
-from diffpy.srmise.srmiseerrors import \
-        SrMisePDFKeyError, SrMiseFileError
+from diffpy.srmise.srmiseerrors import SrMiseFileError, SrMisePDFKeyError
 
 
 class PDFComponent(object):
-    """Common base class.""" 
+    """Common base class."""
     def __init__(self, name):
         """initialize
-        
+
         name -- object name
         """
         self.name = name
-        
+
     def close ( self, force = False ):
         """close myself
-        
+
         force -- if forcibly (no wait)
         """
         pass
@@ -185,14 +184,14 @@ class PDFDataSet(PDFComponent):
                 start_data = 0
         header = datastring[:start_data]
         databody = datastring[start_data:].strip()
-        
+
         # find where the metadata starts
         metadata = ''
         res = re.search(r'^#+\ +metadata\b\n', header, re.M)
         if res:
             metadata = header[res.end():]
-            header = header[:res.start()]   
-            
+            header = header[:res.start()]
+
         # parse header
         # stype
         if re.search('(x-?ray|PDFgetX)', header, re.I):
@@ -234,7 +233,7 @@ class PDFDataSet(PDFComponent):
         res = re.search(regexp, header)
         if res:
             self.metadata['doping'] = float(res.groups()[0])
-            
+
         # parsing gerneral metadata
         if metadata:
             regexp = r"\b(\w+)\ *=\ *(%(f)s)\b" % rx

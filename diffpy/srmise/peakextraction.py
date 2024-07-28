@@ -255,7 +255,7 @@ class PeakExtraction(object):
         """
         try:
             self.readstr(open(filename,'rb').read())
-        except SrMiseDataFormatError, err:
+        except SrMiseDataFormatError as err:
             logger.exception("")
             basename = os.path.basename(filename)
             emsg = ("Could not open '%s' due to unsupported file format " +
@@ -443,7 +443,7 @@ class PeakExtraction(object):
                     emsg = ("Number of value fields does not match that given by '%s'" %start_data_info)
                 for a, v in zip(arrays, line.split()):
                     a.append(float(v))
-        except (ValueError, IndexError), err:
+        except (ValueError, IndexError) as err:
             raise SrMiseDataFormatError(str(err))
         if hasx:
             self.x = np.array(self.x)
@@ -1212,11 +1212,11 @@ if __name__ == '__main__':
     te.setvars(rng=[1.51,10.], pf=[pf], cres=.1, effective_dy = 1.5*err)
     te.extract_single()
 
-    print "--- Actual Peak parameters ---"
-    print ideal_peaks
+    print("--- Actual Peak parameters ---")
+    print(ideal_peaks)
 
-    print "\n--- After extraction ---"
-    print te
+    print("\n--- After extraction ---")
+    print(te)
 
     te.plot()
-    raw_input()
+    input()

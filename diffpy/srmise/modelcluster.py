@@ -18,22 +18,29 @@ ModelCluster: Associate a region of data to a model that describes it.
 ModelCovariance: Helper class for model covariance.
 """
 
-import numpy as np
-import scipy as sp
-from scipy.optimize import leastsq
-from diffpy.srmise.peaks import Peak, Peaks
-from diffpy.srmise.modelparts import ModelParts
-from diffpy.srmise.srmiseerrors import SrMiseEstimationError, SrMiseFitError, SrMiseDataFormatError, SrMiseUndefinedCovarianceError
-from diffpy.srmise.baselines import Baseline
+import logging
 import re
 import sys
 
 import matplotlib.pyplot as plt
+import numpy as np
+import scipy as sp
+from scipy.optimize import leastsq
 
-import logging
+from diffpy.srmise.baselines import Baseline
+from diffpy.srmise.modelparts import ModelParts
+from diffpy.srmise.peaks import Peak, Peaks
+from diffpy.srmise.srmiseerrors import (
+    SrMiseDataFormatError,
+    SrMiseEstimationError,
+    SrMiseFitError,
+    SrMiseUndefinedCovarianceError,
+)
+
 logger = logging.getLogger("diffpy.srmise")
 
 from diffpy.srmise import srmiselog
+
 
 class ModelCovariance(object):
     """Helper class preserves uncertainty info (full covariance matrix) for a fit model.
@@ -58,7 +65,7 @@ class ModelCovariance(object):
 
         # Map (i,j)->n of jth parameter of ith ModelPart to nth parameter in cov.
         self.pmap = {}
-        
+
         # Map n->(i,j), inverse of pmap.
         self.ipmap = {}
 
@@ -211,21 +218,21 @@ class ModelCovariance(object):
 
     def getcorrelation(self, i, j):
         """Return the correlation between variables i and j, Corr_ij=Cov_ij/(sigma_i sigma_j)
-        
+
         The variables may be specified as integers, or as a two-component tuple of integers (l, m)
         which indicate the mth parameter in peak l.
-        
+
         The standard deviation of fixed parameters is 0, in which case the correlation is
         undefined, but return 0 for simplicity.
         """
         if self.cov is None:
             emsg = "Cannot get correlation on undefined covariance matrix."
             raise SrMiseUndefinedCovarianceError(emsg)
-        
+
         # Map peak/parameter tuples to the proper index
         i1 = self.pmap[i] if i in self.pmap else i
         j1 = self.pmap[j] if j in self.pmap else j
-        
+
         if self.cov[i1,i1] == 0. or self.cov[j1,j1] == 0.:
             return 0. # Avoiding undefined quantities is sensible in this context.
         else:
@@ -251,18 +258,18 @@ class ModelCovariance(object):
 
     def getcovariance(self, i, j):
         """Return the covariance between variables i and j.
-        
+
         The variables may be specified as integers, or as a two-component tuple of integers (l, m)
         which indicate the mth parameter of modelpart l.
         """
         if self.cov is None:
             emsg = "Cannot get correlation on undefined covariance matrix."
             raise SrMiseUndefinedCovarianceError(emsg)
-        
+
         # Map peak/parameter tuples to the proper index
         i1 = self.pmap[i] if i in self.pmap else i
         j1 = self.pmap[j] if j in self.pmap else j
-        
+
         return self.cov[i1,j1]
 
     def get(self, i):
@@ -308,7 +315,7 @@ class ModelCovariance(object):
 
     def prettypar(self, i):
         """Return string 'value (uncertainty)' for parameter i.
-        
+
         The variable may be specified as an integer, or as a two-component tuple of integers (l, m)
         which indicate the mth parameter of modelpart l.
         """
@@ -814,7 +821,7 @@ class ModelCluster(object):
         self.model[delslice] = newpeaks
         self.model.sort(key="position")
         return
-        
+
     def deletepeak(self, idx):
         """Delete the peak at the given index."""
         self.replacepeaks([], slice(idx,idx+1))
