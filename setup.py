@@ -32,7 +32,7 @@ def gitinfo():
 
 
 def getversioncfg():
-    from ConfigParser import SafeConfigParser
+    #    from ConfigParser import SafeConfigParser
 
     cp = SafeConfigParser()
     cp.read(versioncfgfile)
@@ -53,12 +53,12 @@ def getversioncfg():
     return cp
 
 
-versiondata = getversioncfg()
+# versiondata = getversioncfg()
 
 # define distribution, but make this module importable
 setup_args = dict(
     name="diffpy.srmise",
-    version=versiondata.get("DEFAULT", "version"),
+    version="0.0.0",
     namespace_packages=["diffpy"],
     packages=find_packages(),
     include_package_data=True,
