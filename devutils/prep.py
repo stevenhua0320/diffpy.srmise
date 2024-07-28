@@ -111,5 +111,3 @@ if __name__ == "__main__":
         print "==== Scrubbing Endlines ===="
         # All *.srmise and *.pwa files in examples directory.
         scrubeol("../doc/examples/output", r".*(\.srmise|\.pwa)")
-
-
