@@ -34,8 +34,8 @@ import matplotlib.pyplot as plt
 # Before it returned a scalar, later it returned an array of length 1.
 import pkg_resources as pr
 
-__spv__ = pr.get_distribution('scipy').version
-__oldleastsqbehavior__ = (pr.parse_version(__spv__) < pr.parse_version('0.8.0'))
+__spv__ = pr.get_distribution("scipy").version
+__oldleastsqbehavior__ = pr.parse_version(__spv__) < pr.parse_version("0.8.0")
 
 
 class ModelParts(list):
@@ -57,7 +57,16 @@ class ModelParts(list):
     def __init__(self, *args, **kwds):
         list.__init__(self, *args, **kwds)
 
-    def fit(self, r, y, y_error, range=None, ntrials=0, cov=None, cov_format="default_output"):
+    def fit(
+        self,
+        r,
+        y,
+        y_error,
+        range=None,
+        ntrials=0,
+        cov=None,
+        cov_format="default_output",
+    ):
         """Chi-square fit of all free parameters to given data.
 
         There must be at least as many free parameters as data points.
@@ -75,12 +84,17 @@ class ModelParts(list):
         """
         freepars = self.unpack_freepars()
         if len(freepars) >= len(r):
-            emsg = "Cannot fit model with " + str(len(freepars)) +\
-                   " free parametersbut only "+str(len(r)) + " data points."
+            emsg = (
+                "Cannot fit model with "
+                + str(len(freepars))
+                + " free parametersbut only "
+                + str(len(r))
+                + " data points."
+            )
             raise SrMiseFitError(emsg)
         if len(freepars) == 0:
-            #emsg = "Cannot fit model with no free parameters."
-            #raise SrMiseFitError(emsg)
+            # emsg = "Cannot fit model with no free parameters."
+            # raise SrMiseFitError(emsg)
             return
 
         if range == None:
@@ -95,38 +109,48 @@ class ModelParts(list):
             plt.cla()
             plt.title("Before")
             plt.plot(r, y, label="_nolabel_")
-            plt.plot(r, (y-self.value(r, range=range))-1.1*(max(y) - min(y)), label="_nolabel_")
+            plt.plot(
+                r,
+                (y - self.value(r, range=range)) - 1.1 * (max(y) - min(y)),
+                label="_nolabel_",
+            )
             for p in self:
                 plt.plot(r, p.value(r, range=range), label=str(p))
             plt.ion()
 
         try:
             f = leastsq(
-                self.residual,               # minimize this function
-                freepars,                    # initial parameters
-                args=args,                   # arguments to residual, residual_jacobian
-                Dfun=self.residual_jacobian, # explicit Jacobian
-                col_deriv=1,                 # order of derivatives in Jacobian
+                self.residual,  # minimize this function
+                freepars,  # initial parameters
+                args=args,  # arguments to residual, residual_jacobian
+                Dfun=self.residual_jacobian,  # explicit Jacobian
+                col_deriv=1,  # order of derivatives in Jacobian
                 full_output=1,
-                maxfev=ntrials)
+                maxfev=ntrials,
+            )
         except NotImplementedError:
             # TODO: Figure out if is worth checking for residual_jacobian
             # before leastsq().  This exception will either occur almost never
             # or extremely frequently, and the extra evaluations will add up.
             logger.info("One or more functions do not define residual_jacobian().")
             f = leastsq(
-                self.residual, # minimize this function
-                freepars,      # initial parameters
-                args=args,     # arguments to residual
-                col_deriv=1,   # order of derivatives in Jacobian
+                self.residual,  # minimize this function
+                freepars,  # initial parameters
+                args=args,  # arguments to residual
+                col_deriv=1,  # order of derivatives in Jacobian
                 full_output=1,
-                maxfev=ntrials)
+                maxfev=ntrials,
+            )
         except Exception:
             # Sadly, KeyboardInterrupt, etc. is reraised as minpack.error
             # Not much I can do about that, though.
             import traceback
-            emsg = "Unexpected error in modelparts.fit().  Original exception:\n" +\
-                   traceback.format_exc() + "End original exception."
+
+            emsg = (
+                "Unexpected error in modelparts.fit().  Original exception:\n"
+                + traceback.format_exc()
+                + "End original exception."
+            )
             raise SrMiseFitError(emsg)
 
         result = f[0]
@@ -144,22 +168,34 @@ class ModelParts(list):
             plt.cla()
             plt.title("After")
             plt.ion()
-            plt.plot(r, y,
-                     r, (y-self.value(r, range=range))-1.1*(max(y) - min(y)),
-                     *[i for sublist in [[r, p.value(r, range=range)] for p in self] for i in sublist])
+            plt.plot(
+                r,
+                y,
+                r,
+                (y - self.value(r, range=range)) - 1.1 * (max(y) - min(y)),
+                *[
+                    i
+                    for sublist in [[r, p.value(r, range=range)] for p in self]
+                    for i in sublist
+                ]
+            )
             plt.draw()
 
             if srmiselog.wait:
-                print("Press 'Enter' to continue...",)
+                print(
+                    "Press 'Enter' to continue...",
+                )
                 input()
 
-        if f[4] not in (1,2,3,4):
+        if f[4] not in (1, 2, 3, 4):
             emsg = "Fit did not succeed -- " + str(f[3])
             raise SrMiseFitError(emsg)
 
         # clean up parameters
         for p in self:
-                p.pars = p.owner().transform_parameters(p.pars, in_format="internal", out_format="internal")
+            p.pars = p.owner().transform_parameters(
+                p.pars, in_format="internal", out_format="internal"
+            )
 
         # Supply estimated covariance matrix if requested.
         # The precise relationship between f[1] and estimated covariance matrix is a little unclear from
@@ -169,28 +205,28 @@ class ModelParts(list):
             pcov = f[1]
             fvec = f[2]["fvec"]
             dof = len(r) - len(freepars)
-            cov.setcovariance(self, pcov*np.sum(fvec**2)/dof)
+            cov.setcovariance(self, pcov * np.sum(fvec**2) / dof)
             try:
                 cov.transform(in_format="internal", out_format=cov_format)
             except SrMiseUndefinedCovarianceError as e:
                 logger.warn("Covariance not defined.  Fit may not have converged.")
 
-
         return
-#### Notes on the fit f
-# f[0] = solution
-# f[1] = Uses the fjac and ipvt optional outputs to construct an estimate of the jacobian around the solution.
-#        None if a singular matrix encountered (indicates very flat curvature in some direction).
-#        This matrix must be multiplied by the residual variance to get the covariance of the parameter
-#        estimates - see curve fit.
-# f[2] = dictionary{nfev: int, fvec: array(), fjac: array(), ipvt: array(), qtf: array()}
-#        nfev - The number of function calls made
-#        fvec - function (residual) evaluated at solution
-#        fjac - "a permutation of the R matrix of a QR factorization of the final Jacobian."
-#        ipvt - integer array defining a permutation matrix P such that fjac*P=QR
-#        qtf - transpose(q)*fvec
-# f[3] = message about results of fit
-# f[4] = integer flag.  Fit was successful on 1,2,3, or 4.  Otherwise unsuccessful.
+
+    #### Notes on the fit f
+    # f[0] = solution
+    # f[1] = Uses the fjac and ipvt optional outputs to construct an estimate of the jacobian around the solution.
+    #        None if a singular matrix encountered (indicates very flat curvature in some direction).
+    #        This matrix must be multiplied by the residual variance to get the covariance of the parameter
+    #        estimates - see curve fit.
+    # f[2] = dictionary{nfev: int, fvec: array(), fjac: array(), ipvt: array(), qtf: array()}
+    #        nfev - The number of function calls made
+    #        fvec - function (residual) evaluated at solution
+    #        fjac - "a permutation of the R matrix of a QR factorization of the final Jacobian."
+    #        ipvt - integer array defining a permutation matrix P such that fjac*P=QR
+    #        qtf - transpose(q)*fvec
+    # f[3] = message about results of fit
+    # f[4] = integer flag.  Fit was successful on 1,2,3, or 4.  Otherwise unsuccessful.
 
     def npars(self, count_fixed=True):
         """Return total number of parameters in all parts.
@@ -201,7 +237,7 @@ class ModelParts(list):
         """
         n = 0
         for p in self:
-            n+=p.npars(count_fixed=count_fixed)
+            n += p.npars(count_fixed=count_fixed)
         return n
 
     def pack_freepars(self, freepars):
@@ -229,9 +265,9 @@ class ModelParts(list):
         try:
             if range is None:
                 range = slice(0, len(r))
-            return (y_expected[range]-total[range])/y_error[range]
+            return (y_expected[range] - total[range]) / y_error[range]
         except TypeError:
-            return (y_expected-total)/y_error
+            return (y_expected - total) / y_error
 
     def residual_jacobian(self, freepars, r, y_expected, y_error, range=None):
         """Calculate the Jacobian of freepars.
@@ -245,22 +281,24 @@ class ModelParts(list):
                 All the data by default.
         """
         if len(freepars) == 0:
-            raise ValueError("Argument freepars has length 0.  The Jacobian "
-                             "is only defined with >=1 free parameters.")
+            raise ValueError(
+                "Argument freepars has length 0.  The Jacobian "
+                "is only defined with >=1 free parameters."
+            )
 
         self.pack_freepars(freepars)
-        tempJac=[]
+        tempJac = []
         for p in self:
-            tempJac[len(tempJac):] = p.jacobian(r, range)
+            tempJac[len(tempJac) :] = p.jacobian(r, range)
         # Since the residual is (expected - calculated) the jacobian
         # of the residual has a minus sign.
-        jac=-np.array([j for j in tempJac if j is not None])
+        jac = -np.array([j for j in tempJac if j is not None])
         try:
             if range is None:
                 range = slice(0, len(r))
-            return jac[:,range]/y_error[range]
+            return jac[:, range] / y_error[range]
         except TypeError:
-            return jac/y_error
+            return jac / y_error
 
     def value(self, r, range=None):
         """Calculate total value of all parts over range.
@@ -270,14 +308,14 @@ class ModelParts(list):
         range - Slice object specifying region of r and y over which to fit.
                 All the data by default.
         """
-        total = r * 0.
+        total = r * 0.0
         for p in self:
             total += p.value(r, range)
         return total
 
     def unpack_freepars(self):
         """Return array of all free parameters."""
-        #To check: ravel() sometimes returns a reference and othertimes a copy.
+        # To check: ravel() sometimes returns a reference and othertimes a copy.
         #          Do I need to use flatten() instead?
         return np.concatenate([p.compress() for p in self]).ravel()
 
@@ -302,15 +340,15 @@ class ModelParts(list):
             try:
                 idx = int(k[1:])
             except ValueError:
-                emsg = "Invalid format keyword '%s'.  They must be specified as 'f0', 'f1', etc." %k
+                emsg = (
+                    "Invalid format keyword '%s'.  They must be specified as 'f0', 'f1', etc."
+                    % k
+                )
                 raise ValueError(emsg)
 
             formats[int(k[1:])] = v
 
-
-
         return
-
 
     def copy(self):
         """Return deep copy of this ModelParts.
@@ -321,7 +359,7 @@ class ModelParts(list):
 
     def __str__(self):
         """Return string representation of this ModelParts."""
-        return ''.join([str(p)+"\n" for p in self])
+        return "".join([str(p) + "\n" for p in self])
 
     def __getslice__(self, i, j):
         """Extends list.__getslice__"""
@@ -338,9 +376,14 @@ class ModelParts(list):
             try:
                 p.pars = p.owner().transform_parameters(p.pars, in_format, out_format)
             except ValueError:
-                logger.info("Invalid parameter transformation: Ignoring %s->%s for function of type %s." %(in_format, out_format, p.owner().getmodule()))
+                logger.info(
+                    "Invalid parameter transformation: Ignoring %s->%s for function of type %s."
+                    % (in_format, out_format, p.owner().getmodule())
+                )
+
 
 # End of class ModelParts
+
 
 class ModelPart(object):
     """Represents a single part (instance of some function) of a model.
@@ -388,18 +431,22 @@ class ModelPart(object):
         self._owner = owner
 
         if len(pars) != owner.npars:
-            emsg = "The length of pars must equal the number of parameters "+\
-                   "specified by the model part owner."
+            emsg = (
+                "The length of pars must equal the number of parameters "
+                + "specified by the model part owner."
+            )
             raise ValueError(emsg)
-        self.pars = np.array(pars[:]) # pars[:] in case pars is a ModelPart
+        self.pars = np.array(pars[:])  # pars[:] in case pars is a ModelPart
 
         if free is None:
             self.free = np.array([True for p in pars], dtype=bool)
         else:
             self.free = np.array(free, dtype=bool)
         if len(self.free) != owner.npars:
-            emsg = "The length of free must be equal to the number of "+\
-                   "parameters specified by the model part owner."
+            emsg = (
+                "The length of free must be equal to the number of "
+                + "parameters specified by the model part owner."
+            )
             raise ValueError(emsg)
 
         self.removable = removable
@@ -419,8 +466,10 @@ class ModelPart(object):
             emsg = "Cannot change owner if static_owner is True."
             raise SrMiseStaticOwnerError(emsg)
         if self._owner.npars != owner.npars:
-            emsg = "New owner specifies different number of parameters than "+\
-                   "original owner."
+            emsg = (
+                "New owner specifies different number of parameters than "
+                + "original owner."
+            )
             raise SrMiseStaticOwnerError(emsg)
         self._owner = owner
 
@@ -453,8 +502,8 @@ class ModelPart(object):
         """
         numfree = self.npars(count_fixed=False)
         if len(freepars) < numfree:
-            pass # raise "freepars does not have enough elements to
-                 # update every unheld parameter."
+            pass  # raise "freepars does not have enough elements to
+            # update every unheld parameter."
         # TODO: Check if I need to make copies here, or if references
         #       to parameters are safe.
         self.pars[self.free] = freepars[:numfree]
@@ -475,7 +524,9 @@ class ModelPart(object):
 
         The original and the copy are completely independent, except they both
         reference the same owner."""
-        return type(self).__call__(self._owner, self.pars, self.free, self.removable, self.static_owner)
+        return type(self).__call__(
+            self._owner, self.pars, self.free, self.removable, self.static_owner
+        )
 
     def __getitem__(self, key_or_idx):
         """Return parameter of peak corresponding with key_or_idx.
@@ -529,20 +580,26 @@ class ModelPart(object):
 
     def __str__(self):
         """Return string representation of ModelPart parameters."""
-        return str(self._owner.transform_parameters(self.pars, in_format="internal", out_format="default_output"))
+        return str(
+            self._owner.transform_parameters(
+                self.pars, in_format="internal", out_format="default_output"
+            )
+        )
 
     def __eq__(self, other):
-        """   """
+        """ """
         if hasattr(other, "_owner"):
-            return ((self._owner is other._owner) and
-                    np.all(self.pars == other.pars) and
-                    np.all(self.free == other.free) and
-                    self.removable == other.removable)
+            return (
+                (self._owner is other._owner)
+                and np.all(self.pars == other.pars)
+                and np.all(self.free == other.free)
+                and self.removable == other.removable
+            )
         else:
             return False
 
     def __ne__(self, other):
-        """   """
+        """ """
         return not self == other
 
     def writestr(self, ownerlist):
@@ -557,19 +614,20 @@ class ModelPart(object):
             emsg = "ownerlist does not contain this ModelPart's owner."
             raise ValueError(emsg)
         lines = []
-        lines.append("owner=%s" %repr(ownerlist.index(self._owner)))
+        lines.append("owner=%s" % repr(ownerlist.index(self._owner)))
 
-        #Lists/numpy arrays don't give full representation of long lists
-        lines.append("pars=[%s]" %", ".join([repr(p) for p in self.pars]))
-        lines.append("free=[%s]" %", ".join([repr(f) for f in self.free]))
-        lines.append("removable=%s" %repr(self.removable))
-        lines.append("static_owner=%s" %repr(self.static_owner))
-        datastring = "\n".join(lines)+"\n"
+        # Lists/numpy arrays don't give full representation of long lists
+        lines.append("pars=[%s]" % ", ".join([repr(p) for p in self.pars]))
+        lines.append("free=[%s]" % ", ".join([repr(f) for f in self.free]))
+        lines.append("removable=%s" % repr(self.removable))
+        lines.append("static_owner=%s" % repr(self.static_owner))
+        datastring = "\n".join(lines) + "\n"
         return datastring
+
 
 # End of class ModelPart
 
 # simple test code
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     pass

@@ -23,12 +23,14 @@ from diffpy.srmise.modelevaluators.base import ModelEvaluator
 
 logger = logging.getLogger("diffpy.srmise")
 
+
 def eatkwds(*args, **kwds):
     """Convenience function to remove all keywords in args from kwds."""
     for k in args:
         if k in kwds:
-            print("Keyword %s=%s ignored." %(k, kwds.pop(k)))
+            print("Keyword %s=%s ignored." % (k, kwds.pop(k)))
     return kwds
+
 
 class MultimodelSelection(PeakStability):
     """Quick and dirty multimodel selection using AIC and its offspring."""
@@ -52,7 +54,9 @@ class MultimodelSelection(PeakStability):
         self.classweights = {}
         self.classprobs = {}
         self.sortedclassprobs = {}
-        self.sortedclasses = {} # dg->as self.classes, but with model indices sorted by best AIC
+        self.sortedclasses = (
+            {}
+        )  # dg->as self.classes, but with model indices sorted by best AIC
 
         PeakStability.__init__(self)
         return
@@ -67,7 +71,9 @@ class MultimodelSelection(PeakStability):
              nominal value.
         filename - Optional file to save pickled results
         """
-        aics_out = {} # Version of self.aics that holds only the statistic, not the AIC object.
+        aics_out = (
+            {}
+        )  # Version of self.aics that holds only the statistic, not the AIC object.
         self.dgs = np.array(dgs)
         for i, dg in enumerate(self.dgs):
             self.dgs_idx[dg] = i
@@ -77,11 +83,10 @@ class MultimodelSelection(PeakStability):
         (r, y, dr, dy) = self.ppe.resampledata(dr)
 
         for model_idx in range(len(self.results)):
-            print("Testing model %s of %s." %(model_idx, len(self.results)))
+            print("Testing model %s of %s." % (model_idx, len(self.results)))
 
             result = self.results[model_idx]
             em = self.ppe.error_method
-
 
             # This section dependent on spaghetti code elsewhere in srmise!
             # Short cut evaluation of AICs which doesn't require calculating chi-square
@@ -95,13 +100,17 @@ class MultimodelSelection(PeakStability):
             # modelevaluators subpackage are in need of a rewrite, and so it would be
             # best to do them all at once.
             dg0 = self.dgs[0]
-            mc = ModelCluster(result[1], result[2], r, y, dg0*np.ones(len(r)), None, em, self.ppe.pf)
+            mc = ModelCluster(
+                result[1], result[2], r, y, dg0 * np.ones(len(r)), None, em, self.ppe.pf
+            )
             em0 = mc.quality()
 
             for dg in self.dgs:
                 em_instance = em()
-                em_instance.chisq = em0.chisq*(dg0/dg)**2 # rescale chi-square
-                em_instance.evaluate(mc) # evaluate AIC without recalculating chi-square
+                em_instance.chisq = em0.chisq * (dg0 / dg) ** 2  # rescale chi-square
+                em_instance.evaluate(
+                    mc
+                )  # evaluate AIC without recalculating chi-square
                 self.aics[dg].append(em_instance)
                 aics_out[dg].append(em_instance.stat)
 
@@ -111,10 +120,10 @@ class MultimodelSelection(PeakStability):
 
         if filename is not None:
             try:
-               import cPickle as pickle
+                import cPickle as pickle
             except:
-               import pickle
-            out_s = open(filename, 'wb')
+                import pickle
+            out_s = open(filename, "wb")
             pickle.dump(aics_out, out_s)
             out_s.close()
 
@@ -123,10 +132,10 @@ class MultimodelSelection(PeakStability):
     def loadaics(self, filename):
         """Load file containing results of the testall method."""
         try:
-           import cPickle as pickle
+            import cPickle as pickle
         except:
-           import pickle
-        in_s = open(filename, 'rb')
+            import pickle
+        in_s = open(filename, "rb")
         aics_in = pickle.load(in_s)
         in_s.close()
 
@@ -171,7 +180,7 @@ class MultimodelSelection(PeakStability):
         for dg in self.dgs:
             self.sortedprobs[dg] = np.argsort(self.aicprobs[dg]).tolist()
 
-    def animate_probs(self, step=False, duration=0., **kwds):
+    def animate_probs(self, step=False, duration=0.0, **kwds):
         """Show animation of extracted peaks from first to last.
 
         Parameters:
@@ -181,14 +190,17 @@ class MultimodelSelection(PeakStability):
         Keywords passed to pyplot.plot()"""
         if duration > 0:
             import time
-            sleeptime = duration/len(self.dgs)
+
+            sleeptime = duration / len(self.dgs)
 
         plt.ion()
         plt.subplot(211)
         best_idx = self.sortedprobs[self.dgs[0]][-1]
-        line, = plt.plot(self.dgs, self.aicprobs[self.dgs[0]])
+        (line,) = plt.plot(self.dgs, self.aicprobs[self.dgs[0]])
         vline = plt.axvline(self.dgs[0])
-        dot, = plt.plot(self.dgs[best_idx],self.aicprobs[self.dgs[0]][best_idx],'ro')
+        (dot,) = plt.plot(
+            self.dgs[best_idx], self.aicprobs[self.dgs[0]][best_idx], "ro"
+        )
 
         plt.subplot(212)
         self.setcurrent(best_idx)
@@ -212,7 +224,7 @@ class MultimodelSelection(PeakStability):
             if duration > 0:
                 time.sleep(sleeptime)
 
-    def animate_classprobs(self, step=False, duration=0., **kwds):
+    def animate_classprobs(self, step=False, duration=0.0, **kwds):
         """Show animation of extracted peaks from first to last.
 
         Parameters:
@@ -222,23 +234,31 @@ class MultimodelSelection(PeakStability):
         Keywords passed to pyplot.plot()"""
         if duration > 0:
             import time
-            sleeptime = duration/len(self.dgs)
+
+            sleeptime = duration / len(self.dgs)
 
         plt.ion()
         ax1 = plt.subplot(211)
         bestclass_idx = self.sortedclassprobs[self.dgs[0]][-1]
         best_idx = self.sortedclasses[self.dgs[0]][bestclass_idx][-1]
-        arrow_left = len(self.classes)-1
-        arrow_right = arrow_left + .05*arrow_left
-        line, = plt.plot(range(len(self.classes)), self.classprobs[self.dgs[0]])
-        dot, = plt.plot(self.dgs[best_idx],self.classprobs[self.dgs[0]][bestclass_idx],'ro')
-        plt.axvline(arrow_left, color='k')
+        arrow_left = len(self.classes) - 1
+        arrow_right = arrow_left + 0.05 * arrow_left
+        (line,) = plt.plot(range(len(self.classes)), self.classprobs[self.dgs[0]])
+        (dot,) = plt.plot(
+            self.dgs[best_idx], self.classprobs[self.dgs[0]][bestclass_idx], "ro"
+        )
+        plt.axvline(arrow_left, color="k")
         ax2 = ax1.twinx()
-        ax2.set_ylim(self.dgs[0],self.dgs[-1])
+        ax2.set_ylim(self.dgs[0], self.dgs[-1])
         ax2.set_ylabel("dg")
         ax1.set_xlim(right=arrow_right)
         ax2.set_xlim(right=arrow_right)
-        dgarrow = ax2.annotate("",(arrow_right, self.dgs[0]), (arrow_left, self.dgs[0]), arrowprops=dict(arrowstyle="-|>"))
+        dgarrow = ax2.annotate(
+            "",
+            (arrow_right, self.dgs[0]),
+            (arrow_left, self.dgs[0]),
+            arrowprops=dict(arrowstyle="-|>"),
+        )
 
         plt.subplot(212)
         self.setcurrent(best_idx)
@@ -247,7 +267,7 @@ class MultimodelSelection(PeakStability):
         minval = np.min(val[1::2])
         [r, res] = tempcluster.plottable_residual()
         plt.plot(*val)
-        plt.plot(r, minval-np.max(res)+res)
+        plt.plot(r, minval - np.max(res) + res)
         for dg in self.dgs[1:]:
             plt.ioff()
             line.set_ydata(self.classprobs[dg])
@@ -263,7 +283,7 @@ class MultimodelSelection(PeakStability):
                 minval = np.min(val[1::2])
                 [r, res] = tempcluster.plottable_residual()
                 plt.plot(*val)
-                plt.plot(r, minval-np.max(res)+res)
+                plt.plot(r, minval - np.max(res) + res)
             dot.set_xdata(bestclass_idx)
             dot.set_ydata(self.classprobs[dg][bestclass_idx])
             plt.ion()
@@ -295,16 +315,18 @@ class MultimodelSelection(PeakStability):
         self.classes_idx = {}
         self.class_tolerance = None
 
-        classes = [] # each element is a list of the models (result indices) in the class
-        classes_idx = {} # given an integer corresponding to a model, return its class
-        epsqval = {} # holds the squared value of each class' exemplar peaks
-        ebsqval = {} # holds the squared value of each class exemplar baselines
+        classes = (
+            []
+        )  # each element is a list of the models (result indices) in the class
+        classes_idx = {}  # given an integer corresponding to a model, return its class
+        epsqval = {}  # holds the squared value of each class' exemplar peaks
+        ebsqval = {}  # holds the squared value of each class exemplar baselines
 
         for i in range(len(self.results)):
             peaks = self.results[i][1]
             baseline = self.results[i][2]
-            bsqval = baseline.value(r)**2
-            psqval = [p.value(r)**2 for p in peaks]
+            bsqval = baseline.value(r) ** 2
+            psqval = [p.value(r) ** 2 for p in peaks]
             added_to_class = False
 
             for c in range(len(classes)):
@@ -318,10 +340,10 @@ class MultimodelSelection(PeakStability):
                     continue
 
                 # check peak types and number of parameters
-                badpeak=False
+                badpeak = False
                 if len(peaks) != len(exemplar_peaks):
                     continue
-                for p, ep in zip(peaks,exemplar_peaks):
+                for p, ep in zip(peaks, exemplar_peaks):
                     if type(p) != type(ep):
                         badpeak = True
                         break
@@ -333,19 +355,23 @@ class MultimodelSelection(PeakStability):
 
                 # check peak values
                 current_psqval = []
-                for p, ep in zip(psqval,epsqval[c]):
-                    basediff = np.abs(np.sum(p-ep))
-                    #if basediff > tolerance*np.sum(ep):
-                    if basediff > tolerance*np.sum(ep) or basediff > tolerance*np.sum(p):
+                for p, ep in zip(psqval, epsqval[c]):
+                    basediff = np.abs(np.sum(p - ep))
+                    # if basediff > tolerance*np.sum(ep):
+                    if basediff > tolerance * np.sum(
+                        ep
+                    ) or basediff > tolerance * np.sum(p):
                         badpeak = True
                         break
                 if badpeak:
                     continue
 
                 # check baseline values
-                basediff = np.abs(np.sum(bsqval-ebsqval[c]))
-                #if basediff > tolerance*np.sum(ebsqval[c]):
-                if basediff > tolerance*np.sum(ebsqval[c]) or basediff > tolerance*np.sum(bsqval):
+                basediff = np.abs(np.sum(bsqval - ebsqval[c]))
+                # if basediff > tolerance*np.sum(ebsqval[c]):
+                if basediff > tolerance * np.sum(
+                    ebsqval[c]
+                ) or basediff > tolerance * np.sum(bsqval):
                     continue
 
                 # that's all the checks, add to current class
@@ -357,7 +383,7 @@ class MultimodelSelection(PeakStability):
             if added_to_class is False:
                 # make a new class with the current model as exemplar
                 classes.append([i])
-                classnum = len(classes)-1
+                classnum = len(classes) - 1
                 classes_idx[i] = classnum
                 epsqval[classnum] = psqval
                 ebsqval[classnum] = bsqval
@@ -393,7 +419,9 @@ class MultimodelSelection(PeakStability):
 
         for dg in self.dgs:
             bestinclass = [cls[-1] for cls in self.sortedclasses[dg]]
-            self.classweights[dg] = em.akaikeweights([self.aics[dg][b] for b in bestinclass])
+            self.classweights[dg] = em.akaikeweights(
+                [self.aics[dg][b] for b in bestinclass]
+            )
 
     def makeclassprobs(self):
         self.classprobs = {}
@@ -401,7 +429,9 @@ class MultimodelSelection(PeakStability):
 
         for dg in self.dgs:
             bestinclass = [cls[-1] for cls in self.sortedclasses[dg]]
-            self.classprobs[dg] = em.akaikeprobs([self.aics[dg][b] for b in bestinclass])
+            self.classprobs[dg] = em.akaikeprobs(
+                [self.aics[dg][b] for b in bestinclass]
+            )
 
     def makesortedclassprobs(self):
         self.sortedclassprobs = {}
@@ -411,7 +441,7 @@ class MultimodelSelection(PeakStability):
 
     def dg_key(self, dg_in):
         """Return the dg value usable as a key nearest to dg_in."""
-        idx = (np.abs(self.dgs-dg_in)).argmin()
+        idx = (np.abs(self.dgs - dg_in)).argmin()
         return self.dgs[idx]
 
     def bestclasses(self, dgs=None):
@@ -489,7 +519,7 @@ class MultimodelSelection(PeakStability):
         from mpl_toolkits.mplot3d import Axes3D
 
         fig = kwds.pop("figure", plt.gcf())
-        ax = fig.add_subplot(kwds.pop("subplot",111), projection='3d')
+        ax = fig.add_subplot(kwds.pop("subplot", 111), projection="3d")
 
         cbkwds = kwds.copy()
 
@@ -497,16 +527,16 @@ class MultimodelSelection(PeakStability):
         dGs = kwds.pop("dGs", self.dgs)
         highlight = kwds.pop("highlight", [])
         classes = kwds.pop("classes", range(len(self.classes)))
-        probfilter = kwds.pop("probfilter", [0.,1.])
+        probfilter = kwds.pop("probfilter", [0.0, 1.0])
         class_size = kwds.pop("class_size", "number")
         norm = kwds.pop("norm", "auto")
         cmap = kwds.pop("cmap", cm.jet)
         highlight_cmap = kwds.pop("highlight_cmap", cm.gray)
         title = kwds.pop("title", True)
         p_alpha = kwds.pop("p_alpha", 0.7)
-        scale = kwds.pop("scale", 1.)
+        scale = kwds.pop("scale", 1.0)
 
-        xs = dGs*scale
+        xs = dGs * scale
         verts = []
         zs = []
         zlabels = []
@@ -515,22 +545,22 @@ class MultimodelSelection(PeakStability):
 
             maxys = np.max(ys)
             if maxys >= probfilter[0] and maxys <= probfilter[1]:
-                p0, p1 = ((xs[0], 0), (xs[-1],0)) # points to close the vertices
-                verts.append(np.concatenate([[p0], zip(xs,ys), [p1], [p0]]))
+                p0, p1 = ((xs[0], 0), (xs[-1], 0))  # points to close the vertices
+                verts.append(np.concatenate([[p0], zip(xs, ys), [p1], [p0]]))
                 zlabels.append(i)
 
         ### Define face colors
         fc = np.array([len(self.classes[z]) for z in zlabels])
         if class_size is "fraction":
-            fc = fc/float(len(self.results))
+            fc = fc / float(len(self.results))
 
         # Index the colormap if necessary
         if class_size is "number":
             if norm is "auto":
-                indexedcolors = cmap(np.linspace(0., 1., np.max(fc)))
+                indexedcolors = cmap(np.linspace(0.0, 1.0, np.max(fc)))
                 cmap = colors.ListedColormap(indexedcolors)
             elif norm is "full":
-                indexedcolors = cmap(np.linspace(0., 1., len(self.results)))
+                indexedcolors = cmap(np.linspace(0.0, 1.0, len(self.results)))
                 cmap = colors.ListedColormap(indexedcolors)
             # A user-specified norm cannot be used to index a colormap.
 
@@ -540,45 +570,59 @@ class MultimodelSelection(PeakStability):
                 mic = np.min(fc)
                 mac = np.max(fc)
                 nc = mac - mic + 1
-                norm = colors.BoundaryNorm(np.linspace(mic, mac+1, nc+1), nc)
+                norm = colors.BoundaryNorm(np.linspace(mic, mac + 1, nc + 1), nc)
             if class_size is "fraction":
                 norm = colors.Normalize()
                 norm.autoscale(fc)
         elif norm is "full":
             mcolor = len(self.results)
             if class_size is "number":
-                norm = colors.BoundaryNorm(np.linspace(0, mcolor+1, mcolor+2), mcolor+1)
+                norm = colors.BoundaryNorm(
+                    np.linspace(0, mcolor + 1, mcolor + 2), mcolor + 1
+                )
             if class_size is "fraction":
-                norm = colors.Normalize(0., 1.)
+                norm = colors.Normalize(0.0, 1.0)
 
         zs = np.arange(len(zlabels))
 
         poly = PolyCollection(verts, facecolors=cmap(norm(fc)), closed=False)
         poly.set_alpha(p_alpha)
-        cax = ax.add_collection3d(poly, zs=zs, zdir='y')
+        cax = ax.add_collection3d(poly, zs=zs, zdir="y")
 
         # Highlight values of interest
         color_idx = np.linspace(0, 1, len(highlight))
         for dG, ci in zip(highlight, color_idx):
             for z_logical, z_plot in zip(zlabels, zs):
-                ax.plot([dG, dG], [z_plot, z_plot], [0, self.classprobs[dG][z_logical]], color=highlight_cmap(ci), alpha=p_alpha)
+                ax.plot(
+                    [dG, dG],
+                    [z_plot, z_plot],
+                    [0, self.classprobs[dG][z_logical]],
+                    color=highlight_cmap(ci),
+                    alpha=p_alpha,
+                )
 
-        ax.set_xlabel('dG')
-        ax.set_xlim3d(dGs[0]*scale, dGs[-1]*scale)
-        ax.set_ylabel('Class')
+        ax.set_xlabel("dG")
+        ax.set_xlim3d(dGs[0] * scale, dGs[-1] * scale)
+        ax.set_ylabel("Class")
         ax.set_ylim3d(zs[0], zs[-1])
         ax.set_yticks(zs)
         ax.set_yticklabels([str(z) for z in zlabels])
-        ax.set_zlabel('Akaike probability')
+        ax.set_zlabel("Akaike probability")
         ax.set_zlim3d(0, 1)
 
         if title is True:
-            title = "Class probabilities\n\
+            title = (
+                "Class probabilities\n\
                     Max probabilities in %s\n\
-                    %i/%i classes with %i/%i models displayed"\
-                     %(probfilter,
-                       len(zs), len(self.classes),
-                       np.sum([len(self.classes[z]) for z in zlabels]), len(self.results) )
+                    %i/%i classes with %i/%i models displayed"
+                % (
+                    probfilter,
+                    len(zs),
+                    len(self.classes),
+                    np.sum([len(self.classes[z]) for z in zlabels]),
+                    len(self.results),
+                )
+            )
 
         if title is not False:
             figtitle = fig.suptitle(title)
@@ -586,23 +630,26 @@ class MultimodelSelection(PeakStability):
         # Add colorbar
         if "cbpos" in kwds:
             cbpos = kwds.pop("cbpos")
-            aspect = cbpos[3]/cbpos[2]
-            plt.tight_layout() # do it before cbaxis, so colorbar is ignored.
+            aspect = cbpos[3] / cbpos[2]
+            plt.tight_layout()  # do it before cbaxis, so colorbar is ignored.
             transAtoF = ax.transAxes + fig.transFigure.inverted()
             rect = transforms.Bbox.from_bounds(*cbpos).transformed(transAtoF).bounds
             cbaxis = fig.add_axes(rect)
 
             # Remove all colorbar.make_axes keywords except orientation
-            kwds = eatkwds("fraction", "pad", "shrink", "aspect",
-                           "anchor", "panchor", **kwds)
+            kwds = eatkwds(
+                "fraction", "pad", "shrink", "aspect", "anchor", "panchor", **kwds
+            )
         else:
             kwds.setdefault("shrink", 0.75)
 
             # In matplotlib 1.1.0 make_axes_gridspec ignores anchor and panchor keywords.
             # Eat these keywords for now.
             kwds = eatkwds("anchor", "panchor", **kwds)
-            cbaxis, kwds = colorbar.make_axes_gridspec(ax, **kwds) # gridspec allows tight_layout
-            plt.tight_layout() # do it after cbaxis, so colorbar isn't ignored
+            cbaxis, kwds = colorbar.make_axes_gridspec(
+                ax, **kwds
+            )  # gridspec allows tight_layout
+            plt.tight_layout()  # do it after cbaxis, so colorbar isn't ignored
 
         cb = colorbar.ColorbarBase(cbaxis, cmap=cmap, norm=norm, **kwds)
 
@@ -611,8 +658,7 @@ class MultimodelSelection(PeakStability):
         elif class_size is "fraction":
             cb.set_label("Fraction of models in class")
 
-
-        return {"fig":fig, "axis":ax,  "cb":cb, "cbaxis": cbaxis}
+        return {"fig": fig, "axis": ax, "cb": cb, "cbaxis": cbaxis}
 
     def get_model(self, dG, **kwds):
         """Return index of best model of best class at given dG.
@@ -625,7 +671,8 @@ class MultimodelSelection(PeakStability):
         corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).
         morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).
                  Returns a model from a class, or from the collection of all models if classes are ignored.
-        cls - Override corder with a specific class index, or None to ignore classes entirely."""
+        cls - Override corder with a specific class index, or None to ignore classes entirely.
+        """
         corder = kwds.pop("corder", 0)
         morder = kwds.pop("morder", 0)
         if "cls" in kwds:
@@ -634,9 +681,9 @@ class MultimodelSelection(PeakStability):
             cls = self.get_class(dG, corder=corder)
 
         if cls is None:
-            return self.sortedprobs[dG][-1-morder]
+            return self.sortedprobs[dG][-1 - morder]
         else:
-            return self.sortedclasses[dG][cls][-1-morder]
+            return self.sortedclasses[dG][cls][-1 - morder]
 
     def get_class(self, dG, **kwds):
         """Return index of best class at given dG.
@@ -646,9 +693,10 @@ class MultimodelSelection(PeakStability):
 
 
         Keywords:
-        corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default)."""
+        corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).
+        """
         corder = kwds.pop("corder", 0)
-        return self.sortedclassprobs[dG][-1-corder] # index of corderth best class
+        return self.sortedclassprobs[dG][-1 - corder]  # index of corderth best class
 
     def get_prob(self, dG, **kwds):
         """Return Akaike probability of best model of best class at given dG.
@@ -661,7 +709,8 @@ class MultimodelSelection(PeakStability):
         corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).
         morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).
                  Returns a model from a class, or from the collection of all models if classes are ignored.
-        cls - Override corder with a specific class index, or None to ignore classes entirely."""
+        cls - Override corder with a specific class index, or None to ignore classes entirely.
+        """
         idx = self.get_model(dG, **kwds)
         if "cls" in kwds and kwds["cls"] is None:
             return self.aicprobs[dG][idx]
@@ -680,7 +729,8 @@ class MultimodelSelection(PeakStability):
         corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).
         morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).
                  Returns a model from a class, or from the collection of all models if classes are ignored.
-        cls - Override corder with a specific class index, or None to ignore classes entirely."""
+        cls - Override corder with a specific class index, or None to ignore classes entirely.
+        """
         idx = self.get_model(dG, **kwds)
         model = self.results[idx][1]
         baseline = self.results[idx][2]
@@ -697,7 +747,8 @@ class MultimodelSelection(PeakStability):
         corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).
         morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).
                  Returns a model from a class, or from the collection of all models if classes are ignored.
-        cls - Override corder with a specific class index, or None to ignore classes entirely."""
+        cls - Override corder with a specific class index, or None to ignore classes entirely.
+        """
         idx = self.get_model(dG, **kwds)
         return self.aics[dG][idx].stat
 
@@ -714,13 +765,16 @@ class MultimodelSelection(PeakStability):
         corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).
         morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).
                  Returns a model from a class, or from the collection of all models if classes are ignored.
-        cls - Override corder with a specific class index, or None to ignore classes entirely."""
-        fdict = {"aic": self.get_aic,
-                 "class": self.get_class,
-                 "dg": lambda x: x,
-                 "model": self.get_model,
-                 "nfree": self.get_nfree,
-                 "prob": self.get_prob}
+        cls - Override corder with a specific class index, or None to ignore classes entirely.
+        """
+        fdict = {
+            "aic": self.get_aic,
+            "class": self.get_class,
+            "dg": lambda x: x,
+            "model": self.get_model,
+            "nfree": self.get_nfree,
+            "prob": self.get_prob,
+        }
         values = []
         for a in args:
             values.append(fdict[a].__call__(dG, **kwds))
