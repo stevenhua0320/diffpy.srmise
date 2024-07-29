@@ -50,9 +50,7 @@ class FromSequence(BaselineFunction):
         if len(args) == 1 and len(kwds) == 0:
             # load from file
             x, y = self.readxy(args[0])
-        elif len(args) == 0 and (
-            "file" in kwds and "x" not in kwds and "y" not in kwds
-        ):
+        elif len(args) == 0 and ("file" in kwds and "x" not in kwds and "y" not in kwds):
             # load file
             x, y = self.readxy(kwds["file"])
         elif len(args) == 2 and len(kwds) == 0:
@@ -80,9 +78,7 @@ class FromSequence(BaselineFunction):
         metadict = {}
         metadict["x"] = (x, self.xyrepr)
         metadict["y"] = (y, self.xyrepr)
-        BaselineFunction.__init__(
-            self, parameterdict, formats, default_formats, metadict, None, Cache=None
-        )
+        BaselineFunction.__init__(self, parameterdict, formats, default_formats, metadict, None, Cache=None)
 
     #### Methods required by BaselineFunction ####
 
@@ -130,17 +126,13 @@ class FromSequence(BaselineFunction):
         if in_format == "internal":
             pass
         else:
-            raise ValueError(
-                "Argument 'in_format' must be one of %s." % self.parformats
-            )
+            raise ValueError("Argument 'in_format' must be one of %s." % self.parformats)
 
         # Convert to specified output format from "internal" format.
         if out_format == "internal":
             pass
         else:
-            raise ValueError(
-                "Argument 'out_format' must be one of %s." % self.parformats
-            )
+            raise ValueError("Argument 'out_format' must be one of %s." % self.parformats)
         return temp
 
     def _valueraw(self, pars, r):

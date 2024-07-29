@@ -58,9 +58,7 @@ class ModelCovariance(object):
     def __init__(self, *args, **kwds):
         """Intialize object."""
         self.cov = None  # The raw covariance matrix
-        self.model = (
-            None  # ModelParts instance, so both peaks and baseline (if present)
-        )
+        self.model = None  # ModelParts instance, so both peaks and baseline (if present)
 
         # Map i->[n1,n2,...] of the jth ModelPart to the n_i parameters in cov.
         self.mmap = {}
@@ -98,9 +96,7 @@ class ModelCovariance(object):
             emsg = "Parameter 'cov' must be a square matrix."
             raise ValueError(emsg)
 
-        if tempcov.shape[0] != model.npars(True) and tempcov.shape[0] != model.npars(
-            False
-        ):
+        if tempcov.shape[0] != model.npars(True) and tempcov.shape[0] != model.npars(False):
             emsg = [
                 "Parameter 'cov' must be an nxn matrix, where n is equal to the number of free ",
                 "parameters in the model, or the total number of parameters (fixed and free) of ",
@@ -248,9 +244,7 @@ class ModelCovariance(object):
         if self.cov[i1, i1] == 0.0 or self.cov[j1, j1] == 0.0:
             return 0.0  # Avoiding undefined quantities is sensible in this context.
         else:
-            return self.cov[i1, j1] / (
-                np.sqrt(self.cov[i1, i1]) * np.sqrt(self.cov[j1, j1])
-            )
+            return self.cov[i1, j1] / (np.sqrt(self.cov[i1, i1]) * np.sqrt(self.cov[j1, j1]))
 
     def getvalue(self, i):
         """Return value of parameter i.
@@ -483,9 +477,7 @@ class ModelCluster(object):
         if self.peak_funcs is None:
             lines.append("peak_funcs=None")
         else:
-            lines.append(
-                "peak_funcs=%s" % repr([pfbaselist.index(p) for p in self.peak_funcs])
-            )
+            lines.append("peak_funcs=%s" % repr([pfbaselist.index(p) for p in self.peak_funcs]))
         if self.error_method is None:
             lines.append("ModelEvaluator=None")
         else:
@@ -611,9 +603,7 @@ class ModelCluster(object):
         ### Instantiating baseline functions
         if readblf:
             blfbaselist = []
-            res = re.split(
-                r"(?m)^#+ BaselineFunction \d+\s*(?:#.*\s+)*", baselinefunctions
-            )
+            res = re.split(r"(?m)^#+ BaselineFunction \d+\s*(?:#.*\s+)*", baselinefunctions)
             for s in res[1:]:
                 blfbaselist.append(BaseFunction.factory(s, blfbaselist))
 
@@ -676,10 +666,7 @@ class ModelCluster(object):
             for line in start_data.split("\n"):
                 l = line.split()
                 if len(arrays) != len(l):
-                    emsg = (
-                        "Number of value fields does not match that given by '%s'"
-                        % start_data_info
-                    )
+                    emsg = "Number of value fields does not match that given by '%s'" % start_data_info
                 for a, v in zip(arrays, line.split()):
                     a.append(float(v))
         except (ValueError, IndexError) as err:
@@ -765,19 +752,11 @@ class ModelCluster(object):
             # border_x are removed.  The highly unlikely case of two peaks
             # exactly at the border is also handled.
             for i in reversed(range(len(new_model))):
-                if (
-                    new_model[i]["position"] == border_x
-                    and i > 0
-                    and new_model[i - 1]["position"] == border_x
-                ):
+                if new_model[i]["position"] == border_x and i > 0 and new_model[i - 1]["position"] == border_x:
                     del new_model[i]
                 elif new_ids[i] != i:
-                    if (
-                        new_model[i]["position"] > border_x
-                        and new_ids[i] < len(left.model)
-                    ) and (
-                        new_model[i]["position"] < border_x
-                        and new_ids[i] >= len(left.model)
+                    if (new_model[i]["position"] > border_x and new_ids[i] < len(left.model)) and (
+                        new_model[i]["position"] < border_x and new_ids[i] >= len(left.model)
                     ):
                         del new_model[i]
 
@@ -826,15 +805,11 @@ class ModelCluster(object):
             # check if slice has expanded on the left
             if self.never_fit and self.slice.start < old_slice.start:
                 left_slice = slice(self.slice.start, old_slice.start)
-                self.never_fit = (
-                    max(y_data_nobl[left_slice] - self.y_error[left_slice]) < 0
-                )
+                self.never_fit = max(y_data_nobl[left_slice] - self.y_error[left_slice]) < 0
             # check if slice has expanded on the right
             if self.never_fit and self.slice.stop > old_slice.stop:
                 right_slice = slice(old_slice.stop, self.slice.stop)
-                self.never_fit = (
-                    max(y_data_nobl[right_slice] - self.y_error[right_slice]) < 0
-                )
+                self.never_fit = max(y_data_nobl[right_slice] - self.y_error[right_slice]) < 0
 
         return
 
@@ -884,9 +859,7 @@ class ModelCluster(object):
             # throw some exception
             pass
         selected = self.peak_funcs[0]
-        estimate = selected.estimate_parameters(
-            self.r_cluster, self.y_cluster - self.valuebl()
-        )
+        estimate = selected.estimate_parameters(self.r_cluster, self.y_cluster - self.valuebl())
 
         if estimate is not None:
             newpeak = selected.actualize(estimate, "internal")
@@ -943,11 +916,7 @@ class ModelCluster(object):
             orig_baseline = self.baseline.copy()
         self.last_fit_size = self.size
 
-        if (
-            fitbaseline
-            and self.baseline is not None
-            and self.baseline.npars(count_fixed=False) > 0
-        ):
+        if fitbaseline and self.baseline is not None and self.baseline.npars(count_fixed=False) > 0:
             y_datafit = self.y_data
             fmodel = ModelParts(self.model)
             fmodel.append(self.baseline)
@@ -966,18 +935,12 @@ class ModelCluster(object):
                 cov_format,
             )
         except SrMiseFitError as e:
-            logger.debug(
-                "Error while fitting cluster: %s\nReverting to original model.", e
-            )
+            logger.debug("Error while fitting cluster: %s\nReverting to original model.", e)
             self.model = orig_model
             self.baseline = orig_baseline
             return None
 
-        if (
-            fitbaseline
-            and self.baseline is not None
-            and self.baseline.npars(count_fixed=False) > 0
-        ):
+        if fitbaseline and self.baseline is not None and self.baseline.npars(count_fixed=False) > 0:
             self.model = Peaks(fmodel[:-1])
             self.baseline = fmodel[-1]
         else:
@@ -1039,10 +1002,9 @@ class ModelCluster(object):
         """
         if self.never_fit:
             return None
-        if (
-            self.last_fit_size > 0
-            and float(self.size) / self.last_fit_size >= growth_threshold
-        ) or (self.last_fit_size == 0 and self.size >= minpoints):
+        if (self.last_fit_size > 0 and float(self.size) / self.last_fit_size >= growth_threshold) or (
+            self.last_fit_size == 0 and self.size >= minpoints
+        ):
             return self.fit(justify=True)
         return None
 
@@ -1063,10 +1025,7 @@ class ModelCluster(object):
         outside_idx = [
             i
             for i in outside_idx
-            if (
-                self.model[i].removable
-                and max(self.model[i].value(self.r_cluster) - self.error_cluster) < 0
-            )
+            if (self.model[i].removable and max(self.model[i].value(self.r_cluster) - self.error_cluster) < 0)
         ]
 
         # TODO: Check for peaks that have blown up.
@@ -1075,14 +1034,10 @@ class ModelCluster(object):
 
         # NaN is too serious not to remove, even if removable is False, but I should look
         # into better handling anyway.
-        nan_idx = [
-            i for i in range(len(self.model)) if np.isnan(self.model[i].pars).any()
-        ]
+        nan_idx = [i for i in range(len(self.model)) if np.isnan(self.model[i].pars).any()]
 
         if len(outside_idx) > 0:
-            msg = [
-                "Following peaks outside cluster made no contribution within it and were removed:"
-            ]
+            msg = ["Following peaks outside cluster made no contribution within it and were removed:"]
             msg.extend([str(self.model[i]) for i in outside_idx])
             logger.debug("\n".join(msg))
 
@@ -1147,9 +1102,7 @@ class ModelCluster(object):
             return self.valuebl(r)
         else:
             if r is None:
-                return self.valuebl(r) + (
-                    self.model.value(self.r_data, self.slice)[self.slice]
-                )
+                return self.valuebl(r) + (self.model.value(self.r_data, self.slice)[self.slice])
             else:
                 return self.valuebl(r) + (self.model.value(r))
 
@@ -1360,18 +1313,12 @@ class ModelCluster(object):
                     msg = ["len(check_models): %s", "len(best_model): %s", "i: %s"]
                     logger.debug("\n".join(msg), len(check_models), len(best_model), i)
 
-                    addpars = (
-                        best_model.npars()
-                        - check_models[i].npars()
-                        - best_model[i].npars(count_fixed=False)
-                    )
+                    addpars = best_model.npars() - check_models[i].npars() - best_model[i].npars(count_fixed=False)
 
                     # Remove contribution of (effectively) fixed peaks
                     y = np.array(y_nobl)
                     if lo > 0:
-                        logger.debug(
-                            "len(sum): %s", len(np.sum(best_modely[:lo], axis=0))
-                        )
+                        logger.debug("len(sum): %s", len(np.sum(best_modely[:lo], axis=0)))
                         y -= np.sum(best_modely[:lo], axis=0)
                     if hi < len(best_modely):
                         y -= np.sum(best_modely[hi:], axis=0)
@@ -1408,9 +1355,7 @@ class ModelCluster(object):
                 "check_qual: %s",
                 "sorted check_qual: %s",
             ]
-            logger.debug(
-                "\n".join(msg), best_qual.stat, [c.stat for c in check_qual], arg
-            )
+            logger.debug("\n".join(msg), best_qual.stat, [c.stat for c in check_qual], arg)
 
             arg = arg[-1]
             newbest_qual = check_qual[arg]

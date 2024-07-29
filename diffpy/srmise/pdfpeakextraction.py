@@ -234,8 +234,7 @@ class PDFPeakExtraction(PeakExtraction):
             # Not a robust epsilon test, but all physical Nyquist rates in same oom.
             if dr - dr_nyquist > eps:
                 logger.warning(
-                    "Resampling at %s, below Nyquist rate of %s.  Information will be lost!"
-                    % (dr, dr_nyquist)
+                    "Resampling at %s, below Nyquist rate of %s.  Information will be lost!" % (dr, dr_nyquist)
                 )
 
         r = np.arange(max(self.x[0], self.rng[0]), min(self.x[-1], self.rng[1]), dr)
@@ -440,9 +439,7 @@ class PDFPeakExtraction(PeakExtraction):
                         break
 
             else:
-                ext = ModelCluster(
-                    ext.model, bl, r1, y1, y_error1, None, self.error_method, self.pf
-                )
+                ext = ModelCluster(ext.model, bl, r1, y1, y_error1, None, self.error_method, self.pf)
                 ext.prune()
 
             logger.info("Model after resampling and termination ripples:\n%s", ext)
@@ -457,9 +454,7 @@ class PDFPeakExtraction(PeakExtraction):
             logger.info(str(cov))
             # logger.info("Correlations > .8:\n%s", "\n".join(str(c) for c in cov.correlationwarning(.8)))
         except SrMiseUndefinedCovarianceError as e:
-            logger.warn(
-                "Covariance not defined for final model.  Fit may not have converged."
-            )
+            logger.warn("Covariance not defined for final model.  Fit may not have converged.")
             logger.info(str(ext))
 
         # Update calculated instance variables
@@ -532,9 +527,7 @@ class PDFPeakExtraction(PeakExtraction):
         try:
             logger.info(str(cov))
         except SrMiseUndefinedCovarianceError as e:
-            logger.warn(
-                "Covariance not defined for final model.  Fit may not have converged."
-            )
+            logger.warn("Covariance not defined for final model.  Fit may not have converged.")
 
         # Update calculated instance variables
         self.extraction_type = "fit"
@@ -703,13 +696,8 @@ class PDFPeakExtraction(PeakExtraction):
 
         lines.append("## Model Quality")
         # Quality of fit
-        lines.append(
-            "# Quality reported by ModelEvaluator: %s" % self.extracted.quality().stat
-        )
-        lines.append(
-            "# Free parameters in extracted peaks: %s"
-            % self.extracted.model.npars(count_fixed=False)
-        )
+        lines.append("# Quality reported by ModelEvaluator: %s" % self.extracted.quality().stat)
+        lines.append("# Free parameters in extracted peaks: %s" % self.extracted.model.npars(count_fixed=False))
         if self.baseline is not None:
             fblpars = self.baseline.npars(count_fixed=False)
         else:
@@ -830,15 +818,11 @@ def resample(orig_r, orig_y, new_r):
     dr = (orig_r[-1] - orig_r[0]) / (n - 1)
 
     if new_r[0] < orig_r[0]:
-        logger.warning(
-            "Resampling outside original grid: %s (requested) < %s (original)"
-            % (new_r[0], orig_r[0])
-        )
+        logger.warning("Resampling outside original grid: %s (requested) < %s (original)" % (new_r[0], orig_r[0]))
 
     if new_r[-1] > orig_r[-1]:
         logger.warning(
-            "Resampling outside original grid: %s (requested) > %s (original)"
-            % (new_r[-1], orig_r[-1])
+            "Resampling outside original grid: %s (requested) > %s (original)" % (new_r[-1], orig_r[-1])
         )
 
     new_y = new_r * 0.0

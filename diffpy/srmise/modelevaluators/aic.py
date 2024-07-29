@@ -113,9 +113,7 @@ class AIC(ModelEvaluator):
 
         # assert n >= self.minPoints(kActual) #check that AIC is defined for the actual fit
         if n < self.minpoints(k_actual):
-            logger.warn(
-                "AIC.growth_justified(): too few data to evaluate quality reliably."
-            )
+            logger.warn("AIC.growth_justified(): too few data to evaluate quality reliably.")
             n = self.minpoints(k_actual)
 
         penalty = self.parpenalty(k_test, n) - self.parpenalty(k_actual, n)

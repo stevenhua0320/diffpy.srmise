@@ -132,16 +132,13 @@ def run(plot=True):
         # "prob" -> The AIC probability given uncertainty dG
         # These all have dedicated getter functions.  For example, the model
         # index can also be obtained using get_model(dG, corder=i)
-        (model, cls, nfree, aic, prob) = ms.get(
-            dG, "model", "class", "nfree", "aic", "prob", corder=i
-        )
+        (model, cls, nfree, aic, prob) = ms.get(dG, "model", "class", "nfree", "aic", "prob", corder=i)
 
         filename_base = "output/known_dG_m" + str(model)
 
         # Print info for this model
         print(
-            "%4i  %5i  %5i  %4i  %10.4e %6.3f  %s"
-            % (i + 1, model, cls, nfree, aic, prob, filename_base + ".pwa")
+            "%4i  %5i  %5i  %4i  %10.4e %6.3f  %s" % (i + 1, model, cls, nfree, aic, prob, filename_base + ".pwa")
         )
 
         # A message added as a comment to saved .pwa file.
@@ -166,9 +163,7 @@ def run(plot=True):
         if plot:
             plt.figure()
             makeplot(ms.ppe, dcif)
-            plt.title(
-                "Model %i/Class %i (Rank %i, AIC prob=%f)" % (model, cls, i + 1, prob)
-            )
+            plt.title("Model %i/Class %i (Rank %i, AIC prob=%f)" % (model, cls, i + 1, prob))
             # Uncomment line below to save figures.
             # plt.savefig(filename_base + ".png", format="png")
 

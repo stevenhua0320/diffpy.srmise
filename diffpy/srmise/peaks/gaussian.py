@@ -52,9 +52,7 @@ class Gaussian(PeakFunction):
         default_formats = {"default_input": "internal", "default_output": "pwa"}
         metadict = {}
         metadict["maxwidth"] = (maxwidth, repr)
-        PeakFunction.__init__(
-            self, parameterdict, formats, default_formats, metadict, None, Cache
-        )
+        PeakFunction.__init__(self, parameterdict, formats, default_formats, metadict, None, Cache)
 
         if maxwidth <= 0:
             emsg = "'maxwidth' must be greater than 0."
@@ -115,37 +113,19 @@ class Gaussian(PeakFunction):
             guesspars[0] = np.sum(use_r * weights) / sum(weights)
             # guesspars[0] = center
             if use_y[0] < max_y:
-                sigma_left = np.sqrt(
-                    -0.5 * (use_r[0] - guesspars[0]) ** 2 / np.log(use_y[0] / max_y)
-                )
+                sigma_left = np.sqrt(-0.5 * (use_r[0] - guesspars[0]) ** 2 / np.log(use_y[0] / max_y))
             else:
                 sigma_left = np.sqrt(
                     -0.5
-                    * np.mean(
-                        np.abs(
-                            np.array(
-                                [use_r[0] - guesspars[0], use_r[-1] - guesspars[0]]
-                            )
-                        )
-                    )
-                    ** 2
+                    * np.mean(np.abs(np.array([use_r[0] - guesspars[0], use_r[-1] - guesspars[0]]))) ** 2
                     / np.log(min_y / max_y)
                 )
             if use_y[-1] < max_y:
-                sigma_right = np.sqrt(
-                    -0.5 * (use_r[-1] - guesspars[0]) ** 2 / np.log(use_y[-1] / max_y)
-                )
+                sigma_right = np.sqrt(-0.5 * (use_r[-1] - guesspars[0]) ** 2 / np.log(use_y[-1] / max_y))
             else:
                 sigma_right = np.sqrt(
                     -0.5
-                    * np.mean(
-                        np.abs(
-                            np.array(
-                                [use_r[0] - guesspars[0], use_r[-1] - guesspars[0]]
-                            )
-                        )
-                    )
-                    ** 2
+                    * np.mean(np.abs(np.array([use_r[0] - guesspars[0], use_r[-1] - guesspars[0]]))) ** 2
                     / np.log(min_y / max_y)
                 )
             guesspars[1] = 0.5 * (sigma_right + sigma_left) * self.sigma2fwhm
@@ -155,9 +135,7 @@ class Gaussian(PeakFunction):
             # sure the peak has died down by the time it reaches the edge of
             # the data.
             guesspars[0] = (use_r[0] + use_r[-1]) / 2
-            guesspars[1] = (
-                (use_r[-1] - use_r[0]) * 2 / (2 * np.log(2))
-            )  # cluster width/2=2*sigma
+            guesspars[1] = (use_r[-1] - use_r[0]) * 2 / (2 * np.log(2))  # cluster width/2=2*sigma
 
         if guesspars[1] > self.maxwidth:
             # account for width-limit
@@ -190,9 +168,7 @@ class Gaussian(PeakFunction):
         else:
             ratio = 1 / scale  # Ugly: Equations orig. solved in terms of ratio
 
-        tpars = self.transform_parameters(
-            pars, in_format="internal", out_format="mu_sigma_area"
-        )
+        tpars = self.transform_parameters(pars, in_format="internal", out_format="mu_sigma_area")
 
         # solves 1. f(rmax;mu1,sigma1,area1)=f(rmax;mu2,sigma2,area2)
         #       2. f(x;mu1,sigma1,area1)=ratio*f(x;mu1,sigma2,area2)
@@ -210,9 +186,7 @@ class Gaussian(PeakFunction):
         tpars[1] = sigma2
         tpars[2] = area2
         try:
-            tpars = self.transform_parameters(
-                tpars, in_format="mu_sigma_area", out_format="internal"
-            )
+            tpars = self.transform_parameters(tpars, in_format="mu_sigma_area", out_format="internal")
         except SrMiseTransformationError as err:
             raise SrMiseScalingError(str(err))
         return tpars
@@ -236,9 +210,7 @@ class Gaussian(PeakFunction):
         # Optimization
         sin_p = np.sin(pars[1]) + 1.0
         p0minusr = pars[0] - r
-        exp_p = np.exp(-((p0minusr) ** 2) / (self.c2 * sin_p)) / (
-            self.c1 * np.sqrt(sin_p)
-        )
+        exp_p = np.exp(-((p0minusr) ** 2) / (self.c2 * sin_p)) / (self.c1 * np.sqrt(sin_p))
 
         if free[0]:
             # derivative with respect to peak position
@@ -317,9 +289,7 @@ class Gaussian(PeakFunction):
                 raise SrMiseTransformationError(emsg)
             temp[1] = np.arcsin(2.0 * fwhm**2 / self.maxwidth**2 - 1.0)
         else:
-            raise ValueError(
-                "Argument 'in_format' must be one of %s." % self.parformats
-            )
+            raise ValueError("Argument 'in_format' must be one of %s." % self.parformats)
 
         # Convert to specified output format from "internal" format.
         if out_format == "internal":
@@ -327,14 +297,9 @@ class Gaussian(PeakFunction):
         elif out_format == "pwa":
             temp[1] = np.sqrt(0.5 * (np.sin(temp[1]) + 1.0) * self.maxwidth**2)
         elif out_format == "mu_sigma_area":
-            temp[1] = (
-                np.sqrt(0.5 * (np.sin(temp[1]) + 1.0) * self.maxwidth**2)
-                / self.sigma2fwhm
-            )
+            temp[1] = np.sqrt(0.5 * (np.sin(temp[1]) + 1.0) * self.maxwidth**2) / self.sigma2fwhm
         else:
-            raise ValueError(
-                "Argument 'out_format' must be one of %s." % self.parformats
-            )
+            raise ValueError("Argument 'out_format' must be one of %s." % self.parformats)
         return temp
 
     def _valueraw(self, pars, r):
@@ -365,9 +330,7 @@ class Gaussian(PeakFunction):
             return None
 
         # Transform parameters for convenience.
-        tpars = self.transform_parameters(
-            pars, in_format="internal", out_format="mu_sigma_area"
-        )
+        tpars = self.transform_parameters(pars, in_format="internal", out_format="mu_sigma_area")
 
         rmax = tpars[0]
         ymax = self._valueraw(pars, rmax)

@@ -242,10 +242,10 @@ class TracePeaks(object):
         except SrMiseDataFormatError as err:
             logger.exception("")
             basename = os.path.basename(filename)
-            emsg = (
-                "Could not open '%s' due to unsupported file format "
-                + "or corrupted data. [%s]"
-            ) % (basename, err)
+            emsg = ("Could not open '%s' due to unsupported file format " + "or corrupted data. [%s]") % (
+                basename,
+                err,
+            )
             raise SrMiseFileError(emsg)
         return None
 
@@ -336,9 +336,7 @@ class TracePeaks(object):
 
     # filter property
     def setfilter(self, filter):
-        self.__filter = compile(
-            " and ".join(["(%s)" % f for f in filter]), "<string>", "eval"
-        )
+        self.__filter = compile(" and ".join(["(%s)" % f for f in filter]), "<string>", "eval")
 
     def getfilter(self):
         return self.__filter

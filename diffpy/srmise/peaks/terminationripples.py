@@ -52,9 +52,7 @@ class TerminationRipples(PeakFunction):
         metadict["qmax"] = (qmax, repr)
         metadict["extension"] = (extension, repr)
         metadict["supersample"] = (supersample, repr)
-        PeakFunction.__init__(
-            self, parameterdict, formats, default_formats, metadict, base, Cache
-        )
+        PeakFunction.__init__(self, parameterdict, formats, default_formats, metadict, base, Cache)
         return
 
     #### Methods required by PeakFunction ####

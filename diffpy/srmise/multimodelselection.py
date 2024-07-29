@@ -54,9 +54,7 @@ class MultimodelSelection(PeakStability):
         self.classweights = {}
         self.classprobs = {}
         self.sortedclassprobs = {}
-        self.sortedclasses = (
-            {}
-        )  # dg->as self.classes, but with model indices sorted by best AIC
+        self.sortedclasses = {}  # dg->as self.classes, but with model indices sorted by best AIC
 
         PeakStability.__init__(self)
         return
@@ -71,9 +69,7 @@ class MultimodelSelection(PeakStability):
              nominal value.
         filename - Optional file to save pickled results
         """
-        aics_out = (
-            {}
-        )  # Version of self.aics that holds only the statistic, not the AIC object.
+        aics_out = {}  # Version of self.aics that holds only the statistic, not the AIC object.
         self.dgs = np.array(dgs)
         for i, dg in enumerate(self.dgs):
             self.dgs_idx[dg] = i
@@ -100,17 +96,13 @@ class MultimodelSelection(PeakStability):
             # modelevaluators subpackage are in need of a rewrite, and so it would be
             # best to do them all at once.
             dg0 = self.dgs[0]
-            mc = ModelCluster(
-                result[1], result[2], r, y, dg0 * np.ones(len(r)), None, em, self.ppe.pf
-            )
+            mc = ModelCluster(result[1], result[2], r, y, dg0 * np.ones(len(r)), None, em, self.ppe.pf)
             em0 = mc.quality()
 
             for dg in self.dgs:
                 em_instance = em()
                 em_instance.chisq = em0.chisq * (dg0 / dg) ** 2  # rescale chi-square
-                em_instance.evaluate(
-                    mc
-                )  # evaluate AIC without recalculating chi-square
+                em_instance.evaluate(mc)  # evaluate AIC without recalculating chi-square
                 self.aics[dg].append(em_instance)
                 aics_out[dg].append(em_instance.stat)
 
@@ -198,9 +190,7 @@ class MultimodelSelection(PeakStability):
         best_idx = self.sortedprobs[self.dgs[0]][-1]
         (line,) = plt.plot(self.dgs, self.aicprobs[self.dgs[0]])
         vline = plt.axvline(self.dgs[0])
-        (dot,) = plt.plot(
-            self.dgs[best_idx], self.aicprobs[self.dgs[0]][best_idx], "ro"
-        )
+        (dot,) = plt.plot(self.dgs[best_idx], self.aicprobs[self.dgs[0]][best_idx], "ro")
 
         plt.subplot(212)
         self.setcurrent(best_idx)
@@ -244,9 +234,7 @@ class MultimodelSelection(PeakStability):
         arrow_left = len(self.classes) - 1
         arrow_right = arrow_left + 0.05 * arrow_left
         (line,) = plt.plot(range(len(self.classes)), self.classprobs[self.dgs[0]])
-        (dot,) = plt.plot(
-            self.dgs[best_idx], self.classprobs[self.dgs[0]][bestclass_idx], "ro"
-        )
+        (dot,) = plt.plot(self.dgs[best_idx], self.classprobs[self.dgs[0]][bestclass_idx], "ro")
         plt.axvline(arrow_left, color="k")
         ax2 = ax1.twinx()
         ax2.set_ylim(self.dgs[0], self.dgs[-1])
@@ -315,9 +303,7 @@ class MultimodelSelection(PeakStability):
         self.classes_idx = {}
         self.class_tolerance = None
 
-        classes = (
-            []
-        )  # each element is a list of the models (result indices) in the class
+        classes = []  # each element is a list of the models (result indices) in the class
         classes_idx = {}  # given an integer corresponding to a model, return its class
         epsqval = {}  # holds the squared value of each class' exemplar peaks
         ebsqval = {}  # holds the squared value of each class exemplar baselines
@@ -358,9 +344,7 @@ class MultimodelSelection(PeakStability):
                 for p, ep in zip(psqval, epsqval[c]):
                     basediff = np.abs(np.sum(p - ep))
                     # if basediff > tolerance*np.sum(ep):
-                    if basediff > tolerance * np.sum(
-                        ep
-                    ) or basediff > tolerance * np.sum(p):
+                    if basediff > tolerance * np.sum(ep) or basediff > tolerance * np.sum(p):
                         badpeak = True
                         break
                 if badpeak:
@@ -369,9 +353,7 @@ class MultimodelSelection(PeakStability):
                 # check baseline values
                 basediff = np.abs(np.sum(bsqval - ebsqval[c]))
                 # if basediff > tolerance*np.sum(ebsqval[c]):
-                if basediff > tolerance * np.sum(
-                    ebsqval[c]
-                ) or basediff > tolerance * np.sum(bsqval):
+                if basediff > tolerance * np.sum(ebsqval[c]) or basediff > tolerance * np.sum(bsqval):
                     continue
 
                 # that's all the checks, add to current class
@@ -419,9 +401,7 @@ class MultimodelSelection(PeakStability):
 
         for dg in self.dgs:
             bestinclass = [cls[-1] for cls in self.sortedclasses[dg]]
-            self.classweights[dg] = em.akaikeweights(
-                [self.aics[dg][b] for b in bestinclass]
-            )
+            self.classweights[dg] = em.akaikeweights([self.aics[dg][b] for b in bestinclass])
 
     def makeclassprobs(self):
         self.classprobs = {}
@@ -429,9 +409,7 @@ class MultimodelSelection(PeakStability):
 
         for dg in self.dgs:
             bestinclass = [cls[-1] for cls in self.sortedclasses[dg]]
-            self.classprobs[dg] = em.akaikeprobs(
-                [self.aics[dg][b] for b in bestinclass]
-            )
+            self.classprobs[dg] = em.akaikeprobs([self.aics[dg][b] for b in bestinclass])
 
     def makesortedclassprobs(self):
         self.sortedclassprobs = {}
@@ -577,9 +555,7 @@ class MultimodelSelection(PeakStability):
         elif norm is "full":
             mcolor = len(self.results)
             if class_size is "number":
-                norm = colors.BoundaryNorm(
-                    np.linspace(0, mcolor + 1, mcolor + 2), mcolor + 1
-                )
+                norm = colors.BoundaryNorm(np.linspace(0, mcolor + 1, mcolor + 2), mcolor + 1)
             if class_size is "fraction":
                 norm = colors.Normalize(0.0, 1.0)
 
@@ -637,18 +613,14 @@ class MultimodelSelection(PeakStability):
             cbaxis = fig.add_axes(rect)
 
             # Remove all colorbar.make_axes keywords except orientation
-            kwds = eatkwds(
-                "fraction", "pad", "shrink", "aspect", "anchor", "panchor", **kwds
-            )
+            kwds = eatkwds("fraction", "pad", "shrink", "aspect", "anchor", "panchor", **kwds)
         else:
             kwds.setdefault("shrink", 0.75)
 
             # In matplotlib 1.1.0 make_axes_gridspec ignores anchor and panchor keywords.
             # Eat these keywords for now.
             kwds = eatkwds("anchor", "panchor", **kwds)
-            cbaxis, kwds = colorbar.make_axes_gridspec(
-                ax, **kwds
-            )  # gridspec allows tight_layout
+            cbaxis, kwds = colorbar.make_axes_gridspec(ax, **kwds)  # gridspec allows tight_layout
             plt.tight_layout()  # do it after cbaxis, so colorbar isn't ignored
 
         cb = colorbar.ColorbarBase(cbaxis, cmap=cmap, norm=norm, **kwds)
