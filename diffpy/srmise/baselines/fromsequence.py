@@ -22,7 +22,8 @@ from diffpy.srmise.baselines.base import BaselineFunction
 
 logger = logging.getLogger("diffpy.srmise")
 
-class FromSequence (BaselineFunction):
+
+class FromSequence(BaselineFunction):
     """Methods for evaluation of a baseline from discrete data via interpolation.
 
     FromSequence uses cubic spline interpolation (no smoothing) on discrete
@@ -46,13 +47,15 @@ class FromSequence (BaselineFunction):
          or
         file: Name of file with column of x values and column of y values.
         """
-        if len(args)==1 and len(kwds)==0:
+        if len(args) == 1 and len(kwds) == 0:
             # load from file
             x, y = self.readxy(args[0])
-        elif len(args) == 0 and ("file" in kwds and "x" not in kwds and "y" not in kwds):
+        elif len(args) == 0 and (
+            "file" in kwds and "x" not in kwds and "y" not in kwds
+        ):
             # load file
             x, y = self.readxy(kwds["file"])
-        elif len(args)==2 and len(kwds)==0:
+        elif len(args) == 2 and len(kwds) == 0:
             # Load x, y directly from arguments
             x = args[0]
             y = args[1]
@@ -69,15 +72,17 @@ class FromSequence (BaselineFunction):
             emsg = "Sequences x and y must have the same length."
             raise ValueError(emsg)
         parameterdict = {}
-        formats = ['internal']
-        default_formats = {'default_input':'internal', 'default_output':'internal'}
+        formats = ["internal"]
+        default_formats = {"default_input": "internal", "default_output": "internal"}
         self.spline = spi.InterpolatedUnivariateSpline(x, y)
         self.minx = x[0]
         self.maxx = x[-1]
         metadict = {}
         metadict["x"] = (x, self.xyrepr)
         metadict["y"] = (y, self.xyrepr)
-        BaselineFunction.__init__(self, parameterdict, formats, default_formats, metadict, None, Cache=None)
+        BaselineFunction.__init__(
+            self, parameterdict, formats, default_formats, metadict, None, Cache=None
+        )
 
     #### Methods required by BaselineFunction ####
 
@@ -102,10 +107,10 @@ class FromSequence (BaselineFunction):
         r: sequence or scalar over which pars is evaluated
         free: Empty sequence."""
         if len(pars) != self.npars:
-            emsg = "Argument pars must have "+str(self.npars)+" elements."
+            emsg = "Argument pars must have " + str(self.npars) + " elements."
             raise ValueError(emsg)
         if len(free) != self.npars:
-            emsg = "Argument free must have "+str(self.npars)+" elements."
+            emsg = "Argument free must have " + str(self.npars) + " elements."
             raise ValueError(emsg)
         return []
 
@@ -125,15 +130,17 @@ class FromSequence (BaselineFunction):
         if in_format == "internal":
             pass
         else:
-            raise ValueError("Argument 'in_format' must be one of %s." \
-                              % self.parformats)
+            raise ValueError(
+                "Argument 'in_format' must be one of %s." % self.parformats
+            )
 
         # Convert to specified output format from "internal" format.
         if out_format == "internal":
             pass
         else:
-            raise ValueError("Argument 'out_format' must be one of %s." \
-                              % self.parformats)
+            raise ValueError(
+                "Argument 'out_format' must be one of %s." % self.parformats
+            )
         return temp
 
     def _valueraw(self, pars, r):
@@ -143,18 +150,22 @@ class FromSequence (BaselineFunction):
         pars: Empty sequence
         r: sequence or scalar over which pars is evaluated"""
         if len(pars) != self.npars:
-            emsg = "Argument pars must have "+str(self.npars)+" elements."
+            emsg = "Argument pars must have " + str(self.npars) + " elements."
             raise ValueError(emsg)
         try:
             if r[0] < self.minx or r[-1] > self.maxx:
-                logger.warn("Warning: Evaluating interpolating function over %s, outside safe range of %s.",
-                            [r[0], r[-1]],
-                            [self.minx, self.maxx])
+                logger.warn(
+                    "Warning: Evaluating interpolating function over %s, outside safe range of %s.",
+                    [r[0], r[-1]],
+                    [self.minx, self.maxx],
+                )
         except (IndexError, TypeError) as e:
             if r < self.minx or r > self.maxx:
-                logger.warn("Warning: Evaluating interpolating function at %s, outside safe range of %s.",
-                            r,
-                            [self.minx, self.maxx])
+                logger.warn(
+                    "Warning: Evaluating interpolating function at %s, outside safe range of %s.",
+                    r,
+                    [self.minx, self.maxx],
+                )
         return self.spline(r)
 
     def getmodule(self):
@@ -162,7 +173,7 @@ class FromSequence (BaselineFunction):
 
     def xyrepr(self, var):
         """Safe string output of x and y, compatible with eval()"""
-        return "[%s]" %", ".join([repr(v) for v in var])
+        return "[%s]" % ", ".join([repr(v) for v in var])
 
     def readxy(self, filename):
         """ """
@@ -170,17 +181,18 @@ class FromSequence (BaselineFunction):
 
         # TODO: Make this safer
         try:
-            datastring = open(filename,'rb').read()
+            datastring = open(filename, "rb").read()
         except Exception as err:
             raise err
 
         import re
-        res = re.search(r'^[^#]', datastring, re.M)
-        if res:
-            datastring = datastring[res.end():].strip()
 
-        x=[]
-        y=[]
+        res = re.search(r"^[^#]", datastring, re.M)
+        if res:
+            datastring = datastring[res.end() :].strip()
+
+        x = []
+        y = []
 
         try:
             for line in datastring.split("\n"):
@@ -192,16 +204,17 @@ class FromSequence (BaselineFunction):
 
         return (np.array(x), np.array(y))
 
-#end of class FromSequence
+
+# end of class FromSequence
 
 # simple test code
-if __name__ == '__main__':
+if __name__ == "__main__":
 
-    r = np.arange(0, 9.42413, .2)
-    b = -(np.tanh(.5*r) + np.sin(.5*r))
+    r = np.arange(0, 9.42413, 0.2)
+    b = -(np.tanh(0.5 * r) + np.sin(0.5 * r))
     f = FromSequence(r, b)
     pars = np.array([])
     free = np.array([])
 
-    r2 = np.arange(0, 9.42413, .5)
+    r2 = np.arange(0, 9.42413, 0.5)
     b2 = f._valueraw(pars, r2)
