@@ -18,6 +18,7 @@ import numpy as np
 import diffpy.srmise.srmiselog
 from diffpy.srmise.basefunction import BaseFunction
 from diffpy.srmise.modelparts import ModelPart
+from diffpy.srmise.peaks import Peaks
 from diffpy.srmise.srmiseerrors import *
 
 logger = logging.getLogger("diffpy.srmise")
