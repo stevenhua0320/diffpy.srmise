@@ -11,7 +11,8 @@
 #
 ##############################################################################
 
-from optparse import OptionGroup, OptionParser
+import textwrap
+from optparse import IndentedHelpFormatter, OptionGroup, OptionParser
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -539,7 +540,7 @@ def main():
         cov = None
         if options.performextraction:
             cov = ext.extract()
-        out = ext.extracted
+        ext.extracted
 
         if options.savefile is not None:
             try:
@@ -591,12 +592,9 @@ def parsepars(mp, parseq):
     return mp.actualize(pars, "internal", free=free)
 
 
-### Class to preserve newlines in optparse
+# Class to preserve newlines in optparse
 # Borrowed, with minor changes, from
 # http://groups.google.com/group/comp.lang.python/browse_frm/thread/6df6e6b541a15bc2/09f28e26af0699b1
-
-import textwrap
-from optparse import IndentedHelpFormatter
 
 
 class IndentedHelpFormatterWithNL(IndentedHelpFormatter):
@@ -652,7 +650,7 @@ class IndentedHelpFormatterWithNL(IndentedHelpFormatter):
         return "".join(result)
 
 
-### End class
+# End class
 
 if __name__ == "__main__":
     main()
