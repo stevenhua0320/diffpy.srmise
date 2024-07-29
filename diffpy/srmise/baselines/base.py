@@ -176,7 +176,7 @@ if __name__ == "__main__":
 
     from diffpy.srmise.modelcluster import ModelCluster
     from diffpy.srmise.modelevaluators import AICc
-    from diffpy.srmise.peaks import GaussianOverR
+    from diffpy.srmise.peaks import GaussianOverR, Peaks
 
     res = 0.01
     r = np.arange(2, 4, res)
