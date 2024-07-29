@@ -108,8 +108,6 @@ if __name__ == "__main__":
 
     ### Convert output of example files to Unix-style endlines for sdist.
     if os.linesep != '\n':
-        print "==== Scrubbing Endlines ===="
+        print"==== Scrubbing Endlines ===="
         # All *.srmise and *.pwa files in examples directory.
         scrubeol("../doc/examples/output", r".*(\.srmise|\.pwa)")
-
-
