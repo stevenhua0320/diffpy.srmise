@@ -173,11 +173,7 @@ class ModelParts(list):
                 y,
                 r,
                 (y - self.value(r, range=range)) - 1.1 * (max(y) - min(y)),
-                *[
-                    i
-                    for sublist in [[r, p.value(r, range=range)] for p in self]
-                    for i in sublist
-                ]
+                *[i for sublist in [[r, p.value(r, range=range)] for p in self] for i in sublist]
             )
             plt.draw()
 
@@ -193,9 +189,7 @@ class ModelParts(list):
 
         # clean up parameters
         for p in self:
-            p.pars = p.owner().transform_parameters(
-                p.pars, in_format="internal", out_format="internal"
-            )
+            p.pars = p.owner().transform_parameters(p.pars, in_format="internal", out_format="internal")
 
         # Supply estimated covariance matrix if requested.
         # The precise relationship between f[1] and estimated covariance matrix is a little unclear from
@@ -282,8 +276,7 @@ class ModelParts(list):
         """
         if len(freepars) == 0:
             raise ValueError(
-                "Argument freepars has length 0.  The Jacobian "
-                "is only defined with >=1 free parameters."
+                "Argument freepars has length 0.  The Jacobian " "is only defined with >=1 free parameters."
             )
 
         self.pack_freepars(freepars)
@@ -340,10 +333,7 @@ class ModelParts(list):
             try:
                 idx = int(k[1:])
             except ValueError:
-                emsg = (
-                    "Invalid format keyword '%s'.  They must be specified as 'f0', 'f1', etc."
-                    % k
-                )
+                emsg = "Invalid format keyword '%s'.  They must be specified as 'f0', 'f1', etc." % k
                 raise ValueError(emsg)
 
             formats[int(k[1:])] = v
@@ -431,10 +421,7 @@ class ModelPart(object):
         self._owner = owner
 
         if len(pars) != owner.npars:
-            emsg = (
-                "The length of pars must equal the number of parameters "
-                + "specified by the model part owner."
-            )
+            emsg = "The length of pars must equal the number of parameters " + "specified by the model part owner."
             raise ValueError(emsg)
         self.pars = np.array(pars[:])  # pars[:] in case pars is a ModelPart
 
@@ -466,10 +453,7 @@ class ModelPart(object):
             emsg = "Cannot change owner if static_owner is True."
             raise SrMiseStaticOwnerError(emsg)
         if self._owner.npars != owner.npars:
-            emsg = (
-                "New owner specifies different number of parameters than "
-                + "original owner."
-            )
+            emsg = "New owner specifies different number of parameters than " + "original owner."
             raise SrMiseStaticOwnerError(emsg)
         self._owner = owner
 
@@ -524,9 +508,7 @@ class ModelPart(object):
 
         The original and the copy are completely independent, except they both
         reference the same owner."""
-        return type(self).__call__(
-            self._owner, self.pars, self.free, self.removable, self.static_owner
-        )
+        return type(self).__call__(self._owner, self.pars, self.free, self.removable, self.static_owner)
 
     def __getitem__(self, key_or_idx):
         """Return parameter of peak corresponding with key_or_idx.
@@ -580,11 +562,7 @@ class ModelPart(object):
 
     def __str__(self):
         """Return string representation of ModelPart parameters."""
-        return str(
-            self._owner.transform_parameters(
-                self.pars, in_format="internal", out_format="default_output"
-            )
-        )
+        return str(self._owner.transform_parameters(self.pars, in_format="internal", out_format="default_output"))
 
     def __eq__(self, other):
         """ """

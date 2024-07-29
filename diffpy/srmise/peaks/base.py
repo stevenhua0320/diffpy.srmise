@@ -22,6 +22,7 @@ from diffpy.srmise.srmiseerrors import *
 
 logger = logging.getLogger("diffpy.srmise")
 
+
 class PeakFunction(BaseFunction):
     """Base class for functions which represent peaks.
 
@@ -60,7 +61,15 @@ class PeakFunction(BaseFunction):
     transform_parameters()
     """
 
-    def __init__(self, parameterdict, parformats, default_formats, metadict, base=None, Cache=None):
+    def __init__(
+        self,
+        parameterdict,
+        parformats,
+        default_formats,
+        metadict,
+        base=None,
+        Cache=None,
+    ):
         """Set parameterdict defined by subclass
 
         parameterdict: A dictionary mapping string keys to their index in a
@@ -82,24 +91,31 @@ class PeakFunction(BaseFunction):
             raise ValueError(emsg)
         BaseFunction.__init__(self, parameterdict, parformats, default_formats, metadict, base, Cache)
 
-
     #### "Virtual" class methods ####
 
     def scale_at(self, peak, x, scale):
         emsg = "scale_at must be implemented in a PeakFunction subclass."
         raise NotImplementedError(emsg)
 
-
     #### Methods required by BaseFunction ####
 
-    def actualize(self, pars, in_format="default_input", free=None, removable=True, static_owner=False):
+    def actualize(
+        self,
+        pars,
+        in_format="default_input",
+        free=None,
+        removable=True,
+        static_owner=False,
+    ):
         converted = self.transform_parameters(pars, in_format, out_format="internal")
         return Peak(self, converted, free, removable, static_owner)
 
     def getmodule(self):
         return __name__
 
-#end of class PeakFunction
+
+# end of class PeakFunction
+
 
 class Peaks(ModelParts):
     """A collection for Peak objects."""
@@ -110,12 +126,12 @@ class Peaks(ModelParts):
 
     def argsort(self, key="position"):
         """Return sequence of indices which sort peaks in order specified by key."""
-        keypars=np.array([p[key] for p in self])
+        keypars = np.array([p[key] for p in self])
         # In normal use the peaks will already be sorted, so check for it.
-        sorted=True
-        for i in range(len(keypars)-1):
-            if keypars[i] > keypars[i+1]:
-                sorted=False
+        sorted = True
+        for i in range(len(keypars) - 1):
+            if keypars[i] > keypars[i + 1]:
+                sorted = False
                 break
         if not sorted:
             return keypars.argsort().tolist()
@@ -142,14 +158,14 @@ class Peaks(ModelParts):
         orig = self.copy()
 
         try:
-            scale = y/height
+            scale = y / height
 
             # First attempt at scaling peaks.  Record which peaks, if any,
             # were not scaled in case a second attempt is required.
             scaled = []
             all_scaled = True
             any_scaled = False
-            fixed_height = 0.
+            fixed_height = 0.0
             for peak in self:
                 scaled.append(peak.scale_at(x, scale))
                 all_scaled = all_scaled and scaled[-1]
@@ -161,13 +177,13 @@ class Peaks(ModelParts):
             if not all_scaled and fixed_height < y and fixed_height < height:
                 self[:] = orig[:]
                 any_scaled = False
-                scale = (y - fixed_height)/(height - fixed_height)
+                scale = (y - fixed_height) / (height - fixed_height)
                 for peak, s in (self, scaled):
                     if s:
                         # "or" is short-circuited, so scale_at() must be first
                         # to guarantee it is called.
                         any_scaled = peak.scale_at(x, scale) or any_scaled
-        except Exception, e:
+        except Exception as e:
             logger.debug("An exception prevented matching -- %s", e)
             self[:] = orig[:]
             return False
@@ -175,12 +191,14 @@ class Peaks(ModelParts):
 
     def sort(self, key="position"):
         """Sort peaks in order specified by key."""
-        keypars=np.array([p[key] for p in self])
+        keypars = np.array([p[key] for p in self])
         order = keypars.argsort()
         self[:] = [self[idx] for idx in order]
         return
 
+
 # End of class Peaks
+
 
 class Peak(ModelPart):
     """Represents a single peak associated with a PeakFunction subclass."""
@@ -225,7 +243,7 @@ class Peak(ModelPart):
 
         try:
             adj_pars = self._owner.scale_at(self.pars, x, scale)
-        except SrMiseScalingError, err:
+        except SrMiseScalingError as err:
             logger.debug("Cannot scale peak:", err)
             return False
 
@@ -256,10 +274,10 @@ class Peak(ModelPart):
                 try:
                     pdict[l[0]] = eval(l[1])
                 except Exception:
-                    emsg = ("Invalid parameter: %s" %d)
+                    emsg = "Invalid parameter: %s" % d
                     raise SrMiseDataFormatError(emsg)
             else:
-                emsg = ("Invalid parameter: %s" %d)
+                emsg = "Invalid parameter: %s" % d
                 raise SrMiseDataFormatError(emsg)
 
         # Correctly initialize the base function, if one exists.
@@ -271,10 +289,11 @@ class Peak(ModelPart):
 
         return Peak(**pdict)
 
+
 # End of class Peak
 
 # simple test code
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     import matplotlib.pyplot as plt
     from numpy.random import randn
@@ -283,26 +302,26 @@ if __name__ == '__main__':
     from diffpy.srmise.modelevaluators import AICc
     from diffpy.srmise.peaks import GaussianOverR
 
-    res = .01
-    r = np.arange(2,4,res)
-    err = np.ones(len(r)) #default unknown errors
-    pf = GaussianOverR(.7)
+    res = 0.01
+    r = np.arange(2, 4, res)
+    err = np.ones(len(r))  # default unknown errors
+    pf = GaussianOverR(0.7)
     evaluator = AICc()
 
-    pars = [[3, .2, 10], [3.5, .2, 10]]
+    pars = [[3, 0.2, 10], [3.5, 0.2, 10]]
     ideal_peaks = Peaks([pf.actualize(p, "pwa") for p in pars])
-    y = ideal_peaks.value(r) + .1*randn(len(r))
+    y = ideal_peaks.value(r) + 0.1 * randn(len(r))
 
-    guesspars = [[2.7, .15, 5], [3.7, .3, 5]]
+    guesspars = [[2.7, 0.15, 5], [3.7, 0.3, 5]]
     guess_peaks = Peaks([pf.actualize(p, "pwa") for p in guesspars])
     cluster = ModelCluster(guess_peaks, r, y, err, None, AICc, [pf])
 
     qual1 = cluster.quality()
-    print qual1.stat
+    print(qual1.stat)
     cluster.fit()
     yfit = cluster.calc()
     qual2 = cluster.quality()
-    print qual2.stat
+    print(qual2.stat)
 
     plt.figure(1)
     plt.plot(r, y, r, yfit)

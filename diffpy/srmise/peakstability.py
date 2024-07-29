@@ -127,9 +127,7 @@ class PeakStability:
         self.current = idx
         if idx is not None:
             result = self.results[idx]
-            self.ppe.setvars(
-                quiet=True, effective_dy=result[0] * np.ones(len(self.ppe.x))
-            )
+            self.ppe.setvars(quiet=True, effective_dy=result[0] * np.ones(len(self.ppe.x)))
             (r, y, dr, dy) = self.ppe.resampledata(result[3])
             self.ppe.extracted = ModelCluster(
                 result[1], result[2], r, y, dy, None, self.ppe.error_method, self.ppe.pf
@@ -178,12 +176,10 @@ class PeakStability:
                 covs.append(self.ppe.extract())
             else:
                 self.ppe.extract()
-            dr = (
-                self.ppe.extracted.r_cluster[-1] - self.ppe.extracted.r_cluster[0]
-            ) / (len(self.ppe.extracted.r_cluster) - 1)
-            self.results.append(
-                [e, self.ppe.extracted.model, self.ppe.extracted.baseline, dr]
+            dr = (self.ppe.extracted.r_cluster[-1] - self.ppe.extracted.r_cluster[0]) / (
+                len(self.ppe.extracted.r_cluster) - 1
             )
+            self.results.append([e, self.ppe.extracted.model, self.ppe.extracted.baseline, dr])
 
         for e, r, bl, dr in self.results:
             print("---- Results for uncertainty %s ----" % e)

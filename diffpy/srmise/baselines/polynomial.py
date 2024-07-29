@@ -52,9 +52,7 @@ class Polynomial(BaselineFunction):
         default_formats = {"default_input": "internal", "default_output": "internal"}
         metadict = {}
         metadict["degree"] = (degree, repr)
-        BaselineFunction.__init__(
-            self, parameterdict, formats, default_formats, metadict, None, Cache
-        )
+        BaselineFunction.__init__(self, parameterdict, formats, default_formats, metadict, None, Cache)
 
     #### Methods required by BaselineFunction ####
 
@@ -152,17 +150,13 @@ class Polynomial(BaselineFunction):
         if in_format == "internal":
             pass
         else:
-            raise ValueError(
-                "Argument 'in_format' must be one of %s." % self.parformats
-            )
+            raise ValueError("Argument 'in_format' must be one of %s." % self.parformats)
 
         # Convert to specified output format from "internal" format.
         if out_format == "internal":
             pass
         else:
-            raise ValueError(
-                "Argument 'out_format' must be one of %s." % self.parformats
-            )
+            raise ValueError("Argument 'out_format' must be one of %s." % self.parformats)
         return temp
 
     def _valueraw(self, pars, r):

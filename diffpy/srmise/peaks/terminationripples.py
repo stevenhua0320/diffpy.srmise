@@ -21,10 +21,11 @@ from diffpy.srmise.peaks.base import PeakFunction
 
 logger = logging.getLogger("diffpy.srmise")
 
-class TerminationRipples (PeakFunction):
+
+class TerminationRipples(PeakFunction):
     """Methods for evaluation and parameter estimation of a peak function with termination ripples."""
 
-    def __init__(self, base, qmax, extension=4., supersample=5., Cache=None):
+    def __init__(self, base, qmax, extension=4.0, supersample=5.0, Cache=None):
         """Peak function which adds termination ripples to existing function.
 
         Unlike other peak functions, TerminationRipples can only be evaluated
@@ -73,7 +74,6 @@ class TerminationRipples (PeakFunction):
         reason."""
         return self.base.estimate_parameters(r, y)
 
-
     # TODO: Can this be implemented sanely for termination ripples?
     def scale_at(self, pars, x, scale):
         """Change parameters so value(x)->scale*value(x) for the base function.
@@ -90,36 +90,36 @@ class TerminationRipples (PeakFunction):
     def _jacobianraw(self, pars, r, free):
         """Return Jacobian of base function with termination ripples.
 
-           Parameters
-           pars: Sequence of parameters for a single peak
-           r: sequence or scalar over which pars is evaluated
-           free: sequence of booleans which determines which derivatives are
-                 needed.  True for evaluation, False for no evaluation."""
+        Parameters
+        pars: Sequence of parameters for a single peak
+        r: sequence or scalar over which pars is evaluated
+        free: sequence of booleans which determines which derivatives are
+              needed.  True for evaluation, False for no evaluation."""
         return self.base._jacobianraw(pars, r, free)
 
     def _transform_derivativesraw(self, pars, in_format, out_format):
         """Return gradient matrix for the pars converted from in_format to out_format.
 
-           Parameters
-           pars: Sequence of parameters
-           in_format: A format defined for base peak function
-           out_format: A format defined for base peak function"""
+        Parameters
+        pars: Sequence of parameters
+        in_format: A format defined for base peak function
+        out_format: A format defined for base peak function"""
         return self.base._transform_derivativesraw(pars, in_format, out_format)
 
     def _transform_parametersraw(self, pars, in_format, out_format):
         """Convert parameter values from in_format to out_format.
 
-           Parameters
-           pars: Sequence of parameters
-           in_format: A format defined for base peak function
-           out_format: A format defined for base peak function"""
+        Parameters
+        pars: Sequence of parameters
+        in_format: A format defined for base peak function
+        out_format: A format defined for base peak function"""
         return self.base._transform_parametersraw(pars, in_format, out_format)
 
     def _valueraw(self, pars, r):
         """Return value of base peak function for the given parameters and r values.
 
-           pars: Sequence of parameters for a single peak
-           r: sequence or scalar over which pars is evaluated"""
+        pars: Sequence of parameters for a single peak
+        r: sequence or scalar over which pars is evaluated"""
         return self.base._valueraw(pars, r)
 
     #### Overridden PeakFunction functions ####
@@ -137,17 +137,19 @@ class TerminationRipples (PeakFunction):
                a default value of 0.  If caching is enabled these may be
                previously calculated values instead."""
         if self is not peak._owner:
-            raise ValueError("Argument 'peak' must be evaluated by the "
-                             "PeakFunction subclass instance with which "
-                             "it is associated.")
+            raise ValueError(
+                "Argument 'peak' must be evaluated by the "
+                "PeakFunction subclass instance with which "
+                "it is associated."
+            )
 
         # normally r will be a sequence, but also allow single numeric values
         try:
             if len(r) > 1:
-                dr = (r[-1]-r[0])/(len(r)-1)
+                dr = (r[-1] - r[0]) / (len(r) - 1)
             else:
                 # dr is ad hoc if r is a single point
-                dr = 2*np.pi/(self.supersample*self.qmax)
+                dr = 2 * np.pi / (self.supersample * self.qmax)
 
             if rng is None:
                 rng = slice(0, len(r))
@@ -158,19 +160,18 @@ class TerminationRipples (PeakFunction):
             for idx in range(len(output)):
                 if jac[idx] is not None:
                     jac[idx] = self.cut_freq(jac[idx], dr)
-                    output[idx] = r * 0.
+                    output[idx] = r * 0.0
                     output[idx][rng] = jac[idx][ext_slice]
             return output
-        except (TypeError):
+        except TypeError:
             # dr is ad hoc if r is a single point.
-            dr = 2*np.pi/(self.supersample*self.qmax)
+            dr = 2 * np.pi / (self.supersample * self.qmax)
             (ext_r, ext_slice) = self.extend_grid(np.array([r]), dr)
             jac = self._jacobianraw(peak.pars, ext_r, peak.free)
             for idx in range(len(output)):
                 if jac[idx] is not None:
                     jac[idx] = self.cut_freq(jac[idx], dr)[ext_slice][0]
             return jac
-
 
     def value(self, peak, r, rng=None):
         """Calculate (rippled) value of peak, possibly restricted by range.
@@ -187,13 +188,15 @@ class TerminationRipples (PeakFunction):
                previously calculated values instead.
         """
         if self is not peak._owner:
-            raise ValueError("Argument 'peak' must be evaluated by the "
-                             "PeakFunction subclass instance with which "
-                             "it is associated.")
+            raise ValueError(
+                "Argument 'peak' must be evaluated by the "
+                "PeakFunction subclass instance with which "
+                "it is associated."
+            )
 
         # normally r will be a sequence, but also allow single numeric values
 
-        dr_super = 2*np.pi/(self.supersample*self.qmax)
+        dr_super = 2 * np.pi / (self.supersample * self.qmax)
         if np.isscalar(r):
             # dr is ad hoc if r is a single point.
             (ext_r, ext_slice) = self.extend_grid(np.array([r]), dr_super)
@@ -204,7 +207,7 @@ class TerminationRipples (PeakFunction):
             if rng is None:
                 rng = slice(0, len(r))
 
-            output = r * 0.
+            output = r * 0.0
 
             # Make sure the actual dr used for finding termination ripples
             # is at least as fine as dr_super, while still calculating the
@@ -215,13 +218,13 @@ class TerminationRipples (PeakFunction):
             # of sampling needed to avoid the worst of these discretization
             # issues is difficult to determine without detailed knowledge
             # of the underlying function.
-            dr = (r[-1]-r[0])/(len(r)-1)
-            segments = np.ceil(dr/dr_super)
-            dr_segmented = dr/segments
+            dr = (r[-1] - r[0]) / (len(r) - 1)
+            segments = np.ceil(dr / dr_super)
+            dr_segmented = dr / segments
 
             rpart = r[rng]
             if segments > 1:
-                rpart = np.arange(rpart[0], rpart[-1] + dr_segmented/2, dr_segmented)
+                rpart = np.arange(rpart[0], rpart[-1] + dr_segmented / 2, dr_segmented)
 
             (ext_r, ext_slice) = self.extend_grid(rpart, dr_segmented)
             value = self._valueraw(peak.pars, ext_r)
@@ -244,31 +247,32 @@ class TerminationRipples (PeakFunction):
         Parameters
         sequence: (numpy array) The sequence to alter.
         delta: The spacing between elements in sequence."""
-        padlen = int(2**np.ceil(np.log2(len(sequence))))
+        padlen = int(2 ** np.ceil(np.log2(len(sequence))))
         padseq = fp.fft(sequence, padlen)
-        dq = 2*np.pi/((padlen-1)*delta)
-        lowidx = int(np.ceil(self.qmax/dq))
-        hiidx = padlen+1-lowidx
+        dq = 2 * np.pi / ((padlen - 1) * delta)
+        lowidx = int(np.ceil(self.qmax / dq))
+        hiidx = padlen + 1 - lowidx
 
         # Remove hi-frequency components
-        padseq[lowidx:hiidx]=0
+        padseq[lowidx:hiidx] = 0
 
         padseq = fp.ifft(padseq)
-        return np.real(padseq[0:len(sequence)])
+        return np.real(padseq[0 : len(sequence)])
 
     def extend_grid(self, r, dr):
         """Return (extended r, slice giving original range)."""
-        ext = self.extension*2*np.pi/self.qmax
-        left_ext = np.arange(r[0]-dr, max(0., r[0]-ext-dr), -dr)[::-1]
-        right_ext = np.arange(r[-1]+dr, r[-1]+ext+dr, dr)
+        ext = self.extension * 2 * np.pi / self.qmax
+        left_ext = np.arange(r[0] - dr, max(0.0, r[0] - ext - dr), -dr)[::-1]
+        right_ext = np.arange(r[-1] + dr, r[-1] + ext + dr, dr)
         ext_r = np.concatenate((left_ext, r, right_ext))
-        ext_slice = slice(len(left_ext), len(ext_r)-len(right_ext))
+        ext_slice = slice(len(left_ext), len(ext_r) - len(right_ext))
         return (ext_r, ext_slice)
 
-#end of class TerminationRipples
+
+# end of class TerminationRipples
 
 # simple test code
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     import matplotlib.pyplot as plt
     from numpy.random import randn
@@ -279,29 +283,29 @@ if __name__ == '__main__':
     from diffpy.srmise.peakfunctions.peaks import Peaks
     from diffpy.srmise.peakfunctions.terminationripples import TerminationRipples
 
-    res = .01
-    r = np.arange(2,4,res)
-    err = np.ones(len(r)) #default unknown errors
-    pf1 = GaussianOverR(.7)
-    pf2 = TerminationRipples(pf1, 20.)
+    res = 0.01
+    r = np.arange(2, 4, res)
+    err = np.ones(len(r))  # default unknown errors
+    pf1 = GaussianOverR(0.7)
+    pf2 = TerminationRipples(pf1, 20.0)
     evaluator = AICc()
 
-    pars = [[3, .2, 10], [3.5, .2, 10]]
+    pars = [[3, 0.2, 10], [3.5, 0.2, 10]]
     ideal_peaks = Peaks([pf1.createpeak(p, "pwa") for p in pars])
     ripple_peaks = Peaks([pf2.createpeak(p, "pwa") for p in pars])
     y_ideal = ideal_peaks.value(r)
-    y_ripple = ripple_peaks.value(r) + .1*randn(len(r))
+    y_ripple = ripple_peaks.value(r) + 0.1 * randn(len(r))
 
-    guesspars = [[2.7, .15, 5], [3.7, .3, 5]]
+    guesspars = [[2.7, 0.15, 5], [3.7, 0.3, 5]]
     guess_peaks = Peaks([pf2.createpeak(p, "pwa") for p in guesspars])
     cluster = ModelCluster(guess_peaks, r, y_ripple, err, None, AICc, [pf2])
 
     qual1 = cluster.quality()
-    print qual1.stat
+    print(qual1.stat)
     cluster.fit()
     yfit = cluster.calc()
     qual2 = cluster.quality()
-    print qual2.stat
+    print(qual2.stat)
 
     plt.figure(1)
     plt.plot(r, y_ideal, r, y_ripple, r, yfit)

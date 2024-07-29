@@ -194,9 +194,7 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
         x = ppe.x[rangeslice]
         y = ppe.y[rangeslice]
         dy = ppe.effective_dy[rangeslice]
-        mcluster = ModelCluster(
-            ppe.initial_peaks, ppe.baseline, x, y, dy, None, ppe.error_method, ppe.pf
-        )
+        mcluster = ModelCluster(ppe.initial_peaks, ppe.baseline, x, y, dy, None, ppe.error_method, ppe.pf)
         ext = mcluster
     else:
         ext = ppe.extracted
@@ -255,9 +253,7 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
     # Define the various data which will be plotted
     r = ext.r_cluster
     dr = (r[-1] - r[0]) / len(r)
-    rexpand = np.concatenate(
-        (np.arange(r[0] - dr, xlo, -dr)[::-1], r, np.arange(r[-1] + dr, xhi + dr, dr))
-    )
+    rexpand = np.concatenate((np.arange(r[0] - dr, xlo, -dr)[::-1], r, np.arange(r[-1] + dr, xhi + dr, dr)))
     rfine = np.arange(r[0], r[-1], 0.1 * dr)
     gr_obs = np.array(resample(ppe.x, ppe.y, rexpand)) * scale
     # gr_fit = resample(r, ext.value(), rfine)
@@ -295,21 +291,10 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
         max_res = 0.0
 
     # Derive various y limits based on all the offsets
-    rel_height = (
-        100.0
-        - top_offset
-        - dg_height
-        - cmp_height
-        - datatop_offset
-        - databottom_offset
-        - bottom_offset
-    )
+    rel_height = 100.0 - top_offset - dg_height - cmp_height - datatop_offset - databottom_offset - bottom_offset
     abs_height = 100 * ((max_gr - min_gr) + (max_res - min_res)) / rel_height
 
-    yhi = (
-        max_gr
-        + (top_offset + dg_height + cmp_height + datatop_offset) * abs_height / 100
-    )
+    yhi = max_gr + (top_offset + dg_height + cmp_height + datatop_offset) * abs_height / 100
     ylo = yhi - abs_height
 
     yhi = kwds.get("yhi", yhi)
@@ -353,13 +338,7 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
 
     # Remove labels above where insets begin
     # ax_data.yaxis.set_ticklabels([str(int(loc)) for loc in ax_data.yaxis.get_majorticklocs() if loc < datatop])
-    ax_data.yaxis.set_ticks(
-        [
-            loc
-            for loc in ax_data.yaxis.get_majorticklocs()
-            if (loc < datatop and loc >= ylo)
-        ]
-    )
+    ax_data.yaxis.set_ticks([loc for loc in ax_data.yaxis.get_majorticklocs() if (loc < datatop and loc >= ylo)])
 
     # Dataset label
     if datalabel is not None:
@@ -378,9 +357,7 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
 
     # Create new x axis at bottom edge of compare inset
     ax_data.axis["top"].set_visible(False)
-    ax_data.axis["newtop"] = ax_data.new_floating_axis(
-        0, datatop, axis_direction="bottom"
-    )  # "top" bugged?
+    ax_data.axis["newtop"] = ax_data.new_floating_axis(0, datatop, axis_direction="bottom")  # "top" bugged?
     ax_data.axis["newtop"].toggle(all=False, ticks=True)
     ax_data.axis["newtop"].major_ticks.set_tick_out(True)
     ax_data.axis["newtop"].minor_ticks.set_tick_out(True)
@@ -399,9 +376,7 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
         transform=ax_data.transAxes,
     )
     labeldict[fig] = newylabel  # so we can find the correct text object
-    fig.canvas.mpl_connect(
-        "draw_event", on_draw
-    )  # original label invisibility and updating
+    fig.canvas.mpl_connect("draw_event", on_draw)  # original label invisibility and updating
 
     # Compare extracted (and ideal, if provided) peak positions clearly.
     if cmp_height > 0:
@@ -610,15 +585,9 @@ def main():
         type="int",
         help="Plot given model from set.  Ignored if srmise_file is not a PeakStability file.",
     )
-    parser.add_option(
-        "--show", action="store_true", help="execute pylab.show() blocking call"
-    )
-    parser.add_option(
-        "-o", "--output", type="string", help="save plot to the specified file"
-    )
-    parser.add_option(
-        "--format", type="string", default="eps", help="output format for plot saving"
-    )
+    parser.add_option("--show", action="store_true", help="execute pylab.show() blocking call")
+    parser.add_option("-o", "--output", type="string", help="save plot to the specified file")
+    parser.add_option("--format", type="string", default="eps", help="output format for plot saving")
     parser.allow_interspersed_args = True
     opts, args = parser.parse_args(sys.argv[1:])
 
@@ -636,9 +605,7 @@ def main():
             try:
                 toplot.load(filename)
             except Exception:
-                print(
-                    "File '%s' is not a .srmise or PeakStability data file." % filename
-                )
+                print("File '%s' is not a .srmise or PeakStability data file." % filename)
                 return
 
     if opts.model is not None:
