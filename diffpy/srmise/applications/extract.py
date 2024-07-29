@@ -149,9 +149,7 @@ def main():
         "--pf",
         dest="peakfunction",
         metavar="PF",
-        help="Fit peak function PF defined in "
-        "diffpy.srmise.peaks, e.g. "
-        "'GaussianOverR(maxwidth=0.7)'",
+        help="Fit peak function PF defined in " "diffpy.srmise.peaks, e.g. " "'GaussianOverR(maxwidth=0.7)'",
     )
     parser.add_option(
         "--cres",
@@ -230,8 +228,7 @@ def main():
         dest="bpoly0",
         type="string",
         metavar="a0[c]",
-        help="Use constant baseline given by y=a0. "
-        "Append 'c' to make parameter constant.",
+        help="Use constant baseline given by y=a0. " "Append 'c' to make parameter constant.",
     )
     group.add_option(
         "--bpoly1",
@@ -239,8 +236,7 @@ def main():
         type="string",
         nargs=2,
         metavar="a1[c] a0[c]",
-        help="Use baseline given by y=a1*x + a0.  Append 'c' to "
-        "make parameter constant.",
+        help="Use baseline given by y=a1*x + a0.  Append 'c' to " "make parameter constant.",
     )
     group.add_option(
         "--bpoly2",
@@ -248,16 +244,14 @@ def main():
         type="string",
         nargs=3,
         metavar="a2[c] a1[c] a0[c]",
-        help="Use baseline given by y=a2*x^2+a1*x + a0.  Append "
-        "'c' to make parameter constant.",
+        help="Use baseline given by y=a2*x^2+a1*x + a0.  Append " "'c' to make parameter constant.",
     )
     group.add_option(
         "--bseq",
         dest="bseq",
         type="string",
         metavar="FILE",
-        help="Use baseline interpolated from x,y values in FILE. "
-        "This baseline has no free parameters.",
+        help="Use baseline interpolated from x,y values in FILE. " "This baseline has no free parameters.",
     )
     group.add_option(
         "--bspherical",
@@ -343,9 +337,7 @@ def main():
         metavar="FILE",
         help="Save result of extraction to FILE (.srmise " "format).",
     )
-    group.add_option(
-        "--plot", "-p", action="store_true", dest="plot", help="Plot extracted peaks."
-    )
+    group.add_option("--plot", "-p", action="store_true", dest="plot", help="Plot extracted peaks.")
     group.add_option(
         "--liveplot",
         "-l",
@@ -362,9 +354,7 @@ def main():
     )
     parser.add_option_group(group)
 
-    group = OptionGroup(
-        parser, "Verbosity Options", "Control detail printed to console."
-    )
+    group = OptionGroup(parser, "Verbosity Options", "Control detail printed to console.")
     group.add_option(
         "--informative",
         "-i",
@@ -435,9 +425,7 @@ def main():
             options.peakfunction = eval("peaks." + options.peakfunction)
         except Exception as err:
             print(err)
-            print(
-                "Could not create peak function '%s'. Exiting." % options.peakfunction
-            )
+            print("Could not create peak function '%s'. Exiting." % options.peakfunction)
             return
 
     if options.modelevaluator is not None:
@@ -447,9 +435,7 @@ def main():
             options.modelevaluator = eval("modelevaluators." + options.modelevaluator)
         except Exception as err:
             print(err)
-            print(
-                "Could not find ModelEvaluator '%s'. Exiting." % options.modelevaluator
-            )
+            print("Could not find ModelEvaluator '%s'. Exiting." % options.modelevaluator)
             return
 
     if options.bcrystal is not None:
@@ -534,9 +520,7 @@ def main():
         if options.rng is not None:
             pdict["rng"] = list(options.rng)
         if options.qmax is not None:
-            pdict["qmax"] = (
-                options.qmax if options.qmax == "automatic" else float(options.qmax)
-            )
+            pdict["qmax"] = options.qmax if options.qmax == "automatic" else float(options.qmax)
         if options.nyquist is not None:
             pdict["nyquist"] = options.nyquist
         if options.supersample is not None:
@@ -624,10 +608,7 @@ class IndentedHelpFormatterWithNL(IndentedHelpFormatter):
         # the above is still the same
         bits = text.split("\n")
         formatted_bits = [
-            textwrap.fill(
-                bit, text_width, initial_indent=indent, subsequent_indent=indent
-            )
-            for bit in bits
+            textwrap.fill(bit, text_width, initial_indent=indent, subsequent_indent=indent) for bit in bits
         ]
         result = "\n".join(formatted_bits) + "\n"
         return result
@@ -665,9 +646,7 @@ class IndentedHelpFormatterWithNL(IndentedHelpFormatter):
                 help_lines.extend(textwrap.wrap(para, self.help_width))
             # Everything is the same after here
             result.append("%*s%s\n" % (indent_first, "", help_lines[0]))
-            result.extend(
-                ["%*s%s\n" % (self.help_position, "", line) for line in help_lines[1:]]
-            )
+            result.extend(["%*s%s\n" % (self.help_position, "", line) for line in help_lines[1:]])
         elif opts[-1] != "\n":
             result.append("\n")
         return "".join(result)

@@ -52,9 +52,7 @@ class NanoSpherical(BaselineFunction):
         formats = ["internal"]
         default_formats = {"default_input": "internal", "default_output": "internal"}
         metadict = {}
-        BaselineFunction.__init__(
-            self, parameterdict, formats, default_formats, metadict, None, Cache
-        )
+        BaselineFunction.__init__(self, parameterdict, formats, default_formats, metadict, None, Cache)
 
     #### Methods required by BaselineFunction ####
 
@@ -169,17 +167,13 @@ class NanoSpherical(BaselineFunction):
             temp[0] = np.abs(temp[0])
             temp[1] = np.abs(temp[1])
         else:
-            raise ValueError(
-                "Argument 'in_format' must be one of %s." % self.parformats
-            )
+            raise ValueError("Argument 'in_format' must be one of %s." % self.parformats)
 
         # Convert to specified output format from "internal" format.
         if out_format == "internal":
             pass
         else:
-            raise ValueError(
-                "Argument 'out_format' must be one of %s." % self.parformats
-            )
+            raise ValueError("Argument 'out_format' must be one of %s." % self.parformats)
         return temp
 
     def _valueraw(self, pars, r):

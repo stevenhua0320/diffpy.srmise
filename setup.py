@@ -77,10 +77,7 @@ setup_args = dict(
     },
     author="Luke Granlund",
     author_email="luke.r.granlund@gmail.com",
-    description=(
-        "Peak extraction and peak fitting tool for atomic "
-        "pair distribution functions."
-    ),
+    description=("Peak extraction and peak fitting tool for atomic " "pair distribution functions."),
     license="BSD-style license",
     url="https://github.com/diffpy/diffpy.srmise/",
     keywords="peak extraction fitting PDF AIC multimodeling",
