@@ -529,41 +529,41 @@ class MultimodelSelection(PeakStability):
 
         ### Define face colors
         fc = np.array([len(self.classes[z]) for z in zlabels])
-        if class_size is "fraction":
+        if class_size == "fraction":
             fc = fc / float(len(self.results))
 
         # Index the colormap if necessary
-        if class_size is "number":
-            if norm is "auto":
+        if class_size == "number":
+            if norm == "auto":
                 indexedcolors = cmap(np.linspace(0.0, 1.0, np.max(fc)))
                 cmap = colors.ListedColormap(indexedcolors)
-            elif norm is "full":
+            elif norm == "full":
                 indexedcolors = cmap(np.linspace(0.0, 1.0, len(self.results)))
                 cmap = colors.ListedColormap(indexedcolors)
             # A user-specified norm cannot be used to index a colormap.
 
         # Create proper norms for "auto" and "full" types.
-        if norm is "auto":
-            if class_size is "number":
+        if norm == "auto":
+            if class_size == "number":
                 mic = np.min(fc)
                 mac = np.max(fc)
                 nc = mac - mic + 1
                 norm = colors.BoundaryNorm(np.linspace(mic, mac + 1, nc + 1), nc)
-            if class_size is "fraction":
+            if class_size == "fraction":
                 norm = colors.Normalize()
                 norm.autoscale(fc)
-        elif norm is "full":
+        elif norm == "full":
             mcolor = len(self.results)
-            if class_size is "number":
+            if class_size == "number":
                 norm = colors.BoundaryNorm(np.linspace(0, mcolor + 1, mcolor + 2), mcolor + 1)
-            if class_size is "fraction":
+            if class_size == "fraction":
                 norm = colors.Normalize(0.0, 1.0)
 
         zs = np.arange(len(zlabels))
 
         poly = PolyCollection(verts, facecolors=cmap(norm(fc)), closed=False)
         poly.set_alpha(p_alpha)
-        cax = ax.add_collection3d(poly, zs=zs, zdir="y")
+        ax.add_collection3d(poly, zs=zs, zdir="y")
 
         # Highlight values of interest
         color_idx = np.linspace(0, 1, len(highlight))
@@ -601,7 +601,7 @@ class MultimodelSelection(PeakStability):
             )
 
         if title is not False:
-            figtitle = fig.suptitle(title)
+            fig.suptitle(title)
 
         # Add colorbar
         if "cbpos" in kwds:
@@ -625,9 +625,9 @@ class MultimodelSelection(PeakStability):
 
         cb = colorbar.ColorbarBase(cbaxis, cmap=cmap, norm=norm, **kwds)
 
-        if class_size is "number":
+        if class_size == "number":
             cb.set_label("Models in class")
-        elif class_size is "fraction":
+        elif class_size == "fraction":
             cb.set_label("Fraction of models in class")
 
         return {"fig": fig, "axis": ax, "cb": cb, "cbaxis": cbaxis}
