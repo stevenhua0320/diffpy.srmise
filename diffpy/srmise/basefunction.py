@@ -116,21 +116,12 @@ class BaseFunction(object):
 
         # Check validity of default_formats
         self.default_formats = default_formats
-        if not (
-            "default_input" in self.default_formats
-            and "default_output" in self.default_formats
-        ):
-            emsg = (
-                "Argument default_formats must specify 'default_input' "
-                + "and 'default_output' as keys."
-            )
+        if not ("default_input" in self.default_formats and "default_output" in self.default_formats):
+            emsg = "Argument default_formats must specify 'default_input' " + "and 'default_output' as keys."
             raise ValueError(emsg)
         for f in self.default_formats.values():
             if not f in self.parformats:
-                emsg = (
-                    "Keys of argument default_formats must map to a "
-                    + "value within argument parformats."
-                )
+                emsg = "Keys of argument default_formats must map to a " + "value within argument parformats."
                 raise ValueError()
 
         # Set metadictionary
@@ -195,10 +186,7 @@ class BaseFunction(object):
               previously calculated values instead.
         """
         if self is not p._owner:
-            emsg = (
-                "Argument 'p' must be evaluated by the BaseFunction "
-                + "subclass which owns it."
-            )
+            emsg = "Argument 'p' must be evaluated by the BaseFunction " + "subclass which owns it."
             raise ValueError(emsg)
 
         # normally r will be a sequence, but also allow single numeric values
@@ -241,18 +229,12 @@ class BaseFunction(object):
             out_format = self.default_formats["default_input"]
 
         if not in_format in self.parformats:
-            raise ValueError(
-                "Argument 'in_format' must be one of %s." % self.parformats
-            )
+            raise ValueError("Argument 'in_format' must be one of %s." % self.parformats)
         if not out_format in self.parformats:
-            raise ValueError(
-                "Argument 'out_format' must be one of %s." % self.parformats
-            )
+            raise ValueError("Argument 'out_format' must be one of %s." % self.parformats)
         if in_format == out_format:
             return np.identity(self.npars)
-        return self._transform_derivativesraw(
-            pars, in_format=in_format, out_format=out_format
-        )
+        return self._transform_derivativesraw(pars, in_format=in_format, out_format=out_format)
 
     def transform_parameters(self, pars, in_format=None, out_format=None):
         """Return new sequence with pars converted from in_format to out_format.
@@ -282,18 +264,12 @@ class BaseFunction(object):
             out_format = self.default_formats["default_input"]
 
         if not in_format in self.parformats:
-            raise ValueError(
-                "Argument 'in_format' must be one of %s." % self.parformats
-            )
+            raise ValueError("Argument 'in_format' must be one of %s." % self.parformats)
         if not out_format in self.parformats:
-            raise ValueError(
-                "Argument 'out_format' must be one of %s." % self.parformats
-            )
+            raise ValueError("Argument 'out_format' must be one of %s." % self.parformats)
         # if in_format == out_format:
         #    return pars
-        return self._transform_parametersraw(
-            pars, in_format=in_format, out_format=out_format
-        )
+        return self._transform_parametersraw(pars, in_format=in_format, out_format=out_format)
 
     def value(self, p, r, rng=None):
         """Calculate value of ModelPart over r, possibly restricted by range.
@@ -307,10 +283,7 @@ class BaseFunction(object):
               previously calculated values instead.
         """
         if self is not p._owner:
-            emsg = (
-                "Argument 'p' must be evaluated by the BaseFunction "
-                + "subclass which owns it."
-            )
+            emsg = "Argument 'p' must be evaluated by the BaseFunction " + "subclass which owns it."
             raise ValueError(emsg)
 
         # normally r will be a sequence, but also allow single numeric values

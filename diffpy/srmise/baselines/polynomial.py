@@ -22,7 +22,8 @@ from diffpy.srmise.srmiseerrors import SrMiseEstimationError
 
 logger = logging.getLogger("diffpy.srmise")
 
-class Polynomial (BaselineFunction):
+
+class Polynomial(BaselineFunction):
     """Methods for evaluation and parameter estimation of a polynomial baseline."""
 
     def __init__(self, degree, Cache=None):
@@ -41,14 +42,14 @@ class Polynomial (BaselineFunction):
             emsg = "Argument degree must be an integer."
             raise ValueError(emsg)
         if self.degree < 0:
-            self.degree = -1 # interpreted as negative infinity
+            self.degree = -1  # interpreted as negative infinity
         # Define parameterdict
         # e.g. {"a_0":3, "a_1":2, "a_2":1, "a_3":0} if degree is 3.
         parameterdict = {}
-        for d in range(self.degree+1):
-            parameterdict["a_"+str(d)] = self.degree - d
-        formats = ['internal']
-        default_formats = {'default_input':'internal', 'default_output':'internal'}
+        for d in range(self.degree + 1):
+            parameterdict["a_" + str(d)] = self.degree - d
+        formats = ["internal"]
+        default_formats = {"default_input": "internal", "default_output": "internal"}
         metadict = {}
         metadict["degree"] = (degree, repr)
         BaselineFunction.__init__(self, parameterdict, formats, default_formats, metadict, None, Cache)
@@ -81,7 +82,7 @@ class Polynomial (BaselineFunction):
             return np.array([])
 
         if self.degree == 0:
-            return np.array([0.])
+            return np.array([0.0])
 
         if self.degree == 1:
             # Estimate degree=1 baseline.
@@ -90,15 +91,16 @@ class Polynomial (BaselineFunction):
             # lies above the baseline.
             # TODO: Make this more sophisticated.
             try:
-                cut = np.max([len(y)/10, 1])
+                cut = np.max([len(y) / 10, 1])
                 cut_idx = y.argsort()[:cut]
 
                 import numpy.linalg as la
+
                 A = np.array([r[cut_idx]]).T
                 slope = la.lstsq(A, y[cut_idx])[0][0]
-                return np.array([slope, 0.])
-            except Exception, e:
-                emsg = "Error during estimation -- "+str(e)
+                return np.array([slope, 0.0])
+            except Exception as e:
+                emsg = "Error during estimation -- " + str(e)
                 raise
                 raise SrMiseEstimationError(emsg)
 
@@ -116,10 +118,10 @@ class Polynomial (BaselineFunction):
               needed.  True for evaluation, False for no evaluation.
         """
         if len(pars) != self.npars:
-            emsg = "Argument pars must have "+str(self.npars)+" elements."
+            emsg = "Argument pars must have " + str(self.npars) + " elements."
             raise ValueError(emsg)
         if len(free) != self.npars:
-            emsg = "Argument free must have "+str(self.npars)+" elements."
+            emsg = "Argument free must have " + str(self.npars) + " elements."
             raise ValueError(emsg)
         jacobian = [None for p in range(self.npars)]
         if (free == False).sum() == self.npars:
@@ -148,15 +150,13 @@ class Polynomial (BaselineFunction):
         if in_format == "internal":
             pass
         else:
-            raise ValueError("Argument 'in_format' must be one of %s." \
-                              % self.parformats)
+            raise ValueError("Argument 'in_format' must be one of %s." % self.parformats)
 
         # Convert to specified output format from "internal" format.
         if out_format == "internal":
             pass
         else:
-            raise ValueError("Argument 'out_format' must be one of %s." \
-                              % self.parformats)
+            raise ValueError("Argument 'out_format' must be one of %s." % self.parformats)
         return temp
 
     def _valueraw(self, pars, r):
@@ -171,51 +171,54 @@ class Polynomial (BaselineFunction):
               If degree is negative infinity, pars is an empty sequence.
         r: sequence or scalar over which pars is evaluated"""
         if len(pars) != self.npars:
-            emsg = "Argument pars must have "+str(self.npars)+" elements."
+            emsg = "Argument pars must have " + str(self.npars) + " elements."
             raise ValueError(emsg)
         return np.polyval(pars, r)
 
     def getmodule(self):
         return __name__
 
-#end of class Polynomial
+
+# end of class Polynomial
 
 # simple test code
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     # Test polynomial of degree 3
-    print "Testing degree 3 polynomial"
-    print "---------------------------"
-    f = Polynomial(degree = 3)
+    print("Testing degree 3 polynomial")
+    print("---------------------------")
+    f = Polynomial(degree=3)
     r = np.arange(5)
     pars = np.array([3, 0, 1, 2])
     free = np.array([True, False, True, True])
     val = f._valueraw(pars, r)
-    jac =  f._jacobianraw(pars, r, free)
-    print "Value:\n", val
-    print "Jacobian: "
-    for j in jac: print " %s" %j
+    jac = f._jacobianraw(pars, r, free)
+    print("Value:\n", val)
+    print("Jacobian: ")
+    for j in jac:
+        print(" %s" % j)
 
     # Test polynomial of degree -oo
-    print "\nTesting degree -oo polynomial (== 0)"
-    print "------------------------------------"
-    f = Polynomial(degree = -1)
+    print("\nTesting degree -oo polynomial (== 0)")
+    print("------------------------------------")
+    f = Polynomial(degree=-1)
     r = np.arange(5)
     pars = np.array([])
     free = np.array([])
     val = f._valueraw(pars, r)
-    jac =  f._jacobianraw(pars, r, free)
-    print "Value:\n", val
-    print "Jacobian: "
-    for j in jac: print " %s" %j
+    jac = f._jacobianraw(pars, r, free)
+    print("Value:\n", val)
+    print("Jacobian: ")
+    for j in jac:
+        print(" %s" % j)
 
     # Test linear estimation
-    print "\nTesting linear baseline estimation"
-    print "------------------------------------"
-    f = Polynomial(degree = 1)
+    print("\nTesting linear baseline estimation")
+    print("------------------------------------")
+    f = Polynomial(degree=1)
     pars = np.array([1, 0])
-    r = np.arange(0, 10, .1)
-    y = -r + 10*np.exp(-(r-5)**2) + np.random.rand(len(r))
+    r = np.arange(0, 10, 0.1)
+    y = -r + 10 * np.exp(-((r - 5) ** 2)) + np.random.rand(len(r))
     est = f.estimate_parameters(r, y)
-    print "Actual baseline: ", np.array([-1, 0.])
-    print "Estimated baseline: ", est
+    print("Actual baseline: ", np.array([-1, 0.0]))
+    print("Estimated baseline: ", est)

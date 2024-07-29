@@ -21,7 +21,8 @@ from diffpy.srmise.srmiseerrors import SrMiseModelEvaluatorError
 
 logger = logging.getLogger("diffpy.srmise")
 
-class AICc (ModelEvaluator):
+
+class AICc(ModelEvaluator):
     """Evaluate and compare models with the AICc statistic.
 
     Akaike's Information Criterion w/ 2nd order correction for small sample
@@ -50,13 +51,13 @@ class AICc (ModelEvaluator):
 
     def evaluate(self, fit, count_fixed=False, kshift=0):
         """Return quality of fit for given ModelCluster using AICc (Akaike's Information Criterion
-           with 2nd order correction for small sample size).
+        with 2nd order correction for small sample size).
 
-           Parameters
-           fit: A ModelCluster
-           count_fixed: Whether fixed parameters are considered.
-           kshift: (0) Treat the model has having this many additional
-                   parameters.  Negative values also allowed."""
+        Parameters
+        fit: A ModelCluster
+        count_fixed: Whether fixed parameters are considered.
+        kshift: (0) Treat the model has having this many additional
+                parameters.  Negative values also allowed."""
         # Number of parameters.  By default, fixed parameters are ignored.
         k = fit.model.npars(count_fixed=count_fixed) + kshift
         if k < 0:
@@ -77,7 +78,6 @@ class AICc (ModelEvaluator):
 
         return self.stat
 
-
     def minpoints(self, npars):
         """Calculates the minimum number of points required to make an estimate of a model's quality."""
 
@@ -88,36 +88,37 @@ class AICc (ModelEvaluator):
     def parpenalty(self, k, n):
         """Returns the cost for adding k parameters to the current model cluster."""
 
-        #Weight the penalty for additional parameters.
-        #If this isn't 1 there had better be a good reason.
-        fudgefactor = 1.
+        # Weight the penalty for additional parameters.
+        # If this isn't 1 there had better be a good reason.
+        fudgefactor = 1.0
 
-        return (2*k+float(2*k*(k+1))/(n-k-1))*fudgefactor
+        return (2 * k + float(2 * k * (k + 1)) / (n - k - 1)) * fudgefactor
 
     def growth_justified(self, fit, k_prime):
         """Returns whether adding k_prime parameters to the given model (ModelCluster) is justified given the current quality of the fit.
-           The assumption is that adding k_prime parameters will result in "effectively 0" chiSquared cost, and so adding it is justified
-           if the cost of adding these parameters is less than the current chiSquared cost.  The validity of this assumption (which
-           depends on an unknown chiSquared value) and the impact of the errors used should be examined more thoroughly in the future."""
+        The assumption is that adding k_prime parameters will result in "effectively 0" chiSquared cost, and so adding it is justified
+        if the cost of adding these parameters is less than the current chiSquared cost.  The validity of this assumption (which
+        depends on an unknown chiSquared value) and the impact of the errors used should be examined more thoroughly in the future.
+        """
 
         if self.chisq is None:
             self.chisq = self.chi_squared(fit.value(), fit.y_cluster, fit.error_cluster)
 
-        k_actual = fit.model.npars(count_fixed=False)  #parameters in current fit
-        k_test = k_actual + k_prime    #parameters in prospective fit
-        n = fit.size              #the number of data points included in the fit
+        k_actual = fit.model.npars(count_fixed=False)  # parameters in current fit
+        k_test = k_actual + k_prime  # parameters in prospective fit
+        n = fit.size  # the number of data points included in the fit
 
         # If there are too few points to calculate AICc with the requested number of parameter
         # then clearly that increase in parameters is not justified.
         if n < self.minpoints(k_test):
             return False
 
-        #assert n >= self.minPoints(kActual) #check that AICc is defined for the actual fit
+        # assert n >= self.minPoints(kActual) #check that AICc is defined for the actual fit
         if n < self.minpoints(k_actual):
             logger.warn("AICc.growth_justified(): too few data to evaluate quality reliably.")
-            n=self.minpoints(k_actual)
+            n = self.minpoints(k_actual)
 
-        penalty=self.parpenalty(k_test, n) - self.parpenalty(k_actual, n)
+        penalty = self.parpenalty(k_test, n) - self.parpenalty(k_actual, n)
 
         return penalty < self.chisq
 
@@ -127,24 +128,25 @@ class AICc (ModelEvaluator):
 
         aic_stats = np.array([aic.stat for aic in aics])
         aic_min = min(aic_stats)
-        return np.exp(-(aic_stats-aic_min)/2.)
+        return np.exp(-(aic_stats - aic_min) / 2.0)
 
     @staticmethod
     def akaikeprobs(aics):
         """Return sequence of Akaike probabilities for sequence of AICs"""
         aic_weights = AICc.akaikeweights(aics)
-        return aic_weights/np.sum(aic_weights)
+        return aic_weights / np.sum(aic_weights)
+
 
 # end of class AICc
 
 
 # simple test code
-if __name__ == '__main__':
+if __name__ == "__main__":
 
-    m1=AICc()
-    m2=AICc()
+    m1 = AICc()
+    m2 = AICc()
 
     m1.stat = 20
     m2.stat = 30
 
-    print m2 > m1
+    print(m2 > m1)

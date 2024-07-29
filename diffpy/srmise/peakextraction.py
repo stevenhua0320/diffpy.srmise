@@ -179,9 +179,7 @@ class PeakExtraction(object):
                 self.effective_dy = self.dy
             else:
                 # A terribly crude guess
-                self.effective_dy = (
-                    0.05 * (np.max(self.y) - np.min(self.y)) * np.ones(len(self.x))
-                )
+                self.effective_dy = 0.05 * (np.max(self.y) - np.min(self.y)) * np.ones(len(self.x))
         elif np.isscalar(self.effective_dy) and self.effective_dy > 0:
             self.effective_dy = self.effective_dy * np.ones(len(self.x))
 
@@ -207,9 +205,7 @@ class PeakExtraction(object):
                 self.baseline = self.baseline.actualize(epars, "internal")
                 logger.info("Estimating baseline: %s" % self.baseline)
             except (NotImplementedError, SrMiseEstimationError):
-                logger.error(
-                    "Could not estimate baseline from provided BaselineFunction, trying default values."
-                )
+                logger.error("Could not estimate baseline from provided BaselineFunction, trying default values.")
                 self.baseline = None
 
         if self.baseline is None or "baseline" in args:
@@ -282,10 +278,10 @@ class PeakExtraction(object):
         except SrMiseDataFormatError as err:
             logger.exception("")
             basename = os.path.basename(filename)
-            emsg = (
-                "Could not open '%s' due to unsupported file format "
-                + "or corrupted data. [%s]"
-            ) % (basename, err)
+            emsg = ("Could not open '%s' due to unsupported file format " + "or corrupted data. [%s]") % (
+                basename,
+                err,
+            )
             raise SrMiseFileError(emsg)
         return self
 
@@ -466,10 +462,7 @@ class PeakExtraction(object):
             for line in start_data.split("\n"):
                 l = line.split()
                 if len(arrays) != len(l):
-                    emsg = (
-                        "Number of value fields does not match that given by '%s'"
-                        % start_data_info
-                    )
+                    emsg = "Number of value fields does not match that given by '%s'" % start_data_info
                 for a, v in zip(arrays, line.split()):
                     a.append(float(v))
         except (ValueError, IndexError) as err:
@@ -503,9 +496,7 @@ class PeakExtraction(object):
         if re.match(r"^None$", mc):
             self.extracted = None
         else:
-            self.extracted = ModelCluster.factory(
-                mc, pfbaselist=safepf, blfbaselist=safebf
-            )
+            self.extracted = ModelCluster.factory(mc, pfbaselist=safepf, blfbaselist=safebf)
 
     def write(self, filename):
         """Write string representation of PeakExtraction instance to file.
@@ -706,11 +697,7 @@ class PeakExtraction(object):
             # Determine clusters using initial_peaks and pre-defined or estimated baseline
             rangeslice = self.getrangeslice()
             x1 = self.x[rangeslice]
-            y1 = (
-                self.y[rangeslice]
-                - self.baseline.value(x1)
-                - self.initial_peaks.value(x1)
-            )
+            y1 = self.y[rangeslice] - self.baseline.value(x1) - self.initial_peaks.value(x1)
             dy = self.effective_dy[rangeslice]
 
         if x < x1[0] or x > x1[-1]:
@@ -730,9 +717,7 @@ class PeakExtraction(object):
         y1 = y1[cslice]
         dy = dy[cslice]
 
-        mcluster = ModelCluster(
-            None, None, x1, y1, dy, None, self.error_method, self.pf
-        )
+        mcluster = ModelCluster(None, None, x1, y1, dy, None, self.error_method, self.pf)
         mcluster.fit()
 
         if len(mcluster.model) > 0:
@@ -798,11 +783,7 @@ class PeakExtraction(object):
         y = self.y[rangeslice] - ip.value(x)
 
         # List of ModelClusters containing extracted peaks.
-        mclusters = [
-            ModelCluster(
-                None, bl, x, y, dy, dclusters.cut(0), self.error_method, self.pf
-            )
-        ]
+        mclusters = [ModelCluster(None, bl, x, y, dy, dclusters.cut(0), self.error_method, self.pf)]
 
         # The minimum number of points required to make a valid fit, as
         # determined by the peak functions and error method used.  This is a
@@ -844,9 +825,7 @@ class PeakExtraction(object):
                 )
             else:
                 # Update an existing cluster
-                mclusters[step.lastcluster_idx].change_slice(
-                    step.cut(step.lastcluster_idx)
-                )
+                mclusters[step.lastcluster_idx].change_slice(step.cut(step.lastcluster_idx))
 
             # Find newly adjacent clusters
             adjacent = step.find_adjacent_clusters().ravel()
@@ -937,9 +916,7 @@ class PeakExtraction(object):
                     right_data = min(len(x), x.searchsorted(peak_pos[pivot + 1]) + 1)
                     near_peaks = np.append(near_peaks, pivot)
 
-                other_peaks = np.concatenate(
-                    [np.arange(0, pivot - 1), np.arange(pivot + 1, len(peak_pos))]
-                )
+                other_peaks = np.concatenate([np.arange(0, pivot - 1), np.arange(pivot + 1, len(peak_pos))])
 
                 # Go from indices to lists of peaks.
                 near_peaks = Peaks([full_cluster.model[i] for i in near_peaks])
@@ -983,9 +960,7 @@ class PeakExtraction(object):
                     self.error_method,
                     self.pf,
                 )
-                recurse = len(near_peaks) > 0 and checkrec.quality().growth_justified(
-                    checkrec, min_npars
-                )
+                recurse = len(near_peaks) > 0 and checkrec.quality().growth_justified(checkrec, min_npars)
 
                 if recurse and recursion_depth < 3:
                     logger.info(
@@ -1004,8 +979,7 @@ class PeakExtraction(object):
                     rec_search.extract_single(recursion_depth + 1)
                     rec = rec_search.extracted
                     logger.info(
-                        "*********ENDING RECURSION level %s (full boundary) ************\n"
-                        % (recursion_depth + 1)
+                        "*********ENDING RECURSION level %s (full boundary) ************\n" % (recursion_depth + 1)
                     )
 
                     # Incorporate best peaks from recursive search.
@@ -1024,9 +998,7 @@ class PeakExtraction(object):
                     "%s",
                     "---End of combining clusters---",
                 ]
-                logger.debug(
-                    "\n".join(msg), mclusters[step.lastcluster_idx], full_cluster
-                )
+                logger.debug("\n".join(msg), mclusters[step.lastcluster_idx], full_cluster)
 
                 mclusters[step.lastcluster_idx] = full_cluster
             ### End update cluster fits ###
@@ -1043,9 +1015,7 @@ class PeakExtraction(object):
                 cleft = step.clusters[idx - 1]
                 cright = step.clusters[idx]
 
-                new_cluster = ModelCluster.join_adjacent(
-                    mclusters[idx - 1], mclusters[idx]
-                )
+                new_cluster = ModelCluster.join_adjacent(mclusters[idx - 1], mclusters[idx])
 
                 # Estimate coordinate where clusters combine.
                 border_x = 0.5 * (x[cleft[1]] + x[cright[0]])
@@ -1089,9 +1059,7 @@ class PeakExtraction(object):
                     right_data = min(len(x), x.searchsorted(peak_pos[pivot + 1]) + 1)
                     near_peaks = np.append(near_peaks, pivot)
 
-                other_peaks = np.concatenate(
-                    [np.arange(0, pivot - 1), np.arange(pivot + 1, len(peak_pos))]
-                )
+                other_peaks = np.concatenate([np.arange(0, pivot - 1), np.arange(pivot + 1, len(peak_pos))])
 
                 # Go from indices to lists of peaks.
                 near_peaks = Peaks([new_cluster.model[i] for i in near_peaks])
@@ -1202,14 +1170,11 @@ class PeakExtraction(object):
                     self.error_method,
                     self.pf,
                 )
-                recurse2 = len(near_peaks) > 0 and checkrec.quality().growth_justified(
-                    checkrec, min_npars
-                )
+                recurse2 = len(near_peaks) > 0 and checkrec.quality().growth_justified(checkrec, min_npars)
 
                 if recurse2 and recursion_depth < 3:
                     logger.info(
-                        "\n*********STARTING RECURSION level %s (prefit)************"
-                        % (recursion_depth + 1)
+                        "\n*********STARTING RECURSION level %s (prefit)************" % (recursion_depth + 1)
                     )
                     rec_search2 = PeakExtraction()
                     rec_search2.setdata(rec_r2, rec_y2, None, rec_error2)
@@ -1223,8 +1188,7 @@ class PeakExtraction(object):
                     rec_search2.extract_single(recursion_depth + 1)
                     rec2 = rec_search2.extracted
                     logger.info(
-                        "*********ENDING RECURSION level %s (prefit) ************\n"
-                        % (recursion_depth + 1)
+                        "*********ENDING RECURSION level %s (prefit) ************\n" % (recursion_depth + 1)
                     )
 
                     # Incorporate best peaks from recursive search.
@@ -1255,9 +1219,7 @@ class PeakExtraction(object):
                     "---End of combining clusters---",
                 ]
 
-                logger.debug(
-                    "\n".join(msg), mclusters[idx - 1], mclusters[idx], new_cluster
-                )
+                logger.debug("\n".join(msg), mclusters[idx - 1], mclusters[idx], new_cluster)
 
                 mclusters[idx - 1] = new_cluster
                 del mclusters[idx]

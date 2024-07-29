@@ -18,6 +18,7 @@ import numpy as np
 import diffpy.srmise.srmiselog
 from diffpy.srmise.basefunction import BaseFunction
 from diffpy.srmise.modelparts import ModelPart
+from diffpy.srmise.peaks import Peaks
 from diffpy.srmise.srmiseerrors import *
 
 logger = logging.getLogger("diffpy.srmise")
@@ -83,9 +84,7 @@ class BaselineFunction(BaseFunction):
               additional functionality.
         Cache: A class (not instance) which implements caching of BaseFunction
                evaluations."""
-        BaseFunction.__init__(
-            self, parameterdict, parformats, default_formats, metadict, base, Cache
-        )
+        BaseFunction.__init__(self, parameterdict, parformats, default_formats, metadict, base, Cache)
 
     #### "Virtual" class methods ####
 

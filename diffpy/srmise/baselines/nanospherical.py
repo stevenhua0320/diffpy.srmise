@@ -22,7 +22,8 @@ from diffpy.srmise.srmiseerrors import SrMiseEstimationError
 
 logger = logging.getLogger("diffpy.srmise")
 
-class NanoSpherical (BaselineFunction):
+
+class NanoSpherical(BaselineFunction):
     """Methods for evaluation of baseline of spherical nanoparticle of uniform density.
 
     Allowed formats are
@@ -47,29 +48,29 @@ class NanoSpherical (BaselineFunction):
                evaluations.
         """
         # Define parameterdict
-        parameterdict = {'scale':0, 'radius':1}
-        formats = ['internal']
-        default_formats = {'default_input':'internal', 'default_output':'internal'}
+        parameterdict = {"scale": 0, "radius": 1}
+        formats = ["internal"]
+        default_formats = {"default_input": "internal", "default_output": "internal"}
         metadict = {}
         BaselineFunction.__init__(self, parameterdict, formats, default_formats, metadict, None, Cache)
 
     #### Methods required by BaselineFunction ####
 
-#    def estimate_parameters(self, r, y):
-#        """Estimate parameters for spherical baseline. (Not implemented!)
-#
-#        Parameters
-#        r - array along r from which to estimate
-#        y - array along y from which to estimate
-#
-#        Returns Numpy array of parameters in the default internal format.
-#        Raises NotImplementedError if estimation is not implemented for this
-#        degree, or SrMiseEstimationError if parameters cannot be estimated for
-#        any other reason.
-#        """
-#        if len(r) != len(y):
-#            emsg = "Arrays r, y must have equal length."
-#            raise ValueError(emsg)
+    #    def estimate_parameters(self, r, y):
+    #        """Estimate parameters for spherical baseline. (Not implemented!)
+    #
+    #        Parameters
+    #        r - array along r from which to estimate
+    #        y - array along y from which to estimate
+    #
+    #        Returns Numpy array of parameters in the default internal format.
+    #        Raises NotImplementedError if estimation is not implemented for this
+    #        degree, or SrMiseEstimationError if parameters cannot be estimated for
+    #        any other reason.
+    #        """
+    #        if len(r) != len(y):
+    #            emsg = "Arrays r, y must have equal length."
+    #            raise ValueError(emsg)
 
     def _jacobianraw(self, pars, r, free):
         """Return the Jacobian of the spherical baseline.
@@ -83,22 +84,26 @@ class NanoSpherical (BaselineFunction):
                needed.  True for evaluation, False for no evaluation.
         """
         if len(pars) != self.npars:
-            emsg = "Argument pars must have "+str(self.npars)+" elements."
+            emsg = "Argument pars must have " + str(self.npars) + " elements."
             raise ValueError(emsg)
         if len(free) != self.npars:
-            emsg = "Argument free must have "+str(self.npars)+" elements."
+            emsg = "Argument free must have " + str(self.npars) + " elements."
             raise ValueError(emsg)
         jacobian = [None for p in range(self.npars)]
         if (free == False).sum() == self.npars:
             return jacobian
 
         if np.isscalar(r):
-            if r <= 0. or r >= 2.*pars[1]:
-                if free[0]: jacobian[0] = 0.
-                if free[1]: jacobian[1] = 0.
+            if r <= 0.0 or r >= 2.0 * pars[1]:
+                if free[0]:
+                    jacobian[0] = 0.0
+                if free[1]:
+                    jacobian[1] = 0.0
             else:
-                if free[0]: jacobian[0] = self._jacobianrawscale(pars, r)
-                if free[1]: jacobian[1] = self._jacobianrawradius(pars, r)
+                if free[0]:
+                    jacobian[0] = self._jacobianrawscale(pars, r)
+                if free[1]:
+                    jacobian[1] = self._jacobianrawradius(pars, r)
         else:
             s = self._getdomain(pars, r)
             if free[0]:
@@ -120,12 +125,12 @@ class NanoSpherical (BaselineFunction):
         """
         s = np.abs(pars[0])
         R = np.abs(pars[1])
-        rdivR = r/R
+        rdivR = r / R
         # From abs'(s) in derivative, which is equivalent to sign(s) except at 0 where it
         # is undefined. Since s=0 is equivalent to the absence of a nanoparticle, sign will
         # be fine.
         sign = np.sign(pars[1])
-        return -sign*r*(1-(3./4.)*rdivR+(1./16.)*rdivR**3)
+        return -sign * r * (1 - (3.0 / 4.0) * rdivR + (1.0 / 16.0) * rdivR**3)
 
     def _jacobianrawradius(self, pars, r):
         """Return partial Jacobian wrt radius without bounds checking.
@@ -141,7 +146,7 @@ class NanoSpherical (BaselineFunction):
         # From abs'(R) in derivative, which is equivalent to sign(R) except at 0 where it
         # is undefined.  Since R=0 is a singularity anyway, sign will be fine.
         sign = np.sign(pars[1])
-        return sign*s*(3*r**2*(r**2-4*R**2))/(16*R**4)
+        return sign * s * (3 * r**2 * (r**2 - 4 * R**2)) / (16 * R**4)
 
     def _transform_parametersraw(self, pars, in_format, out_format):
         """Convert parameter values from in_format to out_format.
@@ -162,15 +167,13 @@ class NanoSpherical (BaselineFunction):
             temp[0] = np.abs(temp[0])
             temp[1] = np.abs(temp[1])
         else:
-            raise ValueError("Argument 'in_format' must be one of %s." \
-                              % self.parformats)
+            raise ValueError("Argument 'in_format' must be one of %s." % self.parformats)
 
         # Convert to specified output format from "internal" format.
         if out_format == "internal":
             pass
         else:
-            raise ValueError("Argument 'out_format' must be one of %s." \
-                              % self.parformats)
+            raise ValueError("Argument 'out_format' must be one of %s." % self.parformats)
         return temp
 
     def _valueraw(self, pars, r):
@@ -185,11 +188,11 @@ class NanoSpherical (BaselineFunction):
         r - sequence or scalar over which pars is evaluated.
         """
         if len(pars) != self.npars:
-            emsg = "Argument pars must have "+str(self.npars)+" elements."
+            emsg = "Argument pars must have " + str(self.npars) + " elements."
             raise ValueError(emsg)
         if np.isscalar(r):
-            if r <= 0. or r >= 2.*pars[1]:
-                return 0.
+            if r <= 0.0 or r >= 2.0 * pars[1]:
+                return 0.0
             else:
                 return self._valueraw2(pars, r)
         else:
@@ -209,38 +212,48 @@ class NanoSpherical (BaselineFunction):
         """
         s = np.abs(pars[0])
         R = np.abs(pars[1])
-        rdivR = r/R
-        return -s*r*(1-(3./4.)*rdivR+(1./16.)*rdivR**3)
+        rdivR = r / R
+        return -s * r * (1 - (3.0 / 4.0) * rdivR + (1.0 / 16.0) * rdivR**3)
 
     def _getdomain(self, pars, r):
         """Return slice object for which r > 0 and r < twice the radius"""
-        low = r.searchsorted(0., side='right')
-        high = r.searchsorted(2.*pars[1], side='left')
+        low = r.searchsorted(0.0, side="right")
+        high = r.searchsorted(2.0 * pars[1], side="left")
         return slice(low, high)
 
     def getmodule(self):
         return __name__
 
-#end of class NanoSpherical
+
+# end of class NanoSpherical
 
 # simple test code
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     f = NanoSpherical()
     r = np.arange(-5, 10)
-    pars = np.array([-1., 7.])
+    pars = np.array([-1.0, 7.0])
     free = np.array([False, True])
-    print "Testing nanoparticle spherical baseline"
-    print "Scale: %f,  Radius: %f" %(pars[0], pars[1])
-    print "-----------------------------------------"
+    print("Testing nanoparticle spherical baseline")
+    print("Scale: %f,  Radius: %f" % (pars[0], pars[1]))
+    print("-----------------------------------------")
     val = f._valueraw(pars, r)
-    jac =  f._jacobianraw(pars, r, free)
-    outjac = [j if j is not None else [None]*len(r) for j in jac]
-    print "r".center(10), "value".center(10), "jac(scale)".center(10), "jac(radius)".center(10)
+    jac = f._jacobianraw(pars, r, free)
+    outjac = [j if j is not None else [None] * len(r) for j in jac]
+    print(
+        "r".center(10),
+        "value".center(10),
+        "jac(scale)".center(10),
+        "jac(radius)".center(10),
+    )
     for tup in zip(r, val, *outjac):
         for t in tup:
             if t is None:
-                print ("%s" %None).ljust(10),
+                print(
+                    ("%s" % None).ljust(10),
+                )
             else:
-                print ("% .3g" %t).ljust(10),
+                print(
+                    ("% .3g" % t).ljust(10),
+                )
         print
