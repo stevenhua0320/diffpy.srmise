@@ -53,7 +53,7 @@ def run(plot=True):
     # Peaks are extracted between 2 and 10 angstroms, using the baseline
     # from the isolated peak example.
     kwds = {}
-    kwds["rng"] = [2.0, 10.]
+    kwds["rng"] = [2.0, 10.0]
     kwds["baseline"] = baseline
 
     # Apply peak extraction parameters.
@@ -63,8 +63,7 @@ def run(plot=True):
     # model and the full covariance matrix.
     cov = ppe.extract()
 
-
-    print "\n======= Accessing SrMise Results ========"
+    print("\n======= Accessing SrMise Results ========")
     ## Accessing results of extraction
     #
     # Model parameters are organized using a nested structure, with a list
@@ -90,43 +89,39 @@ def run(plot=True):
     # peak. Thus, this parameter can be referenced as (1,2).  Several examples
     # are presented below.
 
-
-    print "\n------ Parameter values and uncertainties ------"
+    print("\n------ Parameter values and uncertainties ------")
     # ModelCovariance.get() returns a (value, uncertainty) tuple for a given
     # parameter.  These are the results for the nearest-neighbor peak.
-    p0 = cov.get((0,0))
-    w0 = cov.get((0,1))
-    a0 = cov.get((0,2))
-    print "Nearest-neighbor peak: "
-    print "    position = %f +/- %f" %p0
-    print "    width = %f +/- %f" %w0
-    print "    area = %f +/- %f" %a0
-    print "    Covariance(width, area) = ", cov.getcovariance((0,1),(0,2))
+    p0 = cov.get((0, 0))
+    w0 = cov.get((0, 1))
+    a0 = cov.get((0, 2))
+    print("Nearest-neighbor peak: ")
+    print("    position = %f +/- %f" % p0)
+    print("    width = %f +/- %f" % w0)
+    print("    area = %f +/- %f" % a0)
+    print("    Covariance(width, area) = ", cov.getcovariance((0, 1), (0, 2)))
 
     # Baseline parameters.  By convention, baseline is final element in cov.
     (slope, intercept) = cov.model[-1]
-    print "\nThe linear baseline B(r)=%f*r + %f" \
-          % tuple(par for par in cov.model[-1])
+    print("\nThe linear baseline B(r)=%f*r + %f" % tuple(par for par in cov.model[-1]))
 
-
-    print "\n ------ Uncertainties from a Saved File --------"
+    print("\n ------ Uncertainties from a Saved File --------")
     # A .srmise file does not save the full covariance matrix, so it must be
     # recalculated when loading from these files.  For example, here is the
     # nearest-neighbor peak in the file which we used to define the initial
     # baseline.
     cov2 = ModelCovariance()
     ppebl.extracted.fit(fitbaseline=True, cov=cov2, cov_format="default_output")
-    p0_saved = cov2.get((0,0))
-    w0_saved = cov2.get((0,1))
-    a0_saved = cov2.get((0,2))
-    print "Nearest-neighbor peak:"
-    print "    position = %f +/- %f" %p0_saved
-    print "    width == %f +/- %f" %w0_saved
-    print "    area = = %f +/- %f" %a0_saved
-    print "    Covariance(width, area) = ", cov2.getcovariance((0,1),(0,2))
+    p0_saved = cov2.get((0, 0))
+    w0_saved = cov2.get((0, 1))
+    a0_saved = cov2.get((0, 2))
+    print("Nearest-neighbor peak:")
+    print("    position = %f +/- %f" % p0_saved)
+    print("    width == %f +/- %f" % w0_saved)
+    print("    area = = %f +/- %f" % a0_saved)
+    print("    Covariance(width, area) = ", cov2.getcovariance((0, 1), (0, 2)))
 
-
-    print "\n ---------- Alternate Parameterizations ---------"
+    print("\n ---------- Alternate Parameterizations ---------")
     ## Different Parameterizations
     # Peaks and baselines may have equivalent parameterizations that are useful
     # in different situations.  For example, the types defined by the
@@ -151,26 +146,24 @@ def run(plot=True):
     # would transform the second, third, and fourth peaks).  If the keyword
     # is omitted, the transformation is attempted for all parts of the fit.
     cov.transform(in_format="pwa", out_format="mu_sigma_area", parts="peaks")
-    print "Width (sigma) of nearest-neighbor peak: %f +/- %f" %cov.get((0,1))
+    print("Width (sigma) of nearest-neighbor peak: %f +/- %f" % cov.get((0, 1)))
 
-
-    print "\n ------------ Highly Correlated Parameters ------------"
+    print("\n ------------ Highly Correlated Parameters ------------")
     # Highly-correlated parameters can indicate difficulties constraining the
     # fit.  This function lists all pairs of parameters with an absolute value
     # of correlation which exceeds a given threshold.
-    print "|Correlation| > 0.9:"
-    print "par1     par2    corr(par1, par2)"
-    print "\n".join(str(c) for c in cov.correlationwarning(.9))
+    print("|Correlation| > 0.9:")
+    print("par1     par2    corr(par1, par2)")
+    print("\n".join(str(c) for c in cov.correlationwarning(0.9)))
 
-
-    print "\n-------- Estimate coordination shell occupancy ---------"
+    print("\n-------- Estimate coordination shell occupancy ---------")
     # Estimate the scale factor and its uncertainty from first peak's intensity.
     # G_normalized = scale * G_observed
     # dscale = scale * dG_observed/G_observed
-    scale = 12./a0[0]
-    dscale = scale * a0[1]/a0[0]
-    print "Estimate scale factor assuming nearest-neighbor intensity = 12"
-    print "Scale factor is %f +/- %f" %(scale, dscale)
+    scale = 12.0 / a0[0]
+    dscale = scale * a0[1] / a0[0]
+    print("Estimate scale factor assuming nearest-neighbor intensity = 12")
+    print("Scale factor is %f +/- %f" % (scale, dscale))
 
     # Reference for number of atoms in coordination shells for FCC.
     # http://chem-faculty.lsu.edu/watkins/MERLOT/cubic_neighbors/cubic_near_neighbors.html
@@ -178,34 +171,32 @@ def run(plot=True):
 
     # Calculated the scaled intensities and uncertainties.
     intensity = []
-    for i in range(0, len(cov.model)-1):
-        (area, darea) = cov.get((i,2))
+    for i in range(0, len(cov.model) - 1):
+        (area, darea) = cov.get((i, 2))
         area *= scale
-        darea = area*np.sqrt((dscale/scale)**2 + (darea/area)**2)
+        darea = area * np.sqrt((dscale / scale) ** 2 + (darea / area) ** 2)
         intensity.append((ideal_intensity[i], area, darea))
 
-    print "\nIntensity"
-    print "Ideal: Estimated"
+    print("\nIntensity")
+    print("Ideal: Estimated")
     for i in intensity:
-        print "%i: %f +/- %f" %i
+        print("%i: %f +/- %f" % i)
 
-    print "\nTotal intensity"
+    print("\nTotal intensity")
     # It is possible to iterate over peaks directly without using indices.
     # In addition, peak parameters can be accessed using string keys.  For the
     # Gaussian over r all of "position", "width", and "area" are valid.
     total_observed_intensity = 0
     total_ideal_intensity = 0
     for peak, ii in zip(cov.model[:-1], ideal_intensity):
-        total_observed_intensity += scale*peak["area"]
+        total_observed_intensity += scale * peak["area"]
         total_ideal_intensity += ii
-    print "Ideal: Observed (using estimated scale factor)"
-    print "%i: %f" %(total_ideal_intensity, total_observed_intensity)
-
+    print("Ideal: Observed (using estimated scale factor)")
+    print("%i: %f" % (total_ideal_intensity, total_observed_intensity))
 
     ## Save output
     ppe.write("output/query_results.srmise")
     ppe.writepwa("output/query_results.pwa")
-
 
     ## Evaluating a model.
     # Although the ModelCovariance object is useful, the model used for fitting
@@ -217,14 +208,15 @@ def run(plot=True):
     # peaks are kept separate.
     if plot:
         plt.figure()
-        grid = np.arange(2, 10, .01)
+        grid = np.arange(2, 10, 0.01)
         bl = ppe.extracted.baseline
         everysecondpeak = ppe.extracted.model[::2]
-        plt.plot(ppe.x, ppe.y, 'o')
+        plt.plot(ppe.x, ppe.y, "o")
         for peak in everysecondpeak:
             plt.plot(grid, bl.value(grid) + peak.value(grid))
         plt.xlim(2, 10)
         plt.show()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     run()
