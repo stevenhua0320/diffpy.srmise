@@ -150,7 +150,7 @@ class FromSequence (BaselineFunction):
                 logger.warn("Warning: Evaluating interpolating function over %s, outside safe range of %s.",
                             [r[0], r[-1]],
                             [self.minx, self.maxx])
-        except IndexError, TypeError:
+        except (IndexError, TypeError) as e:
             if r < self.minx or r > self.maxx:
                 logger.warn("Warning: Evaluating interpolating function at %s, outside safe range of %s.",
                             r,
@@ -171,7 +171,7 @@ class FromSequence (BaselineFunction):
         # TODO: Make this safer
         try:
             datastring = open(filename,'rb').read()
-        except Exception, err:
+        except Exception as err:
             raise err
 
         import re
@@ -187,7 +187,7 @@ class FromSequence (BaselineFunction):
                 v = line.split()
                 x.append(float(v[0]))
                 y.append(float(v[1]))
-        except (ValueError, IndexError), err:
+        except (ValueError, IndexError) as err:
             raise SrMiseDataFormatError(str(err))
 
         return (np.array(x), np.array(y))

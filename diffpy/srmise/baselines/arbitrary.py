@@ -17,6 +17,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import diffpy.srmise.srmiselog
+from diffpy.srmise.baselines import Polynomial
 from diffpy.srmise.baselines.base import BaselineFunction
 from diffpy.srmise.srmiseerrors import SrMiseEstimationError
 
@@ -114,7 +115,7 @@ class Arbitrary (BaselineFunction):
         # TODO: check that estimatef returns something proper?
         try:
             return self.estimatef(r, y)
-        except Exception, e:
+        except Exception as e:
             emsg = "Error within estimation routine provided to Arbitrary:\n"+\
                    str(e)
             raise SrMiseEstimationError(emsg)
@@ -149,7 +150,7 @@ class Arbitrary (BaselineFunction):
         # large performance implications if all other functions used while
         # fitting a function define a Jacobian.
         if nfree == 0:
-            return [None for p in range(len(par))]
+            return [None for p in range(len(pars))]
 
         # TODO: check that jacobianf returns something proper?
         return self.jacobianf(pars, r, free)
@@ -210,12 +211,12 @@ if __name__ == '__main__':
     r = np.arange(5)
     pars = np.array([3, 0, 1, 2])
     free = np.array([True, False, True, True])
-    print f._valueraw(pars, r)
-    print f._jacobianraw(pars, r, free)
+    print(f._valueraw(pars, r))
+    print(f._jacobianraw(pars, r, free))
 
     f = Polynomial(degree = -1)
     r = np.arange(5)
     pars = np.array([])
     free = np.array([])
-    print f._valueraw(pars, r)
-    print f._jacobianraw(pars, r, free)
+    print(f._valueraw(pars, r))
+    print(f._jacobianraw(pars, r, free))

@@ -277,10 +277,10 @@ def main():
         from diffpy.srmise import peaks
         try:
             options.peakfunction = eval("peaks."+options.peakfunction)
-        except Exception, err:
-            print err
-            print "Could not create peak function '%s'. Exiting." \
-                  %options.peakfunction
+        except Exception as err:
+            print(err)
+            print("Could not create peak function '%s'. Exiting." \
+                  %options.peakfunction)
             return
 
     if options.modelevaluator is not None:
@@ -288,10 +288,10 @@ def main():
         try:
             options.modelevaluator = \
                 eval("modelevaluators."+options.modelevaluator)
-        except Exception,  err:
-            print err
-            print "Could not find ModelEvaluator '%s'. Exiting." \
-                  %options.modelevaluator
+        except Exception as err:
+            print(err)
+            print("Could not find ModelEvaluator '%s'. Exiting." \
+                  %options.modelevaluator)
             return
 
     if options.bcrystal is not None:
@@ -328,9 +328,9 @@ def main():
         from diffpy.srmise import baselines
         try:
             options.baseline = eval("baselines."+options.baseline)
-        except Exception, err:
-            print err
-            print "Could not create baseline '%s'. Exiting." %options.baseline
+        except Exception as err:
+            print(err)
+            print("Could not create baseline '%s'. Exiting." %options.baseline)
             return
 
     filename = args[0]
@@ -392,22 +392,22 @@ def main():
         if options.savefile is not None:
             try:
                 ext.write(options.savefile)
-            except SrMiseFileError, err:
-                print err
-                print "Could not save result to '%s'." %options.savefile
+            except SrMiseFileError as err:
+                print(err)
+                print("Could not save result to '%s'." %options.savefile)
 
 
         if options.pwafile is not None:
             try:
                 ext.writepwa(options.pwafile)
-            except SrMiseFileError, err:
-                print err
-                print "Could not save pwa summary to '%s'." %options.pwafile
+            except SrMiseFileError as err:
+                print(err)
+                print("Could not save pwa summary to '%s'." %options.pwafile)
 
 
-        print ext
+        print(ext)
         if cov is not None:
-            print cov
+            print(cov)
 
         if options.plot:
             from diffpy.srmise.applications.plot import makeplot
