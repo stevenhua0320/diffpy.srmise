@@ -13,10 +13,8 @@
 
 import logging
 
-import matplotlib.pyplot as plt
 import numpy as np
 
-import diffpy.srmise.srmiselog
 from diffpy.srmise.peaks.base import PeakFunction
 from diffpy.srmise.srmiseerrors import SrMiseEstimationError, SrMiseScalingError, SrMiseTransformationError
 
@@ -59,7 +57,7 @@ class GaussianOverR(PeakFunction):
             raise ValueError(emsg)
         self.maxwidth = maxwidth
 
-        ### Useful constants ###
+        # Useful constants ###
         # c1 and c2 help with function values
         self.c1 = self.maxwidth * np.sqrt(np.pi / (8 * np.log(2)))
         self.c2 = self.maxwidth**2 / (8 * np.log(2))
@@ -73,7 +71,7 @@ class GaussianOverR(PeakFunction):
 
         return
 
-    #### Methods required by PeakFunction ####
+    # Methods required by PeakFunction ####
 
     def estimate_parameters(self, r, y):
         """Estimate parameters for single peak from data provided.
@@ -102,11 +100,10 @@ class GaussianOverR(PeakFunction):
             emsg = "Not enough data for successful estimation."
             raise SrMiseEstimationError(emsg)
 
-        #### Estimation ####
+        # Estimation ####
         guesspars = np.array([0.0, 0.0, 0.0], dtype=float)
         min_y = use_y.min()
         max_y = use_y.max()
-        center = use_r[use_y.argmax()]
 
         if min_y != max_y:
             weights = (use_y - min_y) ** 2
@@ -218,7 +215,7 @@ class GaussianOverR(PeakFunction):
               needed.  True for evaluation, False for no evaluation.
         """
         jacobian = [None, None, None]
-        if (free == False).sum() == self.npars:
+        if (free is False).sum() == self.npars:
             return jacobian
 
         # Optimization
@@ -242,8 +239,8 @@ class GaussianOverR(PeakFunction):
             # derivative with respect to peak area
             # abs'(x)=sign(x) for real x except at 0 where it is undetermined.  Since any real peak necessarily has
             # non-zero area and the function is paramaterized such that values of either sign represent equivalent
-            # curves I arbitrarily choose positive sign for pars[2]==0 in order to push the system back into a realistic
-            # parameter space should this improbable scenario occur.
+            # curves I arbitrarily choose positive sign for pars[2]==0 in order to
+            # push the system back into a realistic parameter space should this improbable scenario occur.
             #   jacobian[2] = sign(pars[2])*exp_p
             if pars[2] >= 0:
                 jacobian[2] = exp_p
@@ -387,7 +384,7 @@ class GaussianOverR(PeakFunction):
     def getmodule(self):
         return __name__
 
-    #### Other methods ####
+    # Other methods ####
 
     def max(self, pars):
         """Return position and height of the peak maximum."""

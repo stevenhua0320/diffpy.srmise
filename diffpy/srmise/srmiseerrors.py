@@ -28,7 +28,7 @@
    """
 
 
-### Superclass class for diffpy.srmise.mise
+# Superclass class for diffpy.srmise.mise
 class SrMiseError(Exception):
     """Superclass of all diffpy.srmise exceptions."""
 
@@ -43,7 +43,7 @@ class SrMiseError(Exception):
         return self.info
 
 
-### SrMiseError subclasses ###
+# SrMiseError subclasses ###
 
 
 class SrMiseDataFormatError(SrMiseError):

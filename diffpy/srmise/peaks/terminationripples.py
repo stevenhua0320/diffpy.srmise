@@ -16,7 +16,6 @@ import logging
 import numpy as np
 import scipy.fftpack as fp
 
-import diffpy.srmise.srmiselog
 from diffpy.srmise.peaks.base import PeakFunction
 
 logger = logging.getLogger("diffpy.srmise")
@@ -55,7 +54,7 @@ class TerminationRipples(PeakFunction):
         PeakFunction.__init__(self, parameterdict, formats, default_formats, metadict, base, Cache)
         return
 
-    #### Methods required by PeakFunction ####
+    # Methods required by PeakFunction ####
 
     # TODO: A smart way to convert from the basefunctions estimate to an
     # appropriate one when ripples are considered.  This may not be necessary,
@@ -122,7 +121,7 @@ class TerminationRipples(PeakFunction):
         r: sequence or scalar over which pars is evaluated"""
         return self.base._valueraw(pars, r)
 
-    #### Overridden PeakFunction functions ####
+    # Overridden PeakFunction functions ####
     # jacobian() and value() are not normally overridden by PeakFunction
     # subclasses, but are here to minimize the effect of edge-effects while
     # introducing termination ripples.
@@ -236,7 +235,7 @@ class TerminationRipples(PeakFunction):
     def getmodule(self):
         return __name__
 
-    #### Other methods ####
+    # Other methods ####
 
     def cut_freq(self, sequence, delta):
         """Remove high-frequency components from sequence.
@@ -278,10 +277,10 @@ if __name__ == "__main__":
     from numpy.random import randn
 
     from diffpy.srmise.modelcluster import ModelCluster
-    from diffpy.srmise.modelevaluator import AICc
-    from diffpy.srmise.peakfunctions.gaussianoverr import GaussianOverR
-    from diffpy.srmise.peakfunctions.peaks import Peaks
-    from diffpy.srmise.peakfunctions.terminationripples import TerminationRipples
+    from diffpy.srmise.modelevaluators import AICc
+    from diffpy.srmise.peaks import Peaks
+    from diffpy.srmise.peaks.gaussianoverr import GaussianOverR
+    from diffpy.srmise.peaks.terminationripples import TerminationRipples
 
     res = 0.01
     r = np.arange(2, 4, res)
