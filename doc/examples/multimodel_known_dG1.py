@@ -38,46 +38,45 @@ import numpy as np
 
 import diffpy.srmise.srmiselog as sml
 from diffpy.srmise import MultimodelSelection, PDFPeakExtraction
-from diffpy.srmise.applications.plot import makeplot
 
 
 def run(plot=True):
 
-    ## Suppress mundane output
+    # Suppress mundane output
     # When running scripts, especially involving multiple trials, it can be
     # useful to suppress many of the diffpy.srmise messages.  Valid levels
     # include "debug", "info" (the default), "warning", "error", and
     # "critical."  See diffpy.srmise.srmiselog for more information.
     sml.setlevel("warning")
 
-    ## Initialize peak extraction from saved trial
+    # Initialize peak extraction from saved trial
     ppe = PDFPeakExtraction()
     ppe.read("output/query_results.srmise")
     ppe.clearcalc()
 
-    ## Set up extraction parameters
+    # Set up extraction parameters
     # All parameters loaded from .srmise file.
     # Setting new values will override the previous values.
     kwds = {}
     kwds["rng"] = [10.9, 15]  # Region of PDF with some overlap.
     ppe.setvars(**kwds)
 
-    ## Create multimodel selection object.
+    # Create multimodel selection object.
     # The MultimodelSelection class keeps track of the results of peak
     # extraction as the assumed uncertainty dg is varied.
     ms = MultimodelSelection()
     ms.setppe(ppe)
 
-    ## Define range of dg values
+    # Define range of dg values
     # For the purpose of illustration use 15 evenly-spaced values of dg where
     # 50% < dg < 120% of mean experimental dG in extraction range.
     dg_mean = np.mean(ppe.dy[ppe.getrangeslice()])
     dgs = np.linspace(0.5 * dg_mean, 1.2 * dg_mean, 15)
 
-    ## Perform peak extraction for each of the assumed uncertainties.
+    # Perform peak extraction for each of the assumed uncertainties.
     ms.run(dgs)
 
-    ## Save results
+    # Save results
     # The file known_dG_models.dat saves the models generated above.  The file
     # known_dG_aics.dat saves the value of the AIC of each model when evaluated
     # on a Nyquist-sampled grid using each of the dg values used to generate

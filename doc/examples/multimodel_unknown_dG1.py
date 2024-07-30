@@ -42,18 +42,18 @@ from diffpy.srmise.baselines import FromSequence
 
 def run(plot=True):
 
-    ## Suppress mundane output
+    # Suppress mundane output
     # When running scripts, especially involving multiple trials, it can be
     # useful to suppress many of the diffpy.srmise messages.  Valid levels
     # include "debug", "info" (the default), "warning", "error", and
     # "critical."  See diffpy.srmise.srmiselog for more information.
     sml.setlevel("warning")
 
-    ## Initialize peak extraction
+    # Initialize peak extraction
     ppe = PDFPeakExtraction()
     ppe.loadpdf("data/C60_fine_qmax21.gr")
 
-    ## Set up extraction parameters
+    # Set up extraction parameters
     # The FromSequence baseline interpolates (r, G(r)) values read from a
     # specified file.  It has parameters.  This particular baseline was
     # calculated by approximating the C60 sample as a face-centered cubic
@@ -65,22 +65,22 @@ def run(plot=True):
     kwds["cres"] = 0.05
     ppe.setvars(**kwds)
 
-    ## Create multimodel selection object.
+    # Create multimodel selection object.
     # The MultimodelSelection class keeps track of the results of peak
     # extraction as the assumed uncertainty dg is varied.
     ms = MultimodelSelection()
     ms.setppe(ppe)
 
-    ## Define range of dg values
+    # Define range of dg values
     # For the purpose of illustration use 20 evenly-spaced values of dg where
     # 1% < dg < 10% of max gr value between r=1 and 7.25.
     grmax = np.max(ppe.y[ppe.getrangeslice()])
     dgs = np.linspace(0.01 * grmax, 0.10 * grmax, 20)
 
-    ## Perform peak extraction for each of the assumed uncertainties.
+    # Perform peak extraction for each of the assumed uncertainties.
     ms.run(dgs)
 
-    ## Save results
+    # Save results
     # The file C60_models.dat saves the models generated above.  The file
     # C60_aics.dat saves the value of the AIC of each model when evaluated
     # on a Nyquist-sampled grid using each of the dg values used to generate

@@ -78,19 +78,19 @@ def run(plot=True):
     # Suppress mundane output
     sml.setlevel("warning")
 
-    ## Create multimodeling object and load diffpy.srmise results from file.
+    # Create multimodeling object and load diffpy.srmise results from file.
     ms = MultimodelSelection()
     ms.load("output/unknown_dG_models.dat")
     ms.loadaics("output/unknown_dG_aics.dat")
 
-    ## Use Nyquist sampling
+    # Use Nyquist sampling
     # Standard AIC analysis assumes the data have independent uncertainties.
     # Nyquist sampling minimizes correlations in the PDF, which is the closest
     # approximation to independence possible for the PDF.
     dr = np.pi / ms.ppe.qmax
     (r, y, dr2, dy) = ms.ppe.resampledata(dr)
 
-    ## Classify models
+    # Classify models
     # All models are placed into classes.  Models in the same class
     # should be essentially identical (same peak parameters, etc.)
     # up to a small tolerance determined by comparing individual peaks. The
@@ -106,7 +106,7 @@ def run(plot=True):
     tolerance = 0.2
     ms.classify(r, tolerance)
 
-    ## Summarize various facts about the analysis.
+    # Summarize various facts about the analysis.
     num_models = len(ms.results)
     num_classes = len(ms.classes)
     print("------- Multimodeling Summary --------")
@@ -115,7 +115,7 @@ def run(plot=True):
     print("Range of dgs: %f-%f" % (ms.dgs[0], ms.dgs[-1]))
     print("Nyquist-sampled data points: %i" % len(r))
 
-    ## Find "best" models.
+    # Find "best" models.
     # In short, models with greatest Akaike probability.  Akaike probabilities
     # can only be validly compared if they were calculated for identical data,
     # namely identical PDF values *and* uncertainties, and are only reliable
@@ -144,7 +144,7 @@ def run(plot=True):
     print("   Best dG  Model  Class  Free       AIC     Prob  File")
     for dG in best_dGs:
 
-        ## Generate information about best model.
+        # Generate information about best model.
         # The get(dG, *args, **kwds) method returns a tuple of values
         # corresponding to string arguments for the best model in best class at
         # given dG. When the corder keyword is given it returns the model from
@@ -191,7 +191,7 @@ def run(plot=True):
             # Uncomment line below to save figures.
             # plt.savefig(filename_base + ".png", format="png")
 
-    ## 3D plot of Akaike probabilities
+    # 3D plot of Akaike probabilities
     # This plot shows the Akaike probabilities of all classes as a function
     # of assumed uncertainty dG.  This gives a rough sense of how the models
     # selected by an AIC-based analysis would vary if the experimental
