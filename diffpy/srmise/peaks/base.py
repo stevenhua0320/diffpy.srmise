@@ -91,13 +91,13 @@ class PeakFunction(BaseFunction):
             raise ValueError(emsg)
         BaseFunction.__init__(self, parameterdict, parformats, default_formats, metadict, base, Cache)
 
-    #### "Virtual" class methods ####
+    # # "Virtual" class methods ####
 
     def scale_at(self, peak, x, scale):
         emsg = "scale_at must be implemented in a PeakFunction subclass."
         raise NotImplementedError(emsg)
 
-    #### Methods required by BaseFunction ####
+    # # Methods required by BaseFunction ####
 
     def actualize(
         self,

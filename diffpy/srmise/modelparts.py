@@ -207,7 +207,7 @@ class ModelParts(list):
 
         return
 
-    #### Notes on the fit f
+    # # Notes on the fit f
     # f[0] = solution
     # f[1] = Uses the fjac and ipvt optional outputs to construct an estimate of the jacobian around the solution.
     #        None if a singular matrix encountered (indicates very flat curvature in some direction).

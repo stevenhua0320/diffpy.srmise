@@ -375,17 +375,17 @@ class PeakExtraction(object):
             baselinefunctions = header[res.end() :].strip()
             header = header[: res.start()]
 
-        ### Instantiating baseline functions
+        #  Instantiating baseline functions
         res = re.split(r"(?m)^#+ BaselineFunction \d+\s*(?:#.*\s+)*", baselinefunctions)
         for s in res[1:]:
             safebf.append(BaseFunction.factory(s, safebf))
 
-        ### Instantiating peak functions
+        #  Instantiating peak functions
         res = re.split(r"(?m)^#+ PeakFunction \d+\s*(?:#.*\s+)*", peakfunctions)
         for s in res[1:]:
             safepf.append(BaseFunction.factory(s, safepf))
 
-        ### Instantiating Baseline object
+        #  Instantiating Baseline object
         if re.match(r"^None$", baselineobject):
             self.baseline = None
         elif re.match(r"^\d+$", baselineobject):
@@ -393,7 +393,7 @@ class PeakExtraction(object):
         else:
             self.baseline = Baseline.factory(baselineobject, safebf)
 
-        ### Instantiating initial peaks
+        #  Instantiating initial peaks
         if re.match(r"^None$", initial_peaks):
             self.initial_peaks = None
         else:
@@ -402,7 +402,7 @@ class PeakExtraction(object):
             for s in res[1:]:
                 self.initial_peaks.append(Peak.factory(s, safepf))
 
-        ### Instantiating srmise metatdata
+        #  Instantiating srmise metatdata
 
         # pf
         res = re.search(r"^pf=(.*)$", srmisemetadata, re.M)
@@ -426,10 +426,10 @@ class PeakExtraction(object):
         res = re.search(r"^Range=(.*)$", srmisemetadata, re.M)
         self.rng = eval(res.groups()[0].strip())
 
-        ### Instantiating other metadata
+        #  Instantiating other metadata
         self.readmetadata(metadata)
 
-        ### Instantiating start data
+        #  Instantiating start data
         # read actual data - x, y, dx, dy, plus effective_dy
         arrays = []
         if hasx:
@@ -478,7 +478,7 @@ class PeakExtraction(object):
         if hasedy:
             self.effective_dy = np.array(self.effective_dy)
 
-        ### Instantiating results
+        #  Instantiating results
         res = re.search(r"^#+ ModelCluster\s*(?:#.*\s+)*", results, re.M)
         if res:
             mc = results[res.end() :].strip()
@@ -638,7 +638,7 @@ class PeakExtraction(object):
                 line.append("%g" % self.effective_dy[i])
             lines.append(" ".join(line))
 
-        ### Calculated members
+        #  Calculated members
         lines.append("##### Results")
         lines.append("extraction_type=%s" % repr(self.extraction_type))
 
@@ -792,8 +792,8 @@ class PeakExtraction(object):
 
         stepcounter = 0
 
-        ############################
-        ### Main extraction loop ###
+        # #########################
+        #  Main extraction loop ###
         for step in dclusters:
 
             stepcounter += 1
@@ -839,7 +839,7 @@ class PeakExtraction(object):
             # three clusters can become adjacent at any given step.
             assert len(adjacent) <= 3
 
-            ### Update cluster fits ###
+            #  Update cluster fits ###
             # 1. Refit clusters adjacent to at least one other cluster.
             for a in adjacent:
                 mclusters[a].fit(justify=True)
@@ -922,7 +922,7 @@ class PeakExtraction(object):
                 near_peaks = Peaks([full_cluster.model[i] for i in near_peaks])
                 other_peaks = Peaks([full_cluster.model[i] for i in other_peaks])
 
-                ### Remove contribution of peaks outside neighborhood
+                #  Remove contribution of peaks outside neighborhood
                 # Define range of fitting/recursion to the interpeak range
                 # The adjusted error is passed unchanged.  This may introduce
                 # a few more peaks than is justified, but they can be pruned
@@ -985,7 +985,7 @@ class PeakExtraction(object):
                     # Incorporate best peaks from recursive search.
                     adj_cluster.augment(rec)
 
-                ### Select which model to use
+                #  Select which model to use
                 full_cluster.model = other_peaks
                 full_cluster.replacepeaks(adj_cluster.model)
                 full_cluster.fit(True)
@@ -1001,9 +1001,9 @@ class PeakExtraction(object):
                 logger.debug("\n".join(msg), mclusters[step.lastcluster_idx], full_cluster)
 
                 mclusters[step.lastcluster_idx] = full_cluster
-            ### End update cluster fits ###
+            #  End update cluster fits ###
 
-            ### Combine adjacent clusters ###
+            #  Combine adjacent clusters ###
 
             # Iterate in reverse order to preserve earlier indices
             for idx in adjacent[-1:0:-1]:
@@ -1065,7 +1065,7 @@ class PeakExtraction(object):
                 near_peaks = Peaks([new_cluster.model[i] for i in near_peaks])
                 other_peaks = Peaks([new_cluster.model[i] for i in other_peaks])
 
-                ### Remove contribution of peaks outside neighborhood
+                #  Remove contribution of peaks outside neighborhood
                 # Define range of fitting/recursion to the interpeak range
                 # The adjusted error is passed unchanged.  This may introduce
                 # a few more peaks than is justified, but they can be pruned
@@ -1075,7 +1075,7 @@ class PeakExtraction(object):
                 adj_y = y[adj_slice] - other_peaks.value(adj_x)
                 adj_error = dy[adj_slice]
 
-                #### Perform recursion on a version that is scaled at the
+                # # Perform recursion on a version that is scaled at the
                 # border, as well as on that is simply fit beforehand.  In
                 # many cases these lead to nearly identical results, but
                 # occasionally one works much better than the other.
@@ -1194,7 +1194,7 @@ class PeakExtraction(object):
                     # Incorporate best peaks from recursive search.
                     adj_cluster2.augment(rec2)
 
-                ### Select which model to use
+                #  Select which model to use
                 new_cluster.model = other_peaks
                 rej_cluster = ModelCluster(new_cluster)
                 q1 = adj_cluster1.quality(self.error_method)
@@ -1224,7 +1224,7 @@ class PeakExtraction(object):
                 mclusters[idx - 1] = new_cluster
                 del mclusters[idx]
 
-            ### End combine adjacent clusters loop ###
+            #  End combine adjacent clusters loop ###
 
             # Finally, combine clusters in dclusters
             if len(adjacent) > 0:
@@ -1232,8 +1232,8 @@ class PeakExtraction(object):
 
             tracer.emit(*mclusters)
 
-        ### End main extraction loop ###
-        ################################
+        #  End main extraction loop ###
+        # #############################
 
         # Put initial peaks back in
         mclusters[0].addexternalpeaks(ip)

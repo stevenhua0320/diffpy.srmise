@@ -527,7 +527,7 @@ class MultimodelSelection(PeakStability):
                 verts.append(np.concatenate([[p0], zip(xs, ys), [p1], [p0]]))
                 zlabels.append(i)
 
-        ### Define face colors
+        #  Define face colors
         fc = np.array([len(self.classes[z]) for z in zlabels])
         if class_size is "fraction":
             fc = fc / float(len(self.results))
