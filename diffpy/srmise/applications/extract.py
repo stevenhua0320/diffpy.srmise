@@ -419,25 +419,19 @@ def main():
     from diffpy.srmise.pdfpeakextraction import PDFPeakExtraction
     from diffpy.srmise.srmiseerrors import SrMiseDataFormatError, SrMiseFileError
 
-    if options.peakfunction is not None:
-        from diffpy.srmise import peaks
+    try:
+        options.peakfunction = eval("peaks." + options.peakfunction)
+    except Exception as err:
+        print(err)
+        print("Could not create peak function '%s'. Exiting." % options.peakfunction)
+        return
 
-        try:
-            options.peakfunction = eval("peaks." + options.peakfunction)
-        except Exception as err:
-            print(err)
-            print("Could not create peak function '%s'. Exiting." % options.peakfunction)
-            return
-
-    if options.modelevaluator is not None:
-        from diffpy.srmise import modelevaluators
-
-        try:
-            options.modelevaluator = eval("modelevaluators." + options.modelevaluator)
-        except Exception as err:
-            print(err)
-            print("Could not find ModelEvaluator '%s'. Exiting." % options.modelevaluator)
-            return
+    try:
+        options.modelevaluator = eval("modelevaluators." + options.modelevaluator)
+    except Exception as err:
+        print(err)
+        print("Could not find ModelEvaluator '%s'. Exiting." % options.modelevaluator)
+        return
 
     if options.bcrystal is not None:
         from diffpy.srmise.baselines import Polynomial
@@ -475,8 +469,6 @@ def main():
 
         bl = NanoSpherical()
         options.baseline = parsepars(bl, options.bspherical)
-    elif options.baseline is not None:
-        from diffpy.srmise import baselines
 
         try:
             options.baseline = eval("baselines." + options.baseline)

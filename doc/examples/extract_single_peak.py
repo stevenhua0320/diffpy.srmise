@@ -27,26 +27,26 @@ at the command line.
 
 import matplotlib.pyplot as plt
 
-from diffpy.srmise import PDFPeakExtraction
 from diffpy.srmise.applications.plot import makeplot
 from diffpy.srmise.baselines import Polynomial
+from diffpy.srmise.pdfpeakextraction import PDFPeakExtraction
 
 
 def run(plot=True):
 
-    ## Initialize peak extraction
+    # Initialize peak extraction
     # Create peak extraction object
     ppe = PDFPeakExtraction()
 
     # Load the PDF from a file
     ppe.loadpdf("data/Ag_nyquist_qmax30.gr")
 
-    ## Set up extraction parameters.
-    # For convenience we add all parameters to a dictionary before passing them
+    # Set up extraction parameters.
+    # For convenience, we add all parameters to a dictionary before passing them
     # to the extraction object.
     #
     # The "rng" (range) parameter defines the region over which peaks will be
-    # extracted and fit.  For the well isolated nearest-neighbor silver peak,
+    # extracted and fit. For the well isolated nearest-neighbor silver peak,
     # which occurs near 2.9 angstroms, it is sufficient to perform extraction
     # between 2 and 3.5 angstroms.
     #
@@ -61,24 +61,24 @@ def run(plot=True):
     # Apply peak extraction parameters.
     ppe.setvars(**kwds)
 
-    ## Perform peak extraction
+    # Perform peak extraction
     ppe.extract()
 
-    ## Save output
+    # Save output
     # The write() method saves a file which preserves all aspects of peak
     # extraction and its results, by convention using the .srmise extension,
     # and which can later be read by diffpy.srmise.
     #
     # The writepwa() method saves a file intended as a human-readable summary.
     # In particular, it reports the position, width (as full-width at
-    # half-maximum), and area of of extracted peaks.  The reported values
+    # half-maximum), and area of extracted peaks.  The reported values
     # are for Gaussians in the radial distribution function (RDF) corresponding
     # to this PDF.
     ppe.write("output/extract_single_peak.srmise")
     ppe.writepwa("output/extract_single_peak.pwa")
 
-    ## Plot results.
-    # Display plot of extracted peak.  It is also possible to plot an existing
+    # Plot results.
+    # Display plot of extracted peak. It is also possible to plot an existing
     # .srmise file from the command line using
     #     srmise output/Ag_singlepeak.srmise --no-extract --plot
     # For additional plotting options, run "srmiseplot --help".

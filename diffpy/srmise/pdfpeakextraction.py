@@ -16,19 +16,23 @@ import logging
 import os.path
 import re
 
-import matplotlib.pyplot as plt
 import numpy as np
 
+from diffpy.srmise import srmiselog
 from diffpy.srmise.modelcluster import ModelCluster, ModelCovariance
 
 # from diffpy.pdfgui.control.pdfdataset import PDFDataSet
 from diffpy.srmise.pdfdataset import PDFDataSet
 from diffpy.srmise.peakextraction import PeakExtraction
-from diffpy.srmise.srmiseerrors import *
+from diffpy.srmise.srmiseerrors import (
+    SrMiseDataFormatError,
+    SrMiseError,
+    SrMiseQmaxError,
+    SrMiseStaticOwnerError,
+    SrMiseUndefinedCovarianceError,
+)
 
 logger = logging.getLogger("diffpy.srmise")
-
-from diffpy.srmise import srmiselog
 
 
 class PDFPeakExtraction(PeakExtraction):
@@ -454,7 +458,7 @@ class PDFPeakExtraction(PeakExtraction):
         try:
             logger.info(str(cov))
             # logger.info("Correlations > .8:\n%s", "\n".join(str(c) for c in cov.correlationwarning(.8)))
-        except SrMiseUndefinedCovarianceError as e:
+        except SrMiseUndefinedCovarianceError:
             logger.warn("Covariance not defined for final model.  Fit may not have converged.")
             logger.info(str(ext))
 
@@ -527,7 +531,7 @@ class PDFPeakExtraction(PeakExtraction):
         logger.info(str(ext))
         try:
             logger.info(str(cov))
-        except SrMiseUndefinedCovarianceError as e:
+        except SrMiseUndefinedCovarianceError:
             logger.warn("Covariance not defined for final model.  Fit may not have converged.")
 
         # Update calculated instance variables

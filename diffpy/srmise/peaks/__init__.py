@@ -13,8 +13,3 @@
 ##############################################################################
 
 __all__ = ["base", "gaussian", "gaussianoverr", "terminationripples"]
-
-from base import Peak, Peaks
-from gaussian import Gaussian
-from gaussianoverr import GaussianOverR
-from terminationripples import TerminationRipples

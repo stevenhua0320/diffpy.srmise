@@ -41,11 +41,10 @@ gettracer: Get a TracePeaks instance for tracing peak extraction.
 import logging
 import os.path
 import re
-import sys
 
 from diffpy.srmise.srmiseerrors import SrMiseDataFormatError, SrMiseFileError, SrMiseLogError
 
-### Default settings ###
+# Default settings ###
 defaultformat = "%(message)s"
 defaultlevel = logging.INFO
 
@@ -57,7 +56,7 @@ LEVELS = {
     "critical": logging.CRITICAL,
 }
 
-### Set up logging to stdout ###
+# Set up logging to stdout ###
 logger = logging.getLogger("diffpy.srmise")
 logger.setLevel(defaultlevel)
 ch = logging.StreamHandler()
@@ -68,10 +67,10 @@ ch.setFormatter(formatter)
 
 logger.addHandler(ch)
 
-### Optional file logger ###
+# Optional file logger ###
 fh = None
 
-### Make updated plots as fitting progresses. ###
+# Make updated plots as fitting progresses. ###
 liveplots = False
 wait = False
 
@@ -144,7 +143,7 @@ def liveplotting(lp, w=False):
         raise ValueError(emsg)
 
 
-### TracePeaks.  Primary purpose is to enable creating movies. ###
+# TracePeaks.  Primary purpose is to enable creating movies. ###
 
 
 class TracePeaks(object):
@@ -345,7 +344,7 @@ class TracePeaks(object):
     filter = property(getfilter, setfilter)
 
 
-### End of class TracePeaks
+# End of class TracePeaks
 
 
 def settracer(**kwds):
