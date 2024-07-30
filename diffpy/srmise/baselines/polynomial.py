@@ -3,7 +3,7 @@
 #
 # SrMise            by Luke Granlund
 #                   (c) 2014 trustees of the Michigan State University
-#                   (c) 2024 trustees of Columia University in the City of New York
+#                   (c) 2024 trustees of Columbia University in the City of New York
 #                   All rights reserved.
 #
 # File coded by:    Luke Granlund
@@ -49,8 +49,7 @@ class Polynomial(BaselineFunction):
             parameterdict["a_" + str(d)] = self.degree - d
         formats = ["internal"]
         default_formats = {"default_input": "internal", "default_output": "internal"}
-        metadict = {}
-        metadict["degree"] = (degree, repr)
+        metadict = {"degree": (degree, repr)}
         BaselineFunction.__init__(self, parameterdict, formats, default_formats, metadict, None, Cache)
 
     # Methods required by BaselineFunction ####
@@ -95,12 +94,11 @@ class Polynomial(BaselineFunction):
 
                 import numpy.linalg as la
 
-                A = np.array([r[cut_idx]]).T
-                slope = la.lstsq(A, y[cut_idx])[0][0]
+                a = np.array([r[cut_idx]]).T
+                slope = la.lstsq(a, y[cut_idx])[0][0]
                 return np.array([slope, 0.0])
             except Exception as e:
                 emsg = "Error during estimation -- " + str(e)
-                raise
                 raise SrMiseEstimationError(emsg)
 
     def _jacobianraw(self, pars, r, free):
