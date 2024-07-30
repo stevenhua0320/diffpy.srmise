@@ -37,25 +37,25 @@ from diffpy.srmise.peaks import GaussianOverR
 
 def run(plot=True):
 
-    ## Initialize peak extraction
+    # Initialize peak extraction
     # Create peak extraction object
     ppe = PDFPeakExtraction()
 
     # Load the PDF from a file
     ppe.loadpdf("data/TiO2_fine_qmax26.gr")
 
-    ###### Set up extraction parameters.
+    # Set up extraction parameters.
     # In this section we'll examine the major extraction parameters in detail.
     # diffpy.srmise strives to provide reasonable default values for these
     # parameters.  For normal use setting the range, baseline, and uncertainty
     # should be sufficient.
     kwds = {}
 
-    ## Range
+    # Range
     # Range defaults to the entire PDF if not specified.
     kwds["rng"] = [1.5, 10.0]
 
-    ## dg
+    # dg
     # diffpy.srmise selects model complexity based primarily on the uncertainty
     # of the PDF.  Note that very small uncertainties (<1%) can make peak
     # extraction excessively slow.  In general, the smaller the uncertainty the
@@ -80,7 +80,7 @@ def run(plot=True):
     #     1273-1283. doi:10.1107/S1600576714010516
     kwds["dg"] = 0.35  # Play with this value!
 
-    ## baseline
+    # baseline
     # As a crystal PDF, a linear baseline crossing the origin is appropriate.
     # Here we define the linear baseline B(r) = -.5*r + 0, and explicitly set
     # the y-intercept as a fixed parameter which will not be fit.  For
@@ -91,7 +91,7 @@ def run(plot=True):
     slope = -0.65  # Play with this value!
     y_intercept = 0.0
     kwds["baseline"] = blfunc.actualize([slope, y_intercept], free=[True, False])
-    ## pf
+    # pf
     # The pf (peakfunction) parameter allows setting the shape of peaks to be
     # extracted.  Termination effects are added automatically to the peak
     # function during extraction.  In the harmonic approximation of atomic
@@ -109,7 +109,7 @@ def run(plot=True):
     pf = GaussianOverR(0.7)
     kwds["pf"] = [pf]  # Despite the list, only one entry is currently supported.
 
-    ## qmax
+    # qmax
     # PDFs typically report the value of qmax (i.e. the maximum momentum
     # transfer q in the measurement), but it can be specified explicitly also.
     # If the PDF does not report qmax, diffpy.srmise attempts to estimate it
@@ -119,7 +119,7 @@ def run(plot=True):
     # diffpy.srmise does not consider Nyquist sampling or termination effects.
     kwds["qmax"] = 26.0
 
-    ## nyquist
+    # nyquist
     # This parameter governs whether diffpy.srmise attempts to find a model
     # on a Nyquist-sampled grid with dr=pi/qmax, which is a grid where data
     # uncertainties are least correlated without loss of information.  By
@@ -132,7 +132,7 @@ def run(plot=True):
     #     doi:10.1103/PhysRevB.84.134105
     kwds["nyquist"] = True
 
-    ## supersample
+    # supersample
     # This parameter dictates the data be oversampled by at least this factor
     # (relative to the Nyquist rate) during the early stages of peak
     # extraction. If the input PDF is even more finely sampled, that level of
@@ -141,7 +141,7 @@ def run(plot=True):
     # finding and clustering process, but reduces speed.
     kwds["supersample"] = 4.0
 
-    ## cres
+    # cres
     # The cres (clustering resolution) parameter governs the sensitivity of the
     # clustering method used by diffpy.srmise.  In short, when the data are
     # being clustered, data which are further than the clustering resolution
@@ -156,7 +156,7 @@ def run(plot=True):
     # Apply peak extraction parameters.
     ppe.setvars(**kwds)
 
-    ## initial_peaks
+    # initial_peaks
     # Initial peaks are peaks which are kept fixed during the early stages of
     # peak extraction, effectively condition results upon their values.  Since
     # initial peaks are sometimes dependent on other SrMise parameters (e.g.
@@ -168,7 +168,7 @@ def run(plot=True):
     # diffpy.srmise estimate the peak parameters.
     # 2) Explicit specification of peak parameters.
 
-    ## Initial peaks from approximate positions.
+    # Initial peaks from approximate positions.
     # This routine estimates peak parameters by finding the peak-like cluster
     # containing the specified point.  It does not search for occluded peaks,
     # so works best on well-separated peaks.  It does, however, take any
@@ -177,7 +177,7 @@ def run(plot=True):
     for p in positions:
         ppe.estimate_peak(p)  # adds to initial_peaks
 
-    ## Initial peaks from explicit parameters.
+    # Initial peaks from explicit parameters.
     # Adding initial peaks explicitly is similar to defining a baseline.
     # Namely, choosing a peak function and then actualizing it with given
     # parameters. For this example peaks are created from the same GaussianOverR
@@ -194,22 +194,22 @@ def run(plot=True):
         peaks.append(pf.actualize(p, free=[True, False, True], in_format="pwa"))
     ppe.add_peaks(peaks)  # adds to initial_peaks
 
-    ## Initial peaks and pruning
+    # Initial peaks and pruning
     # While initial peaks condition what other peaks can be extracted, by
     # default they can also be pruned if a simpler model appears better.  To
     # prevent this, they can be set as non-removable.
     for ip in ppe.initial_peaks:
         ip.removable = False
 
-    ## Plot initial parameters
+    # Plot initial parameters
     if plot:
         makeplot(ppe)
         plt.title("Initial Peaks")
 
-    ###### Perform peak extraction
+    # Perform peak extraction
     ppe.extract()
 
-    ## Save output
+    # Save output
     # The write() method saves a file which preserves all aspects of peak
     # extraction and its results, by convention using the .srmise extension,
     # and which can later be read by diffpy.srmise.
@@ -222,7 +222,7 @@ def run(plot=True):
     ppe.write("output/parameter_summary.srmise")
     ppe.writepwa("output/parameter_summary.pwa")
 
-    ## Plot results.
+    # Plot results.
     # Display plot of extracted peak.  It is also possible to plot an existing
     # .srmise file from the command line using
     #     srmise output/TiO2_parameterdetail.srmise --no-extract --plot

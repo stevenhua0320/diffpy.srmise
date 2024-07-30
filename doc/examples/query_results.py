@@ -30,12 +30,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from diffpy.srmise import ModelCovariance, PDFPeakExtraction
-from diffpy.srmise.applications.plot import makeplot
 
 
 def run(plot=True):
 
-    ## Initialize peak extraction
+    # Initialize peak extraction
     # Create peak extraction object
     ppe = PDFPeakExtraction()
 
@@ -49,7 +48,7 @@ def run(plot=True):
     ppebl.read("output/extract_single_peak.srmise")
     baseline = ppebl.extracted.baseline
 
-    ## Set up extraction parameters.
+    # Set up extraction parameters.
     # Peaks are extracted between 2 and 10 angstroms, using the baseline
     # from the isolated peak example.
     kwds = {}
@@ -59,12 +58,12 @@ def run(plot=True):
     # Apply peak extraction parameters.
     ppe.setvars(**kwds)
 
-    ## Perform peak extraction, and retain object containing a copy of the
+    # Perform peak extraction, and retain object containing a copy of the
     # model and the full covariance matrix.
     cov = ppe.extract()
 
     print("\n======= Accessing SrMise Results ========")
-    ## Accessing results of extraction
+    # Accessing results of extraction
     #
     # Model parameters are organized using a nested structure, with a list
     # of peaks each of which is a list of parameters, similar to the the
@@ -122,7 +121,7 @@ def run(plot=True):
     print("    Covariance(width, area) = ", cov2.getcovariance((0, 1), (0, 2)))
 
     print("\n ---------- Alternate Parameterizations ---------")
-    ## Different Parameterizations
+    # Different Parameterizations
     # Peaks and baselines may have equivalent parameterizations that are useful
     # in different situations.  For example, the types defined by the
     # GaussianOverR peak function are:
@@ -194,11 +193,11 @@ def run(plot=True):
     print("Ideal: Observed (using estimated scale factor)")
     print("%i: %f" % (total_ideal_intensity, total_observed_intensity))
 
-    ## Save output
+    # Save output
     ppe.write("output/query_results.srmise")
     ppe.writepwa("output/query_results.pwa")
 
-    ## Evaluating a model.
+    # Evaluating a model.
     # Although the ModelCovariance object is useful, the model used for fitting
     # can be directly accessed through PDFPeakExtraction as well, albeit
     # without uncertainties.  This is particularly helpful when evaluating a

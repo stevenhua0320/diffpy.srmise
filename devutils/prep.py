@@ -8,6 +8,8 @@ import sys
 
 __basedir__ = os.getcwdu()
 
+from numpy.compat import unicode
+
 # Example imports
 
 
@@ -86,7 +88,7 @@ if __name__ == "__main__":
     rm("../doc/examples/output", r"known_dG.*\.pwa")
     rm("../doc/examples/output", r"unknown_dG.*\.pwa")
 
-    ### Testing examples
+    # Testing examples
     examples = Test()
     test_names = [
         "extract_single_peak",
@@ -108,7 +110,7 @@ if __name__ == "__main__":
 
     examples.report()
 
-    ### Convert output of example files to Unix-style endlines for sdist.
+    # Convert output of example files to Unix-style endlines for sdist.
     if os.linesep != "\n":
         print("==== Scrubbing Endlines ====")
         # All *.srmise and *.pwa files in examples directory.
