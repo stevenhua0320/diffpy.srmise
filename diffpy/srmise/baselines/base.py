@@ -15,10 +15,9 @@ import logging
 
 import numpy as np
 
-import diffpy.srmise.srmiselog
 from diffpy.srmise.basefunction import BaseFunction
 from diffpy.srmise.modelparts import ModelPart
-from diffpy.srmise.srmiseerrors import *
+from diffpy.srmise.srmiseerrors import SrMiseDataFormatError
 
 logger = logging.getLogger("diffpy.srmise")
 
@@ -85,9 +84,9 @@ class BaselineFunction(BaseFunction):
                evaluations."""
         BaseFunction.__init__(self, parameterdict, parformats, default_formats, metadict, base, Cache)
 
-    #### "Virtual" class methods ####
+    # "Virtual" class methods ####
 
-    #### Methods required by BaseFunction ####
+    # Methods required by BaseFunction ####
 
     def actualize(
         self,
@@ -136,17 +135,16 @@ class Baseline(ModelPart):
         baselinestr: string representing Baseline
         ownerlist: List of BaseFunctions that owner is in
         """
-        from numpy import array
 
         data = baselinestr.strip().splitlines()
 
         # dictionary of parameters
         pdict = {}
         for d in data:
-            l = d.split("=", 1)
-            if len(l) == 2:
+            result = d.split("=", 1)
+            if len(result) == 2:
                 try:
-                    pdict[l[0]] = eval(l[1])
+                    pdict[result[0]] = eval(result[1])
                 except Exception:
                     emsg = "Invalid parameter: %s" % d
                     raise SrMiseDataFormatError(emsg)
@@ -169,10 +167,8 @@ class Baseline(ModelPart):
 # simple test code
 if __name__ == "__main__":
 
-    import matplotlib.pyplot as plt
     from numpy.random import randn
 
-    from diffpy.srmise.modelcluster import ModelCluster
     from diffpy.srmise.modelevaluators import AICc
     from diffpy.srmise.peaks import GaussianOverR, Peaks
 
