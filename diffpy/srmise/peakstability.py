@@ -40,7 +40,7 @@ class PeakStability:
     def load(self, filename):
         try:
             import cPickle as pickle
-        except:
+        except ImportError:
             import pickle
 
         in_s = open(filename, "rb")
@@ -68,7 +68,7 @@ class PeakStability:
     def save(self, filename):
         try:
             import cPickle as pickle
-        except:
+        except ImportError:
             import pickle
         out_s = open(filename, "wb")
         try:
@@ -150,7 +150,7 @@ class PeakStability:
         self.setcurrent(0)
         plt.ion()
         plt.plot(*self.ppe.extracted.plottable())
-        a = plt.axis()
+        plt.axis()
         for i in results:
             self.setcurrent(i)
             plt.ioff()
