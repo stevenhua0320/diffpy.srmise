@@ -20,7 +20,6 @@
 """
 
 
-import copy
 import os.path
 import re
 import time
