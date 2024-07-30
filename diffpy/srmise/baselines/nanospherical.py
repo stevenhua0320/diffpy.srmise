@@ -13,12 +13,9 @@
 
 import logging
 
-import matplotlib.pyplot as plt
 import numpy as np
 
-import diffpy.srmise.srmiselog
 from diffpy.srmise.baselines.base import BaselineFunction
-from diffpy.srmise.srmiseerrors import SrMiseEstimationError
 
 logger = logging.getLogger("diffpy.srmise")
 
@@ -54,7 +51,7 @@ class NanoSpherical(BaselineFunction):
         metadict = {}
         BaselineFunction.__init__(self, parameterdict, formats, default_formats, metadict, None, Cache)
 
-    #### Methods required by BaselineFunction ####
+    # Methods required by BaselineFunction ####
 
     #    def estimate_parameters(self, r, y):
     #        """Estimate parameters for spherical baseline. (Not implemented!)
@@ -90,7 +87,7 @@ class NanoSpherical(BaselineFunction):
             emsg = "Argument free must have " + str(self.npars) + " elements."
             raise ValueError(emsg)
         jacobian = [None for p in range(self.npars)]
-        if (free == False).sum() == self.npars:
+        if (free is False).sum() == self.npars:
             return jacobian
 
         if np.isscalar(r):
@@ -123,7 +120,7 @@ class NanoSpherical(BaselineFunction):
                pars[1] = radius
         r - sequence or scalar over which pars is evaluated.
         """
-        s = np.abs(pars[0])
+        np.abs(pars[0])
         R = np.abs(pars[1])
         rdivR = r / R
         # From abs'(s) in derivative, which is equivalent to sign(s) except at 0 where it

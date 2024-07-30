@@ -13,11 +13,9 @@
 
 import logging
 
-import matplotlib.pyplot as plt
 import numpy as np
 import scipy.interpolate as spi
 
-import diffpy.srmise.srmiselog
 from diffpy.srmise.baselines.base import BaselineFunction
 
 logger = logging.getLogger("diffpy.srmise")
@@ -80,7 +78,7 @@ class FromSequence(BaselineFunction):
         metadict["y"] = (y, self.xyrepr)
         BaselineFunction.__init__(self, parameterdict, formats, default_formats, metadict, None, Cache=None)
 
-    #### Methods required by BaselineFunction ####
+    # Methods required by BaselineFunction ####
 
     def estimate_parameters(self, r, y):
         """Return empty numpy array.
@@ -151,7 +149,7 @@ class FromSequence(BaselineFunction):
                     [r[0], r[-1]],
                     [self.minx, self.maxx],
                 )
-        except (IndexError, TypeError) as e:
+        except (IndexError, TypeError):
             if r < self.minx or r > self.maxx:
                 logger.warn(
                     "Warning: Evaluating interpolating function at %s, outside safe range of %s.",
@@ -169,7 +167,7 @@ class FromSequence(BaselineFunction):
 
     def readxy(self, filename):
         """ """
-        from diffpy.srmise.srmiseerrors import SrMiseDataFormatError, SrMiseFileError
+        from diffpy.srmise.srmiseerrors import SrMiseDataFormatError
 
         # TODO: Make this safer
         try:

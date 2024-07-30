@@ -13,10 +13,8 @@
 
 import logging
 
-import matplotlib.pyplot as plt
 import numpy as np
 
-import diffpy.srmise.srmiselog
 from diffpy.srmise.baselines import Polynomial
 from diffpy.srmise.baselines.base import BaselineFunction
 from diffpy.srmise.srmiseerrors import SrMiseEstimationError
@@ -97,7 +95,7 @@ class Arbitrary(BaselineFunction):
         metadict["estimatef"] = (estimatef, repr)
         BaselineFunction.__init__(self, parameterdict, formats, default_formats, metadict, None, Cache)
 
-    #### Methods required by BaselineFunction ####
+    # Methods required by BaselineFunction ####
 
     def estimate_parameters(self, r, y):
         """Estimate parameters for data baseline.
@@ -133,7 +131,7 @@ class Arbitrary(BaselineFunction):
               needed.  True for evaluation, False for no evaluation."""
         nfree = None
         if self.jacobianf is None:
-            nfree = (pars == True).sum()
+            nfree = (pars is True).sum()
             if nfree != 0:
                 emsg = "No jacobian routine provided to Arbitrary."
                 raise NotImplementedError(emsg)
