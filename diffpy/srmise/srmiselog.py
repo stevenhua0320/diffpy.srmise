@@ -287,14 +287,14 @@ class TracePeaks(object):
 
         res = re.search(r"^recursion=(.*)$", header, re.M)
         if res:
-            recursion = eval(res.groups()[0].strip())
+            eval(res.groups()[0].strip())
         else:
             emsg = "Required field 'recursion' not found."
             raise SrMiseDataFormatError(emsg)
 
         res = re.search(r"^counter=(.*)$", header, re.M)
         if res:
-            counter = eval(res.groups()[0].strip())
+            eval(res.groups()[0].strip())
         else:
             emsg = "Required field 'counter' not found."
             raise SrMiseDataFormatError(emsg)

@@ -13,10 +13,8 @@
 
 import logging
 
-import matplotlib.pyplot as plt
 import numpy as np
 
-import diffpy.srmise.srmiselog
 from diffpy.srmise.baselines.base import BaselineFunction
 from diffpy.srmise.srmiseerrors import SrMiseEstimationError
 
@@ -54,7 +52,7 @@ class Polynomial(BaselineFunction):
         metadict["degree"] = (degree, repr)
         BaselineFunction.__init__(self, parameterdict, formats, default_formats, metadict, None, Cache)
 
-    #### Methods required by BaselineFunction ####
+    # Methods required by BaselineFunction ####
 
     def estimate_parameters(self, r, y):
         """Estimate parameters for polynomial baseline.
@@ -124,7 +122,7 @@ class Polynomial(BaselineFunction):
             emsg = "Argument free must have " + str(self.npars) + " elements."
             raise ValueError(emsg)
         jacobian = [None for p in range(self.npars)]
-        if (free == False).sum() == self.npars:
+        if (free is False).sum() == self.npars:
             return jacobian
 
         # The partial derivative with respect to the nth coefficient of a
