@@ -18,9 +18,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import transforms
 
-import diffpy.srmise.srmiselog
-from diffpy.srmise import ModelCluster, PeakStability
-from diffpy.srmise.modelevaluators.base import ModelEvaluator
+from diffpy.srmise.modelcluster import ModelCluster
+from diffpy.srmise.peakstability import PeakStability
 
 logger = logging.getLogger("diffpy.srmise")
 
@@ -114,7 +113,7 @@ class MultimodelSelection(PeakStability):
         if filename is not None:
             try:
                 import cPickle as pickle
-            except:
+            except ImportError:
                 import pickle
             out_s = open(filename, "wb")
             pickle.dump(aics_out, out_s)
@@ -126,7 +125,7 @@ class MultimodelSelection(PeakStability):
         """Load file containing results of the testall method."""
         try:
             import cPickle as pickle
-        except:
+        except ImportError:
             import pickle
         in_s = open(filename, "rb")
         aics_in = pickle.load(in_s)
@@ -321,7 +320,7 @@ class MultimodelSelection(PeakStability):
                 exemplar_baseline = self.results[classes[c][0]][2]
 
                 # Check baseline type and number of parameters
-                if type(baseline) != type(exemplar_baseline):
+                if type(baseline) is not type(exemplar_baseline):
                     continue
                 if baseline.npars() != exemplar_baseline.npars():
                     continue
@@ -331,7 +330,7 @@ class MultimodelSelection(PeakStability):
                 if len(peaks) != len(exemplar_peaks):
                     continue
                 for p, ep in zip(peaks, exemplar_peaks):
-                    if type(p) != type(ep):
+                    if type(p) is not type(ep):
                         badpeak = True
                         break
                     if p.npars() != ep.npars():
@@ -341,7 +340,6 @@ class MultimodelSelection(PeakStability):
                     continue
 
                 # check peak values
-                current_psqval = []
                 for p, ep in zip(psqval, epsqval[c]):
                     basediff = np.abs(np.sum(p - ep))
                     # if basediff > tolerance*np.sum(ep):
@@ -383,7 +381,6 @@ class MultimodelSelection(PeakStability):
 
     def makesortedclasses(self):
         self.sortedclasses = {}
-        em = self.ppe.error_method
 
         for dg in self.dgs:
             bestinclass = []
@@ -468,13 +465,15 @@ class MultimodelSelection(PeakStability):
         dGs - Sequence of dG values to plot. Default is all values.
         highlight - Sequence of dG values to highlight on plot.  Default is [].
         classes - Sequence of indices of classes to plot. Default is all classes.
-        probfilter - [float1, float2].  Only show classes with maximum probability in given range.  Default is [0., 1.]
+        probfilter - [float1, float2]. Only show classes with maximum probability in given range.
+                     Default is [0., 1.]
         class_size - Report the size of each class as a "number" or "fraction".  Default is "number".
         norm - A colors normalization for displaying number/fraction of models in class. Default is "auto".
                If equal to "full" determined by the total number of models.
                If equal to "auto" determined by the number of models in displayed classes.
-        cmap - A colormap or registered colormap name.  Default is cm.jet.  If class_size is "number" and norm is either "auto"
-               or "full" the map is converted to an indexed colormap.
+        cmap - A colormap or registered colormap name.  Default is cm.jet.
+            If class_size is "number" and norm is either "auto"
+            or "full" the map is converted to an indexed colormap.
         highlight_cmap - A colormap or registered colormap name for coloring highlights.  Default is cm.gray.
         title - True, False, or a string.  Defaults to True, which displays some basic information about the graph.
         p_alpha - Probability graph alpha. (Colorbar remains opaque).  Default is 0.7.
@@ -495,12 +494,11 @@ class MultimodelSelection(PeakStability):
 
         from matplotlib import cm, colorbar, colors
         from matplotlib.collections import PolyCollection
-        from mpl_toolkits.mplot3d import Axes3D
 
         fig = kwds.pop("figure", plt.gcf())
         ax = fig.add_subplot(kwds.pop("subplot", 111), projection="3d")
 
-        cbkwds = kwds.copy()
+        kwds.copy()
 
         # Resolve keywords (title resolved later)
         dGs = kwds.pop("dGs", self.dgs)
@@ -530,41 +528,41 @@ class MultimodelSelection(PeakStability):
 
         #  Define face colors
         fc = np.array([len(self.classes[z]) for z in zlabels])
-        if class_size is "fraction":
+        if class_size == "fraction":
             fc = fc / float(len(self.results))
 
         # Index the colormap if necessary
-        if class_size is "number":
-            if norm is "auto":
+        if class_size == "number":
+            if norm == "auto":
                 indexedcolors = cmap(np.linspace(0.0, 1.0, np.max(fc)))
                 cmap = colors.ListedColormap(indexedcolors)
-            elif norm is "full":
+            elif norm == "full":
                 indexedcolors = cmap(np.linspace(0.0, 1.0, len(self.results)))
                 cmap = colors.ListedColormap(indexedcolors)
             # A user-specified norm cannot be used to index a colormap.
 
         # Create proper norms for "auto" and "full" types.
-        if norm is "auto":
-            if class_size is "number":
+        if norm == "auto":
+            if class_size == "number":
                 mic = np.min(fc)
                 mac = np.max(fc)
                 nc = mac - mic + 1
                 norm = colors.BoundaryNorm(np.linspace(mic, mac + 1, nc + 1), nc)
-            if class_size is "fraction":
+            if class_size == "fraction":
                 norm = colors.Normalize()
                 norm.autoscale(fc)
-        elif norm is "full":
+        elif norm == "full":
             mcolor = len(self.results)
-            if class_size is "number":
+            if class_size == "number":
                 norm = colors.BoundaryNorm(np.linspace(0, mcolor + 1, mcolor + 2), mcolor + 1)
-            if class_size is "fraction":
+            if class_size == "fraction":
                 norm = colors.Normalize(0.0, 1.0)
 
         zs = np.arange(len(zlabels))
 
         poly = PolyCollection(verts, facecolors=cmap(norm(fc)), closed=False)
         poly.set_alpha(p_alpha)
-        cax = ax.add_collection3d(poly, zs=zs, zdir="y")
+        ax.add_collection3d(poly, zs=zs, zdir="y")
 
         # Highlight values of interest
         color_idx = np.linspace(0, 1, len(highlight))
@@ -602,12 +600,11 @@ class MultimodelSelection(PeakStability):
             )
 
         if title is not False:
-            figtitle = fig.suptitle(title)
+            fig.suptitle(title)
 
         # Add colorbar
         if "cbpos" in kwds:
             cbpos = kwds.pop("cbpos")
-            aspect = cbpos[3] / cbpos[2]
             plt.tight_layout()  # do it before cbaxis, so colorbar is ignored.
             transAtoF = ax.transAxes + fig.transFigure.inverted()
             rect = transforms.Bbox.from_bounds(*cbpos).transformed(transAtoF).bounds
@@ -626,9 +623,9 @@ class MultimodelSelection(PeakStability):
 
         cb = colorbar.ColorbarBase(cbaxis, cmap=cmap, norm=norm, **kwds)
 
-        if class_size is "number":
+        if class_size == "number":
             cb.set_label("Models in class")
-        elif class_size is "fraction":
+        elif class_size == "fraction":
             cb.set_label("Fraction of models in class")
 
         return {"fig": fig, "axis": ax, "cb": cb, "cbaxis": cbaxis}
