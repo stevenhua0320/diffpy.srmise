@@ -3,7 +3,7 @@
 #
 # SrMise            by Luke Granlund
 #                   (c) 2014 trustees of the Michigan State University
-#                   (c) 2024 trustees of Columia University in the City of New York
+#                   (c) 2024 trustees of Columbia University in the City of New York
 #                   All rights reserved.
 #
 # File coded by:    Luke Granlund
@@ -89,11 +89,12 @@ class Arbitrary(BaselineFunction):
 
         # TODO: figure out how the metadict can be used to save the functions
         # and use them again when a file is loaded...
-        metadict = {}
-        metadict["npars"] = (npars, repr)
-        metadict["valuef"] = (valuef, repr)
-        metadict["jacobianf"] = (jacobianf, repr)
-        metadict["estimatef"] = (estimatef, repr)
+        metadict = {
+            "npars": (npars, repr),
+            "valuef": (valuef, repr),
+            "jacobianf": (jacobianf, repr),
+            "estimatef": (estimatef, repr),
+        }
         BaselineFunction.__init__(self, parameterdict, formats, default_formats, metadict, None, Cache)
 
     # Methods required by BaselineFunction ####
@@ -182,7 +183,6 @@ class Arbitrary(BaselineFunction):
     def _valueraw(self, pars, r):
         """Return value of polynomial for the given parameters and r values.
 
-        Parameters
         Parameters
         pars: Sequence of parameters
             pars[0] = a_0
