@@ -22,11 +22,9 @@ import logging
 import re
 import sys
 
-import matplotlib.pyplot as plt
 import numpy as np
-import scipy as sp
-from scipy.optimize import leastsq
 
+from diffpy.srmise import srmiselog
 from diffpy.srmise.baselines import Baseline
 from diffpy.srmise.modelparts import ModelParts
 from diffpy.srmise.peaks import Peak, Peaks
@@ -38,8 +36,6 @@ from diffpy.srmise.srmiseerrors import (
 )
 
 logger = logging.getLogger("diffpy.srmise")
-
-from diffpy.srmise import srmiselog
 
 
 class ModelCovariance(object):
@@ -201,8 +197,8 @@ class ModelCovariance(object):
                 subg = np.identity(p.npars(True))
             except Exception as e:
                 logger.warning(
-                    "Transformation gradient failed for part %i: %s.  Failed with message %s. Ignoring transformation."
-                    % (i, str(p), str(e))
+                    "Transformation gradient failed for part %i: %s. "
+                    "Failed with message %s. Ignoring transformation." % (i, str(p), str(e))
                 )
                 subg = np.identity(p.npars(True))
 
@@ -211,8 +207,8 @@ class ModelCovariance(object):
                 p.pars = p.owner().transform_parameters(p.pars, in_format, out_format)
             except Exception as e:
                 logger.warning(
-                    "Parameter transformation failed for part %i: %s.  Failed with message %s. Ignoring transformation."
-                    % (i, str(p), str(e))
+                    "Parameter transformation failed for part %i: %s. "
+                    "Failed with message %s. Ignoring transformation." % (i, str(p), str(e))
                 )
                 subg = np.identity(p.npars(True))
 
@@ -600,21 +596,21 @@ class ModelCluster(object):
                 baselinefunctions = header[res.end() :].strip()
                 header = header[: res.start()]
 
-        ### Instantiating baseline functions
+        # Instantiating baseline functions
         if readblf:
             blfbaselist = []
             res = re.split(r"(?m)^#+ BaselineFunction \d+\s*(?:#.*\s+)*", baselinefunctions)
             for s in res[1:]:
                 blfbaselist.append(BaseFunction.factory(s, blfbaselist))
 
-        ### Instantiating peak functions
+        # Instantiating peak functions
         if readpf:
             pfbaselist = []
             res = re.split(r"(?m)^#+ PeakFunction \d+\s*(?:#.*\s+)*", peakfunctions)
             for s in res[1:]:
                 pfbaselist.append(BaseFunction.factory(s, pfbaselist))
 
-        ### Instantiating header data
+        # Instantiating header data
         # peak_funcs
         res = re.search(r"^peak_funcs=(.*)$", header, re.M)
         peak_funcs = eval(res.groups()[0].strip())
@@ -631,19 +627,19 @@ class ModelCluster(object):
         res = re.search(r"^slice=(.*)$", header, re.M)
         cluster_slice = eval(res.groups()[0].strip())
 
-        ### Instantiating BaselineObject
+        # Instantiating BaselineObject
         if re.match(r"^None$", baselineobject):
             baseline = None
         else:
             baseline = Baseline.factory(baselineobject, blfbaselist)
 
-        ### Instantiating model
+        # Instantiating model
         model = Peaks()
         res = re.split(r"(?m)^#+ ModelPeak\s*(?:#.*\s+)*", model_peaks)
         for s in res[1:]:
             model.append(Peak.factory(s, pfbaselist))
 
-        ### Instantiating start data
+        # Instantiating start data
         # read actual data - r, y, dy
         arrays = []
         if hasr:
@@ -664,9 +660,10 @@ class ModelCluster(object):
         # raise SrMiseDataFormatError if something goes wrong
         try:
             for line in start_data.split("\n"):
-                l = line.split()
-                if len(arrays) != len(l):
+                lines = line.split()
+                if len(arrays) != len(lines):
                     emsg = "Number of value fields does not match that given by '%s'" % start_data_info
+                    raise IndexError(emsg)
                 for a, v in zip(arrays, line.split()):
                     a.append(float(v))
         except (ValueError, IndexError) as err:
@@ -847,7 +844,7 @@ class ModelCluster(object):
 
     def estimatepeak(self):
         """Attempt to add single peak to empty cluster.  Return True if successful."""
-        ### STUB!!! ###
+        # STUB!!! ###
         # Currently only a single peak function is supported.  Dynamic
         # selection from multiple types may require additional support
         # within peak functions themselves.  The simplest method would
@@ -901,7 +898,7 @@ class ModelCluster(object):
             if estimate:
                 try:
                     self.estimatepeak()
-                except SrMiseEstimationError as e:
+                except SrMiseEstimationError:
                     logger.info("Fit: No model to fit, estimation not possible.")
                     return
             else:
@@ -1278,7 +1275,7 @@ class ModelCluster(object):
         msg = ["====Pruning fits:====", "Original model:", "%s", "w/ quality: %s"]
         logger.info("\n".join(msg), best_model, best_qual.stat)
 
-        #### Main prune loop ####
+        # Main prune loop ####
         while check_models.count(None) < len(check_models):
 
             # Cache value of individual peaks for best current model.

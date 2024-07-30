@@ -17,8 +17,6 @@ import logging
 import matplotlib.pyplot as plt
 import numpy as np
 
-import diffpy.srmise.srmiselog
-
 logger = logging.getLogger("diffpy.srmise")
 
 
