@@ -19,8 +19,7 @@ import sys
 import numpy as np
 from numpy.compat import unicode
 
-from diffpy.srmise.modelparts import ModelPart, ModelParts
-from diffpy.srmise.srmiseerrors import *
+from diffpy.srmise.srmiseerrors import SrMiseDataFormatError
 
 logger = logging.getLogger("diffpy.srmise")
 
@@ -120,7 +119,7 @@ class BaseFunction(object):
             emsg = "Argument default_formats must specify 'default_input' " + "and 'default_output' as keys."
             raise ValueError(emsg)
         for f in self.default_formats.values():
-            if not f in self.parformats:
+            if f not in self.parformats:
                 emsg = "Keys of argument default_formats must map to a " + "value within argument parformats."
                 raise ValueError()
 
@@ -140,7 +139,7 @@ class BaseFunction(object):
             pass
         return
 
-    #### "Virtual" class methods ####
+    # "Virtual" class methods ####
 
     def actualize(self, *args, **kwds):
         """Create ModelPart instance of self with given parameters.  ("Virtual" method)"""
@@ -172,7 +171,7 @@ class BaseFunction(object):
         emsg = "_valueraw must() be implemented in a BaseFunction subclass."
         raise NotImplementedError(emsg)
 
-    #### Class methods ####
+    # Class methods ####
 
     def jacobian(self, p, r, rng=None):
         """Calculate jacobian of p, possibly restricted by range.
@@ -228,9 +227,9 @@ class BaseFunction(object):
         elif out_format == "default_input":
             out_format = self.default_formats["default_input"]
 
-        if not in_format in self.parformats:
+        if in_format not in self.parformats:
             raise ValueError("Argument 'in_format' must be one of %s." % self.parformats)
-        if not out_format in self.parformats:
+        if out_format not in self.parformats:
             raise ValueError("Argument 'out_format' must be one of %s." % self.parformats)
         if in_format == out_format:
             return np.identity(self.npars)
@@ -263,9 +262,9 @@ class BaseFunction(object):
         elif out_format == "default_input":
             out_format = self.default_formats["default_input"]
 
-        if not in_format in self.parformats:
+        if in_format not in self.parformats:
             raise ValueError("Argument 'in_format' must be one of %s." % self.parformats)
-        if not out_format in self.parformats:
+        if out_format not in self.parformats:
             raise ValueError("Argument 'out_format' must be one of %s." % self.parformats)
         # if in_format == out_format:
         #    return pars
@@ -335,7 +334,7 @@ class BaseFunction(object):
         """
         if self.base is not None and self.base not in baselist:
             emsg = "baselist does not include this BaseFunction's base function."
-            raise ValueError("emsg")
+            raise ValueError(emsg)
         lines = []
         # Write function type
         lines.append("function=%s" % repr(self.__class__.__name__))

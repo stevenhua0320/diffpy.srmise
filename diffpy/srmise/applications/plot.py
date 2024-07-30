@@ -19,7 +19,6 @@ import matplotlib.pyplot as plt
 import mpl_toolkits.axisartist as AA
 import numpy as np
 from matplotlib.ticker import MultipleLocator
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 from diffpy.srmise import PDFPeakExtraction, PeakStability
@@ -107,7 +106,6 @@ def comparepositions(ppe, ip=None, **kwds):
     plt.plot(xe, ye, "g", lw=1.5, **ep_style)
 
     if ip is not None:
-        yb = (base, base)
         plt.axhline(base, linestyle=":", color="k")
         ax.yaxis.set_ticks([base + 0.5 * yideal, base + 0.5 * yext])
         ax.yaxis.set_ticklabels([yideal_label, yext_label])
@@ -134,7 +132,7 @@ def comparepositions(ppe, ip=None, **kwds):
 
 
 def dgseries(stability, **kwds):
-    ax = kwds.get("ax", plt.gca())
+    kwds.get("ax", plt.gca())
     dg_style = kwds.get("dg_style", default_dg_style)
 
     scale = kwds.get("scale", 1.0)
@@ -222,7 +220,7 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
     bottom_offset = kwds.get("bottom_offset", 3.0)
 
     # Style options
-    dg_style = kwds.get("dg_style", default_dg_style)
+    kwds.get("dg_style", default_dg_style)
     gobs_style = kwds.get("gobs_style", default_gobs_style)
     gfit_style = kwds.get("gfit_style", default_gfit_style)
     gind_style = kwds.get("gind_style", default_gind_style)
@@ -240,7 +238,7 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
     # Other options
     datalabel = kwds.get("datalabel", None)
     dgformatstr = kwds.get("dgformatstr", r"$\delta$g=%f")
-    dgformatpost = kwds.get("dgformatpost", None)  # ->userfunction(string)
+    kwds.get("dgformatpost", None)  # ->userfunction(string)
     show_fit = kwds.get("show_fit", True)
     show_individual = kwds.get("show_individual", True)
     fill_individual = kwds.get("fill_individual", True)
@@ -532,7 +530,6 @@ def on_draw(event):
 
 def readcompare(filename):
     """Returns a list of distances read from filename, otherwise None."""
-    from diffpy.srmise.srmiseerrors import SrMiseDataFormatError, SrMiseFileError
 
     # TODO: Make this safer
     try:
@@ -551,7 +548,7 @@ def readcompare(filename):
     try:
         for line in datastring.split("\n"):
             distances.append(float(line))
-    except (ValueError, IndexError) as err:
+    except (ValueError, IndexError):
         print("Could not read distances from '%s'. Ignoring file." % filename)
 
     if len(distances) == 0:
@@ -620,7 +617,7 @@ def main():
         distances = readcompare(opts.compare)
 
     setfigformat(figsize=(6.0, 4.0))
-    figdict = makeplot(toplot, distances)
+    makeplot(toplot, distances)
     if opts.output:
         plt.savefig(opts.output, format=opts.format, dpi=600)
     if opts.show:
