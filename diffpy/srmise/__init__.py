@@ -16,3 +16,6 @@
 
 
 from diffpy.srmise.version import __version__
+
+# silence the pyflakes syntax checker
+assert __version__ or True

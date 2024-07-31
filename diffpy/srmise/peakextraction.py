@@ -20,16 +20,14 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 
+from diffpy.srmise import srmiselog
 from diffpy.srmise.baselines import Baseline
 from diffpy.srmise.dataclusters import DataClusters
 from diffpy.srmise.modelcluster import ModelCluster, ModelCovariance
-from diffpy.srmise.modelparts import ModelPart, ModelParts
 from diffpy.srmise.peaks import Peak, Peaks
-from diffpy.srmise.srmiseerrors import *
+from diffpy.srmise.srmiseerrors import SrMiseDataFormatError, SrMiseEstimationError, SrMiseFileError
 
 logger = logging.getLogger("diffpy.srmise")
-
-from diffpy.srmise import srmiselog
 
 
 class PeakExtraction(object):
@@ -461,8 +459,8 @@ class PeakExtraction(object):
         # raise SrMiseDataFormatError if something goes wrong
         try:
             for line in start_data.split("\n"):
-                l = line.split()
-                if len(arrays) != len(l):
+                split_line = line.split()
+                if len(arrays) != len(split_line):
                     emsg = "Number of value fields does not match that given by '%s'" % start_data_info
                 for a, v in zip(arrays, line.split()):
                     a.append(float(v))
@@ -892,7 +890,8 @@ class PeakExtraction(object):
                 # left_data, right_data: indices defining the extent of the "interpeak range" for x, etc.
                 near_peaks = np.array([], dtype=np.int)
 
-                # interpeak range goes from peak to peak of next nearest peaks, although their contributions to the data are still removed.
+                # interpeak range goes from peak to peak of next nearest peaks, although their contributions
+                # to the data are still removed.
                 if pivot == 0:
                     # No peaks left of border_x!
                     left_data = full_cluster.slice.indices(len(x))[0]
@@ -1035,7 +1034,8 @@ class PeakExtraction(object):
                 # left_data, right_data: indices defining the extent of the "interpeak range" for x, etc.
                 near_peaks = np.array([], dtype=np.int)
 
-                # interpeak range goes from peak to peak of next nearest peaks, although their contributions to the data are still removed.
+                # interpeak range goes from peak to peak of next nearest peaks, although their contributions
+                # to the data are still removed.
                 if pivot == 0:
                     # No peaks left of border_x!
                     left_data = new_cluster.slice.indices(len(x))[0]
@@ -1307,7 +1307,6 @@ if __name__ == "__main__":
 
     from numpy.random import randn
 
-    from diffpy.srmise import srmiselog
     from diffpy.srmise.modelevaluators import AICc
     from diffpy.srmise.peaks import GaussianOverR
 
