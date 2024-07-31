@@ -11,8 +11,3 @@
 # See LICENSE.txt for license information.
 #
 ##############################################################################
-
-__all__ = ["base", "aic", "aicc"]
-
-from aic import AIC
-from aicc import AICc

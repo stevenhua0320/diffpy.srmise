@@ -16,7 +16,6 @@ import logging
 
 import numpy as np
 
-import diffpy.srmise.srmiselog
 from diffpy.srmise.modelevaluators.base import ModelEvaluator
 from diffpy.srmise.srmiseerrors import SrMiseModelEvaluatorError
 
@@ -72,7 +71,7 @@ class AICc(ModelEvaluator):
             logger.warn("AICc.evaluate(): too few data to evaluate quality reliably.")
             n = self.minpoints(k)
 
-        if self.chisq == None:
+        if self.chisq is None:
             self.chisq = self.chi_squared(fit.value(), fit.y_cluster, fit.error_cluster)
 
         self.stat = self.chisq + self.parpenalty(k, n)
@@ -96,10 +95,12 @@ class AICc(ModelEvaluator):
         return (2 * k + float(2 * k * (k + 1)) / (n - k - 1)) * fudgefactor
 
     def growth_justified(self, fit, k_prime):
-        """Returns whether adding k_prime parameters to the given model (ModelCluster) is justified given the current quality of the fit.
-        The assumption is that adding k_prime parameters will result in "effectively 0" chiSquared cost, and so adding it is justified
-        if the cost of adding these parameters is less than the current chiSquared cost.  The validity of this assumption (which
-        depends on an unknown chiSquared value) and the impact of the errors used should be examined more thoroughly in the future.
+        """Is adding k_prime parameters to ModelCluster justified given the current quality of the fit.
+
+        The assumption is that adding k_prime parameters will result in "effectively 0" chiSquared cost,
+        and so adding it is justified if the cost of adding these parameters is less than the current
+        chiSquared cost.  The validity of this assumption (which depends on an unknown chiSquared value)
+        and the impact of the errors used should be examined more thoroughly in the future.
         """
 
         if self.chisq is None:

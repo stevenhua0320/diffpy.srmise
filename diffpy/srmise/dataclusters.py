@@ -365,11 +365,11 @@ class DataClusters:
     def cluster_boundaries(self):
         """Return sequence with (x,y) of all cluster boundaries."""
         boundaries = []
-        for l in self.clusters:
-            xlo = np.mean(self.x[l[0] - 1 : l[0] + 1])
-            ylo = np.mean(self.y[l[0] - 1 : l[0] + 1])
-            xhi = np.mean(self.x[l[1] : l[1] + 2])
-            yhi = np.mean(self.y[l[1] : l[1] + 2])
+        for cluster in self.clusters:
+            xlo = np.mean(self.x[cluster[0] - 1 : cluster[0] + 1])
+            ylo = np.mean(self.y[cluster[0] - 1 : cluster[0] + 1])
+            xhi = np.mean(self.x[cluster[1] : cluster[1] + 2])
+            yhi = np.mean(self.y[cluster[1] : cluster[1] + 2])
             boundaries.append((xlo, ylo))
             boundaries.append((xhi, yhi))
         return np.unique(boundaries)
@@ -416,9 +416,9 @@ class DataClusters:
                     all_lines[i].set_ydata([0, height])
                     ax.draw_artist(all_lines[i])
                 else:
-                    l = plt.axvline(b[0], 0, height, color="k", animated=True)
-                    ax.draw_artist(l)
-                    all_lines.append(l)
+                    line = plt.axvline(b[0], 0, height, color="k", animated=True)
+                    ax.draw_artist(line)
+                    all_lines.append(line)
             canvas.blit(ax.bbox)
 
         self.clusters = clusters

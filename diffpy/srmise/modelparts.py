@@ -21,20 +21,18 @@ ModelParts: Collection (list) of ModelPart instances.
 
 import logging
 
-import numpy as np
-from scipy.optimize import leastsq
-
-from diffpy.srmise import srmiselog
-from diffpy.srmise.srmiseerrors import *
-
-logger = logging.getLogger("diffpy.srmise")
-
 import matplotlib.pyplot as plt
+import numpy as np
 
 # Output of scipy.optimize.leastsq for a single parameter changed in scipy 0.8.0
 # Before it returned a scalar, later it returned an array of length 1.
 import pkg_resources as pr
+from scipy.optimize import leastsq
 
+from diffpy.srmise import srmiselog
+from diffpy.srmise.srmiseerrors import SrMiseFitError, SrMiseStaticOwnerError, SrMiseUndefinedCovarianceError
+
+logger = logging.getLogger("diffpy.srmise")
 __spv__ = pr.get_distribution("scipy").version
 __oldleastsqbehavior__ = pr.parse_version(__spv__) < pr.parse_version("0.8.0")
 
@@ -98,7 +96,7 @@ class ModelParts(list):
             # raise SrMiseFitError(emsg)
             return
 
-        if range == None:
+        if range is None:
             range = slice(None)
 
         args = (r, y, y_error, range)
@@ -203,7 +201,7 @@ class ModelParts(list):
             cov.setcovariance(self, pcov * np.sum(fvec**2) / dof)
             try:
                 cov.transform(in_format="internal", out_format=cov_format)
-            except SrMiseUndefinedCovarianceError as e:
+            except SrMiseUndefinedCovarianceError:
                 logger.warn("Covariance not defined.  Fit may not have converged.")
 
         return
@@ -332,7 +330,7 @@ class ModelParts(list):
 
         for k, v in kwds.items():
             try:
-                idx = int(k[1:])
+                int(k[1:])
             except ValueError:
                 emsg = "Invalid format keyword '%s'.  They must be specified as 'f0', 'f1', etc." % k
                 raise ValueError(emsg)
@@ -559,7 +557,7 @@ class ModelPart(object):
         if count_fixed:
             return self._owner.npars
         else:
-            return (self.free == True).sum()
+            return (self.free is True).sum()
 
     def __str__(self):
         """Return string representation of ModelPart parameters."""
