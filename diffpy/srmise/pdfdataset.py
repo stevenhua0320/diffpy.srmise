@@ -11,7 +11,7 @@
 #
 # This file uses source code from the PDFgui files pdfdataset.py and
 # pdfcomponent.py, (c) 2006 trustees of the Michigan State University.  See
-# LICENSE_PDFgui.txt for the full PDFgui license.
+# LICENSE_PDFgui.rst for the full PDFgui license.
 #
 ##############################################################################
 
