@@ -172,7 +172,7 @@ class ModelParts(list):
                 y,
                 r,
                 (y - self.value(r, range=range)) - 1.1 * (max(y) - min(y)),
-                *[i for sublist in [[r, p.value(r, range=range)] for p in self] for i in sublist]
+                *[i for sublist in [[r, p.value(r, range=range)] for p in self] for i in sublist],
             )
             plt.draw()
 
