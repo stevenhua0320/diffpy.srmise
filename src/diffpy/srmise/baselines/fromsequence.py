@@ -178,7 +178,7 @@ class FromSequence(BaselineFunction):
 
         import re
 
-        res = re.search(r"^[^#]", datastring, re.M)
+        res = re.search(rb"^[^#]", datastring, re.M)
         if res:
             datastring = datastring[res.end() :].strip()
 
@@ -186,7 +186,7 @@ class FromSequence(BaselineFunction):
         y = []
 
         try:
-            for line in datastring.split("\n"):
+            for line in datastring.split(b"\n"):
                 v = line.split()
                 x.append(float(v[0]))
                 y.append(float(v[1]))
