@@ -22,8 +22,8 @@ import numpy as np
 from matplotlib.ticker import MultipleLocator
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
-from diffpy.srmise import PDFPeakExtraction, PeakStability
-from diffpy.srmise.pdfpeakextraction import resample
+from diffpy.srmise.pdfpeakextraction import PDFPeakExtraction, resample
+from diffpy.srmise.peakstability import PeakStability
 
 # For a given figure, returns a label of interest
 labeldict = {}
@@ -92,14 +92,14 @@ def comparepositions(ppe, ip=None, **kwds):
     ep = [p for p in ep if p >= pmin and p <= pmax]
 
     if ip is not None:
-        xi = np.NaN + np.zeros(3 * len(ip))
+        xi = np.nan + np.zeros(3 * len(ip))
         xi[0::3] = ip
         xi[1::3] = ip
         yi = np.zeros_like(xi) + base
         yi[1::3] += yideal
         plt.plot(xi, yi, "b", lw=1.5, **ip_style)
 
-    xe = np.NaN + np.zeros(3 * len(ep))
+    xe = np.nan + np.zeros(3 * len(ep))
     xe[0::3] = ep
     xe[1::3] = ep
     ye = np.zeros_like(xe) + base
@@ -185,7 +185,7 @@ def makeplot(ppe_or_stability, ip=None, **kwds):
 
     if ppe.extracted is None:
         # Makeplot requires a ModelCluster, so whip one up.
-        from diffpy.srmise import ModelCluster
+        from diffpy.srmise.modelcluster import ModelCluster
 
         ppe.defaultvars()  # Make sure everything has some setting.  This
         # shouldn't have harmful side effects.
