@@ -344,8 +344,8 @@ if __name__ == "__main__":
     from numpy.random import randn
 
     from diffpy.srmise.modelcluster import ModelCluster
-    from diffpy.srmise.modelevaluators import AICc
-    from diffpy.srmise.peaks import Peaks
+    from diffpy.srmise.modelevaluators.aicc import AICc
+    from diffpy.srmise.peaks.base import Peaks
 
     res = 0.01
     r = np.arange(2, 4, res)
