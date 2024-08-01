@@ -20,21 +20,22 @@ ModelParts: Collection (list) of ModelPart instances.
 """
 
 import logging
+from importlib.metadata import version
 
 import matplotlib.pyplot as plt
 import numpy as np
 
 # Output of scipy.optimize.leastsq for a single parameter changed in scipy 0.8.0
 # Before it returned a scalar, later it returned an array of length 1.
-import pkg_resources as pr
+from packaging.version import parse
 from scipy.optimize import leastsq
 
 from diffpy.srmise import srmiselog
 from diffpy.srmise.srmiseerrors import SrMiseFitError, SrMiseStaticOwnerError, SrMiseUndefinedCovarianceError
 
 logger = logging.getLogger("diffpy.srmise")
-__spv__ = pr.get_distribution("scipy").version
-__oldleastsqbehavior__ = pr.parse_version(__spv__) < pr.parse_version("0.8.0")
+__spv__ = version("scipy")
+__oldleastsqbehavior__ = parse(__spv__) < parse("0.8.0")
 
 
 class ModelParts(list):
@@ -123,8 +124,8 @@ class ModelParts(list):
                 freepars,  # initial parameters
                 args=args,  # arguments to residual, residual_jacobian
                 Dfun=self.residual_jacobian,  # explicit Jacobian
-                col_deriv=1,  # order of derivatives in Jacobian
-                full_output=1,
+                col_deriv=True,  # order of derivatives in Jacobian
+                full_output=True,
                 maxfev=ntrials,
             )
         except NotImplementedError:
@@ -136,8 +137,8 @@ class ModelParts(list):
                 self.residual,  # minimize this function
                 freepars,  # initial parameters
                 args=args,  # arguments to residual
-                col_deriv=1,  # order of derivatives in Jacobian
-                full_output=1,
+                col_deriv=True,  # order of derivatives in Jacobian
+                full_output=True,
                 maxfev=ntrials,
             )
         except Exception:
@@ -202,7 +203,7 @@ class ModelParts(list):
             try:
                 cov.transform(in_format="internal", out_format=cov_format)
             except SrMiseUndefinedCovarianceError:
-                logger.warn("Covariance not defined.  Fit may not have converged.")
+                logger.warning("Covariance not defined.  Fit may not have converged.")
 
         return
 
@@ -352,7 +353,7 @@ class ModelParts(list):
 
     def __getslice__(self, i, j):
         """Extends list.__getslice__"""
-        return self.__class__(list.__getslice__(self, i, j))
+        return self.__class__(list.__getitem__(self, i, j))
 
     def transform(self, in_format="internal", out_format="internal"):
         """Transforms format of parameters in this modelpart.
