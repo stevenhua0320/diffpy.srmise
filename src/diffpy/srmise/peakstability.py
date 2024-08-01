@@ -15,7 +15,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from diffpy.srmise import ModelCluster, PDFPeakExtraction
+from diffpy.srmise.modelcluster import ModelCluster
+from diffpy.srmise.pdfpeakextraction import PDFPeakExtraction
 
 
 # This is a total hack-job right now, and isn't suitable for
