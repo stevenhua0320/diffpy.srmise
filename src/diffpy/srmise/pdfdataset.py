@@ -201,7 +201,7 @@ class PDFDataSet(PDFComponent):
 
         # find where the metadata starts
         metadata = ""
-        res = re.search(r"^#+\ +metadata\b\n", header, re.M)
+        res = re.search(r"^#+ +metadata\b\n", header, re.M)
         if res:
             metadata = header[res.end() :]
             header = header[: res.start()]
@@ -343,7 +343,7 @@ class PDFDataSet(PDFComponent):
         # metadata
         if len(self.metadata) > 0:
             lines.append("# metadata")
-            for k, v in self.metadata.iteritems():
+            for k, v in self.metadata.items():
                 lines.append("%s=%s" % (k, v))
         # write data:
         lines.append("##### start data")
@@ -408,10 +408,10 @@ if __name__ == "__main__":
     dataset = PDFDataSet("test")
     dataset.read(filename)
     print("== metadata ==")
-    for k, v in dataset.metadata.iteritems():
+    for k, v in dataset.metadata.items():
         print(k, "=", v)
     print("== data members ==")
-    for k, v in dataset.__dict__.iteritems():
+    for k, v in dataset.__dict__.items():
         if k in ("metadata", "robs", "Gobs", "drobs", "dGobs") or k[0] == "_":
             continue
         print(k, "=", v)

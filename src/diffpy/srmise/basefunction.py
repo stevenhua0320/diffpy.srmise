@@ -369,7 +369,7 @@ class BaseFunction(object):
         # "key=value"->{"key":"value"}
         data = re.split(r"(?:[\r\n]+|\A)(\S+)=", data)
         ddict = {}
-        for i in range(len(data) / 2):
+        for i in range(len(data) // 2):
             ddict[data[2 * i + 1]] = data[2 * i + 2]
 
         # dictionary of parameters
@@ -442,7 +442,8 @@ class BaseFunction(object):
 
 if __name__ == "__main__":
 
-    from diffpy.srmise.peaks import GaussianOverR, TerminationRipples
+    from diffpy.srmise.peaks.gaussianoverr import GaussianOverR
+    from diffpy.srmise.peaks.terminationripples import TerminationRipples
 
     p = GaussianOverR(0.8)
     outstr = p.writestr([])

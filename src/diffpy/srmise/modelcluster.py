@@ -26,9 +26,9 @@ import sys
 import numpy as np
 
 from diffpy.srmise import srmiselog
-from diffpy.srmise.baselines import Baseline
+from diffpy.srmise.baselines.base import Baseline
 from diffpy.srmise.modelparts import ModelParts
-from diffpy.srmise.peaks import Peak, Peaks
+from diffpy.srmise.peaks.base import Peak, Peaks
 from diffpy.srmise.srmiseerrors import (
     SrMiseDataFormatError,
     SrMiseEstimationError,
