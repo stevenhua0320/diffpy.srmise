@@ -21,10 +21,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from diffpy.srmise import srmiselog
-from diffpy.srmise.baselines import Baseline
+from diffpy.srmise.baselines.base import Baseline
 from diffpy.srmise.dataclusters import DataClusters
 from diffpy.srmise.modelcluster import ModelCluster, ModelCovariance
-from diffpy.srmise.peaks import Peak, Peaks
+from diffpy.srmise.peaks.base import Peak, Peaks
 from diffpy.srmise.srmiseerrors import SrMiseDataFormatError, SrMiseEstimationError, SrMiseFileError
 
 logger = logging.getLogger("diffpy.srmise")
@@ -131,7 +131,7 @@ class PeakExtraction(object):
         initial_peaks: Peaks instance.  These peaks are present at the start of extraction.
         rng: Sequence specifying the least and greatest x-values over which to extract peaks.
         """
-        for k, v in kwds.iteritems():
+        for k, v in kwds.items():
             if k in self.extractvars:
                 if quiet:
                     logger.debug("Setting variable %s=%s", k, v)
@@ -183,7 +183,7 @@ class PeakExtraction(object):
             self.effective_dy = self.effective_dy * np.ones(len(self.x))
 
         if self.pf is None or "pf" in args:
-            from diffpy.srmise.peaks import GaussianOverR
+            from diffpy.srmise.peaks.gaussianoverr import GaussianOverR
 
             # TODO: Make a more useful default.
             self.pf = [GaussianOverR(self.x[-1] - self.x[0])]
@@ -208,13 +208,13 @@ class PeakExtraction(object):
                 self.baseline = None
 
         if self.baseline is None or "baseline" in args:
-            from diffpy.srmise.baselines import Polynomial
+            from diffpy.srmise.baselines.polynomial import Polynomial
 
             bl = Polynomial(degree=-1)
             self.baseline = bl.actualize(np.array([]), "internal")
 
         if self.error_method is None or "error_method" in args:
-            from diffpy.srmise.modelevaluators import AIC
+            from diffpy.srmise.modelevaluators.aic import AIC
 
             self.error_method = AIC
 
@@ -1307,8 +1307,8 @@ if __name__ == "__main__":
 
     from numpy.random import randn
 
-    from diffpy.srmise.modelevaluators import AICc
-    from diffpy.srmise.peaks import GaussianOverR
+    from diffpy.srmise.modelevaluators.aicc import AICc
+    from diffpy.srmise.peaks.gaussianoverr import GaussianOverR
 
     srmiselog.setlevel("info")
     srmiselog.liveplotting(False)

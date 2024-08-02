@@ -247,7 +247,6 @@ class TracePeaks(object):
                 err,
             )
             raise SrMiseFileError(emsg)
-        return None
 
     def readstr(self, datastring):
         """Read tracer ModelCluster from string.
