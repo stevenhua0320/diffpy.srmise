@@ -16,8 +16,8 @@ import logging
 
 import numpy as np
 
-from diffpy.srmise.baselines import Polynomial
 from diffpy.srmise.baselines.base import BaselineFunction
+from diffpy.srmise.baselines.polynomial import Polynomial
 from diffpy.srmise.srmiseerrors import SrMiseEstimationError
 
 logger = logging.getLogger("diffpy.srmise")
@@ -65,7 +65,7 @@ class Arbitrary(BaselineFunction):
         # Define parameterdict
         # e.g. {"a_0":0, "a_1":1, "a_2":2, "a_3":3} if npars is 4.
         parameterdict = {}
-        for d in range(self.testnpars + 1):
+        for d in range(testnpars + 1):
             parameterdict["a_" + str(d)] = d
         formats = ["internal"]
         default_formats = {"default_input": "internal", "default_output": "internal"}

@@ -68,7 +68,7 @@ class AICc(ModelEvaluator):
         n = fit.size
 
         if n < self.minpoints(k):
-            logger.warn("AICc.evaluate(): too few data to evaluate quality reliably.")
+            logger.warning("AICc.evaluate(): too few data to evaluate quality reliably.")
             n = self.minpoints(k)
 
         if self.chisq is None:
@@ -117,7 +117,7 @@ class AICc(ModelEvaluator):
 
         # assert n >= self.minPoints(kActual) #check that AICc is defined for the actual fit
         if n < self.minpoints(k_actual):
-            logger.warn("AICc.growth_justified(): too few data to evaluate quality reliably.")
+            logger.warning("AICc.growth_justified(): too few data to evaluate quality reliably.")
             n = self.minpoints(k_actual)
 
         penalty = self.parpenalty(k_test, n) - self.parpenalty(k_actual, n)

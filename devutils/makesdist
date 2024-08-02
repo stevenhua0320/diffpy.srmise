@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-'''Create source distribution tar.gz archive, where each file belongs
+"""Create source distribution tar.gz archive, where each file belongs
 to a root user and modification time is set to the git commit time.
-'''
+"""
 
 import sys
 import os
@@ -27,6 +27,7 @@ tarname = max(glob.glob(BASEDIR + '/dist/*.tar'), key=os.path.getmtime)
 
 tfin = tarfile.open(tarname)
 tfout = tarfile.open(tarname + '.gz', 'w:gz')
+
 
 def fixtarinfo(tinfo):
     tinfo.uid = tinfo.gid = 0

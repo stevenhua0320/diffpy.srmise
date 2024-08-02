@@ -434,7 +434,7 @@ def main():
         return
 
     if options.bcrystal is not None:
-        from diffpy.srmise.baselines import Polynomial
+        from diffpy.srmise.baselines.polynomial import Polynomial
 
         bl = Polynomial(degree=1)
         options.baseline = parsepars(bl, [options.bcrystal, "0c"])
@@ -445,27 +445,27 @@ def main():
         blext.read(options.bsrmise)
         options.baseline = blext.extracted.baseline
     elif options.bpoly0 is not None:
-        from diffpy.srmise.baselines import Polynomial
+        from diffpy.srmise.baselines.polynomial import Polynomial
 
         bl = Polynomial(degree=0)
         options.baseline = parsepars(bl, [options.bpoly0])
     elif options.bpoly1 is not None:
-        from diffpy.srmise.baselines import Polynomial
+        from diffpy.srmise.baselines.polynomial import Polynomial
 
         bl = Polynomial(degree=1)
         options.baseline = parsepars(bl, options.bpoly1)
     elif options.bpoly2 is not None:
-        from diffpy.srmise.baselines import Polynomial
+        from diffpy.srmise.baselines.polynomial import Polynomial
 
         bl = Polynomial(degree=2)
         options.baseline = parsepars(bl, options.bpoly2)
     elif options.bseq is not None:
-        from diffpy.srmise.baselines import FromSequence
+        from diffpy.srmise.baselines.fromsequence import FromSequence
 
         bl = FromSequence(options.bseq)
         options.baseline = bl.actualize([], "internal")
     elif options.bspherical is not None:
-        from diffpy.srmise.baselines import NanoSpherical
+        from diffpy.srmise.baselines.nanospherical import NanoSpherical
 
         bl = NanoSpherical()
         options.baseline = parsepars(bl, options.bspherical)

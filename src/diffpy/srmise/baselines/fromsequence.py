@@ -145,14 +145,14 @@ class FromSequence(BaselineFunction):
             raise ValueError(emsg)
         try:
             if r[0] < self.minx or r[-1] > self.maxx:
-                logger.warn(
+                logger.warning(
                     "Warning: Evaluating interpolating function over %s, outside safe range of %s.",
                     [r[0], r[-1]],
                     [self.minx, self.maxx],
                 )
         except (IndexError, TypeError):
             if r < self.minx or r > self.maxx:
-                logger.warn(
+                logger.warning(
                     "Warning: Evaluating interpolating function at %s, outside safe range of %s.",
                     r,
                     [self.minx, self.maxx],
@@ -178,7 +178,7 @@ class FromSequence(BaselineFunction):
 
         import re
 
-        res = re.search(r"^[^#]", datastring, re.M)
+        res = re.search(rb"^[^#]", datastring, re.M)
         if res:
             datastring = datastring[res.end() :].strip()
 
@@ -186,7 +186,7 @@ class FromSequence(BaselineFunction):
         y = []
 
         try:
-            for line in datastring.split("\n"):
+            for line in datastring.split(b"\n"):
                 v = line.split()
                 x.append(float(v[0]))
                 y.append(float(v[1]))
