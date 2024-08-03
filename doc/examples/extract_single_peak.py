@@ -28,7 +28,7 @@ at the command line.
 import matplotlib.pyplot as plt
 
 from diffpy.srmise.applications.plot import makeplot
-from diffpy.srmise.baselines import Polynomial
+from diffpy.srmise.baselines.polynomial import Polynomial
 from diffpy.srmise.pdfpeakextraction import PDFPeakExtraction
 
 
