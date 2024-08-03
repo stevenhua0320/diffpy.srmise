@@ -6,7 +6,7 @@ import os
 import re
 import sys
 
-__basedir__ = os.getcwdu()
+__basedir__ = os.getcwd()
 
 from numpy.compat import unicode
 
