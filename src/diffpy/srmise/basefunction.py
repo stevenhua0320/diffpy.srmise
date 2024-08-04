@@ -346,7 +346,7 @@ class BaseFunction(object):
         else:
             lines.append("base=%s" % repr(None))
         # Write all other metadata
-        for k, (v, f) in self.metadict.iteritems():
+        for k, (v, f) in self.metadict.items():
             lines.append("%s=%s" % (k, f(v)))
         datastring = "\n".join(lines) + "\n"
         return datastring
