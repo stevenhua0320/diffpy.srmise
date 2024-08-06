@@ -29,10 +29,10 @@ initial_peaks (peaks already assumed to exist during extraction)"""
 
 import matplotlib.pyplot as plt
 
-from diffpy.srmise import PDFPeakExtraction
 from diffpy.srmise.applications.plot import makeplot
-from diffpy.srmise.baselines import Polynomial
-from diffpy.srmise.peaks import GaussianOverR
+from diffpy.srmise.baselines.polynomial import Polynomial
+from diffpy.srmise.pdfpeakextraction import PDFPeakExtraction
+from diffpy.srmise.peaks.gaussianoverr import GaussianOverR
 
 
 def run(plot=True):

@@ -35,8 +35,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import diffpy.srmise.srmiselog as sml
-from diffpy.srmise import MultimodelSelection
 from diffpy.srmise.applications.plot import makeplot
+from diffpy.srmise.multimodelselection import MultimodelSelection
 
 # distances from ideal Ag (refined to PDF)
 dcif = np.array(

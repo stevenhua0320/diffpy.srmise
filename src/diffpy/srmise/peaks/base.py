@@ -189,7 +189,7 @@ class Peaks(ModelParts):
             return False
         return any_scaled
 
-    def sort(self, key="position"):
+    def sort(self, reverse=False, key="position"):
         """Sort peaks in order specified by key."""
         keypars = np.array([p[key] for p in self])
         order = keypars.argsort()

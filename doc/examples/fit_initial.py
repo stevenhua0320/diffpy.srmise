@@ -21,10 +21,11 @@ grid."""
 
 import matplotlib.pyplot as plt
 
-from diffpy.srmise import PDFPeakExtraction
 from diffpy.srmise.applications.plot import makeplot
-from diffpy.srmise.baselines import FromSequence
-from diffpy.srmise.peaks import Peaks, TerminationRipples
+from diffpy.srmise.baselines.fromsequence import FromSequence
+from diffpy.srmise.pdfpeakextraction import PDFPeakExtraction
+from diffpy.srmise.peaks.base import Peaks
+from diffpy.srmise.peaks.terminationripples import TerminationRipples
 
 
 def run(plot=True):

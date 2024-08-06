@@ -36,8 +36,9 @@ The standard reference of AIC-based multimodel selection is
 import numpy as np
 
 import diffpy.srmise.srmiselog as sml
-from diffpy.srmise import MultimodelSelection, PDFPeakExtraction
-from diffpy.srmise.baselines import FromSequence
+from diffpy.srmise.baselines.fromsequence import FromSequence
+from diffpy.srmise.multimodelselection import MultimodelSelection
+from diffpy.srmise.pdfpeakextraction import PDFPeakExtraction
 
 
 def run(plot=True):
