@@ -68,6 +68,21 @@ class DataClusters:
     def __iter__(self):
         return self
 
+    def __eq__(self, other):
+        # this function makes sure two DataClusters object is equal. Namely equal here means
+        # all the attribute of two objects are equal.
+        return (
+            np.array_equal(self.x, other.x)
+            and np.array_equal(self.y, other.y)
+            and np.array_equal(self.data_order, other.data_order)
+            and np.array_equal(self.clusters, other.clusters)
+            and self.res == other.res
+            and self.current_idx == other.current_idx
+            and self.lastcluster_idx == other.lastcluster_idx
+            and self.lastpoint_idx == other.lastpoint_idx
+            and self.status == other.status
+        )
+
     def clear(self):
         """Clear all members, including user data."""
         self.x = np.array([])
