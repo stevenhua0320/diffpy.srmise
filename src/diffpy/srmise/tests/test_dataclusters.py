@@ -5,47 +5,39 @@ from diffpy.srmise.dataclusters import DataClusters
 
 
 @pytest.mark.parametrize(
-    "input_x, input_y, input_res, expected_x, expected_y, expected_data_order, expected_clusters, expected_res, "
-    "expected_current_index, expected_last_cluster_idx, expected_last_pt_idx, expected_status",
+    "inputs, expected",
     [
         (
-            np.array([1, 2, 3]),
-            np.array([3, 2, 1]),
-            4,
-            np.array([]),
-            np.array([]),
-            np.array([], dtype=np.int32),
-            np.array([[]], dtype=np.int32),
-            0,
-            0,
-            None,
-            None,
-            0,
-        )
+            {
+                "input_x": np.array([1, 2, 3]),
+                "input_y": np.array([3, 2, 1]),
+                "input_res": 4,
+            },
+            {
+                "x": np.array([]),
+                "y": np.array([]),
+                "data_order": np.array([], dtype=np.int32),
+                "clusters": np.array([[]], dtype=np.int32),
+                "res": 0,
+                "current_idx": 0,
+                "lastcluster_idx": None,
+                "lastpoint_idx": None,
+                "status": 0,
+            },
+        ),
     ],
 )
-def test_clear(
-    input_x,
-    input_y,
-    input_res,
-    expected_x,
-    expected_y,
-    expected_data_order,
-    expected_clusters,
-    expected_res,
-    expected_current_index,
-    expected_last_cluster_idx,
-    expected_last_pt_idx,
-    expected_status,
-):
-    c1 = DataClusters(x=input_x, y=input_y, res=input_res)
+def test_clear(inputs, expected):
+    # Initialize DataClusters with input parameters
+    c1 = DataClusters(x=inputs["input_x"], y=inputs["input_y"], res=inputs["input_res"])
+
+    # Perform the clear operation
     c1.clear()
-    assert np.array_equal(c1.x, expected_x)
-    assert np.array_equal(c1.y, expected_y)
-    assert np.array_equal(c1.data_order, expected_data_order)
-    assert np.array_equal(c1.clusters, expected_clusters)
-    assert c1.res == expected_res
-    assert c1.current_idx == expected_current_index
-    assert c1.lastcluster_idx == expected_last_cluster_idx
-    assert c1.lastpoint_idx == expected_last_pt_idx
-    assert c1.status == expected_status
+
+    # Assert each expected attribute against its actual value after clearing
+    for attr, expected_value in expected.items():
+        assert (
+            np.array_equal(getattr(c1, attr), expected_value)
+            if isinstance(expected_value, np.ndarray)
+            else getattr(c1, attr) == expected_value
+        )
