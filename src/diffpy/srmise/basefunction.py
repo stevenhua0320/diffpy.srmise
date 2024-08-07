@@ -103,9 +103,9 @@ class BaseFunction(object):
             if type(p) not in (str, unicode):
                 emsg = "Argument parameterdict's keys must be strings."
                 raise ValueError(emsg)
-        vals = self.parameterdict.values()
-        vals.sort()
-        if vals != range(self.npars):
+        expected_values = set(range(self.npars))
+        actual_values = set(self.parameterdict.values())
+        if expected_values != actual_values:
             emsg = (
                 "Argument parameterdict's values must uniquely specify "
                 + "the index of each parameter defined by its keys."
