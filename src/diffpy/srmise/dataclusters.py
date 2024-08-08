@@ -82,7 +82,8 @@ class DataClusters:
         )
 
     def clear(self):
-        """Clear all members, including user data."""
+        """Remove all the points from the cluster list,
+        and reset x, y value sequences to empty list. Reset the resolution to 0."""
         self.x = np.array([])
         self.y = np.array([])
         self.data_order = np.array([], dtype=np.int32)
