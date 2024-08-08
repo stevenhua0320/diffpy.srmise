@@ -69,8 +69,6 @@ class DataClusters:
         return self
 
     def __eq__(self, other):
-        # this function makes sure two DataClusters object is equal. Namely equal here means
-        # all the attribute of two objects are equal.
         return (
             np.array_equal(self.x, other.x)
             and np.array_equal(self.y, other.y)
