@@ -85,16 +85,8 @@ class DataClusters:
         """
         Clear all data and reset the cluster object to a transient initial state.
 
-        This method performs the following steps:
-        - Remove all the points from the clusters list.
-        - Reset the x and y value sequences to empty NumPy arrays.
-        - Reset dataorder list to empty NumPy arrays.
-        - Reset the resolution to 0.
-        - Reset current_idx to 0.
-        - Reset lastcluster_idx and lastpoint_idx to None.
-        - Reset status to INIT.
-
         The purpose of this method is to provide a clean state before creating new clustering operations.
+        The object is updated in-place and no new instance is returned.
 
         Returns
         -------
