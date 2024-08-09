@@ -16,8 +16,8 @@ from diffpy.srmise.dataclusters import DataClusters
             {
                 "x": np.array([]),
                 "y": np.array([]),
-                "data_order": np.array([], dtype=np.int32),
-                "clusters": np.array([[]], dtype=np.int32),
+                "data_order": np.array([]),
+                "clusters": np.array([[]]),
                 "res": 0,
                 "current_idx": 0,
                 "lastcluster_idx": None,

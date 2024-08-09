@@ -82,12 +82,28 @@ class DataClusters:
         )
 
     def clear(self):
-        """Remove all the points from the cluster list,
-        and reset x, y value sequences to empty list. Reset the resolution to 0."""
+        """
+        Clear all data and reset the cluster object to a transient initial state.
+
+        This method performs the following steps:
+        - Remove all the points from the clusters list.
+        - Reset the x and y value sequences to empty NumPy arrays.
+        - Reset dataorder list to empty NumPy arrays.
+        - Reset the resolution to 0.
+        - Reset current_idx to 0.
+        - Reset lastcluster_idx and lastpoint_idx to None.
+        - Reset status to INIT.
+
+        The purpose of this method is to provide a clean state before creating new clustering operations.
+
+        Returns
+        -------
+        None
+        """
         self.x = np.array([])
         self.y = np.array([])
-        self.data_order = np.array([], dtype=np.int32)
-        self.clusters = np.array([[]], dtype=np.int32)
+        self.data_order = np.array([])
+        self.clusters = np.array([[]])
         self.res = 0
         self.current_idx = 0
         self.lastcluster_idx = None
