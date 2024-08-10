@@ -130,14 +130,14 @@ class DataClusters:
         # 3) r isn't sorted?
         if len(x) != len(y):
             raise ValueError("Sequences x and y must have the same length.")
-        if res <= 0:
-            raise ValueError("Resolution res must be greater than 0.")
+        if res < 0:
+            raise ValueError("Resolution res must be non-negative.")
         # Test for sorting?
         self.x = x
         self.y = y
         self.res = res
         # If x sequence size is empty, set the object into Initialized state.
-        if x.size == 0:
+        if x.size == 0 and res == 0:
             self.data_order = np.array([])
             self.clusters = np.array([[]])
             self.current_idx = 0
