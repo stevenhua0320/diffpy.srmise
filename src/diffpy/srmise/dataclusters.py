@@ -136,6 +136,9 @@ class DataClusters:
         self.x = x
         self.y = y
         self.res = res
+        # check x and res value are compatible.
+        if x.size == 0 and res != 0:
+            raise ValueError("It produces trivial clustering, please set 'res' to positive values.")
         # If x sequence size is empty, set the object into Initialized state.
         if x.size == 0 and res == 0:
             self.data_order = np.array([])
