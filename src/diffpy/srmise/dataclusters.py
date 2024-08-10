@@ -69,6 +69,8 @@ class DataClusters:
         return self
 
     def __eq__(self, other):
+        if not isinstance(other, DataClusters):
+            return False
         return (
             np.array_equal(self.x, other.x)
             and np.array_equal(self.y, other.y)
@@ -131,18 +133,23 @@ class DataClusters:
         if res <= 0:
             raise ValueError("Resolution res must be greater than 0.")
         # Test for sorting?
-
         self.x = x
         self.y = y
         self.res = res
-
-        self.data_order = self.y.argsort()  # Defines order of clustering
-        self.clusters = np.array([[self.data_order[-1], self.data_order[-1]]])
-        self.current_idx = len(self.data_order) - 1
-        self.lastcluster_idx = 0
-        self.lastpoint_idx = self.data_order[-1]
-
-        self.status = self.READY
+        # If x sequence size is empty, set the object into Initialized state.
+        if x.size == 0:
+            self.data_order = np.array([])
+            self.clusters = np.array([[]])
+            self.current_idx = 0
+            self.lastpoint_idx = None
+            self.status = self.INIT
+        else:
+            self.data_order = self.y.argsort()  # Defines order of clustering
+            self.clusters = np.array([[self.data_order[-1], self.data_order[-1]]])
+            self.current_idx = len(self.data_order) - 1
+            self.lastpoint_idx = self.data_order[-1]
+            self.status = self.READY
+        self.lastcluster_idx = None
         return
 
     def next(self):

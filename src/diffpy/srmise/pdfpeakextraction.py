@@ -119,7 +119,7 @@ class PDFPeakExtraction(PeakExtraction):
         quiet: [False] Log changes quietly.
 
         Keywords
-        cres: The clustering resolution, must be > 0.
+        cres: The clustering resolution, must be >= 0.
         effective_dy: The uncertainties actually used during extraction
         dg: Alias for effective_dy
         pf: Sequence of PeakFunctionBase subclass instances.

@@ -16,13 +16,7 @@ from diffpy.srmise.dataclusters import DataClusters
             {
                 "x": np.array([]),
                 "y": np.array([]),
-                "data_order": np.array([]),
-                "clusters": np.array([[]]),
                 "res": 0,
-                "current_idx": 0,
-                "lastcluster_idx": None,
-                "lastpoint_idx": None,
-                "status": 0,
             },
         ),
     ],
@@ -30,14 +24,7 @@ from diffpy.srmise.dataclusters import DataClusters
 def test_clear(inputs, expected):
     # Initialize DataClusters with input parameters
     actual = DataClusters(x=inputs["input_x"], y=inputs["input_y"], res=inputs["input_res"])
-
+    expected = DataClusters(x=expected["x"], y=expected["y"], res=expected["res"])
     # Perform the clear operation
     actual.clear()
-
-    # Assert each expected attribute against its actual value after clearing
-    for attr, expected_value in expected.items():
-        assert (
-            np.array_equal(getattr(actual, attr), expected_value)
-            if isinstance(expected_value, np.ndarray)
-            else getattr(actual, attr) == expected_value
-        )
+    assert actual == expected
