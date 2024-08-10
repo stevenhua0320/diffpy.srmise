@@ -68,12 +68,36 @@ class DataClusters:
     def __iter__(self):
         return self
 
+    def __eq__(self, other):
+        if not isinstance(other, DataClusters):
+            return False
+        return (
+            np.array_equal(self.x, other.x)
+            and np.array_equal(self.y, other.y)
+            and np.array_equal(self.data_order, other.data_order)
+            and np.array_equal(self.clusters, other.clusters)
+            and self.res == other.res
+            and self.current_idx == other.current_idx
+            and self.lastcluster_idx == other.lastcluster_idx
+            and self.lastpoint_idx == other.lastpoint_idx
+            and self.status == other.status
+        )
+
     def clear(self):
-        """Clear all members, including user data."""
+        """
+        Clear all data and reset the cluster object to a transient initial state.
+
+        The purpose of this method is to provide a clean state before creating new clustering operations.
+        The object is updated in-place and no new instance is returned.
+
+        Returns
+        -------
+        None
+        """
         self.x = np.array([])
         self.y = np.array([])
-        self.data_order = np.array([], dtype=np.int32)
-        self.clusters = np.array([[]], dtype=np.int32)
+        self.data_order = np.array([])
+        self.clusters = np.array([[]])
         self.res = 0
         self.current_idx = 0
         self.lastcluster_idx = None
@@ -106,21 +130,26 @@ class DataClusters:
         # 3) r isn't sorted?
         if len(x) != len(y):
             raise ValueError("Sequences x and y must have the same length.")
-        if res <= 0:
-            raise ValueError("Resolution res must be greater than 0.")
+        if res < 0:
+            raise ValueError("Resolution res must be non-negative.")
         # Test for sorting?
-
         self.x = x
         self.y = y
         self.res = res
-
-        self.data_order = self.y.argsort()  # Defines order of clustering
-        self.clusters = np.array([[self.data_order[-1], self.data_order[-1]]])
-        self.current_idx = len(self.data_order) - 1
-        self.lastcluster_idx = 0
-        self.lastpoint_idx = self.data_order[-1]
-
-        self.status = self.READY
+        # If x sequence size is empty, set the object into Initialized state.
+        if x.size == 0 and res == 0:
+            self.data_order = np.array([])
+            self.clusters = np.array([[]])
+            self.current_idx = 0
+            self.lastpoint_idx = None
+            self.status = self.INIT
+        else:
+            self.data_order = self.y.argsort()  # Defines order of clustering
+            self.clusters = np.array([[self.data_order[-1], self.data_order[-1]]])
+            self.current_idx = len(self.data_order) - 1
+            self.lastpoint_idx = self.data_order[-1]
+            self.status = self.READY
+        self.lastcluster_idx = None
         return
 
     def next(self):
