@@ -13,6 +13,18 @@ def test_clear():
     assert actual == expected
 
 
+# In the set data test, we test for these cases.
+# (1) x and y are non-empty array values, and res is positive (the most generic case)
+# (2) x and y are non-empty array values, and res is 0 (will produce a ValueError)
+# (3) x and y are non-empty array values, and res is negative (will produce a ValueError,
+# but give different msg than 2)
+# (4) x and y are empty array, and res is positive (produce ValueError & msg "please give input to x/y array",
+# something like that)
+# (5) Same as 4, except res is 0 (Initialized state)
+# (6) Same as 4, except res is negative (ValueError)
+# (7) Same as 1/2/3, except, x & y have different length (ValueError & msg)
+
+
 @pytest.mark.parametrize(
     "inputs, expected",
     [
@@ -26,11 +38,11 @@ def test_clear():
         ),
         (
             {
-                "input_x": np.array([1]),
-                "input_y": np.array([3]),
-                "input_res": 1,
+                "input_x": np.array([]),
+                "input_y": np.array([]),
+                "input_res": 0,
             },
-            DataClusters(np.array([1]), np.array([3]), 1),
+            DataClusters(np.array([]), np.array([]), 0),
         ),
     ],
 )
