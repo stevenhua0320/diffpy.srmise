@@ -81,6 +81,10 @@ class DataClusters:
             and self.lastcluster_idx == other.lastcluster_idx
             and self.lastpoint_idx == other.lastpoint_idx
             and self.status == other.status
+            and self.INIT == other.INIT
+            and self.READY == other.READY
+            and self.CLUSTERING == other.CLUSTERING
+            and self.DONE == other.DONE
         )
 
     def clear(self):
