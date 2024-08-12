@@ -16,8 +16,8 @@ def test_clear():
 
 
 def test___eq__():
-    actual = DataClusters(np.array([1, 2, 3]), np.array([3, 2, 1]), 0)
-    expected = DataClusters(np.array([1, 2, 3]), np.array([3, 2, 1]), 0)
+    actual = DataClusters(np.array([1, 2, 3]), np.array([3, 2, 1]), 1)
+    expected = DataClusters(np.array([1, 2, 3]), np.array([3, 2, 1]), 1)
     assert expected == actual
     attributes = vars(actual)
     for attr_key, attr_val in attributes.items():
