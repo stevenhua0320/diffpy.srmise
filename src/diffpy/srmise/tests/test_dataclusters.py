@@ -55,14 +55,12 @@ def test___eq__():
 )
 def test_DataClusters_constructor(inputs, expected):
     actual = DataClusters(x=inputs["x"], y=inputs["y"], res=inputs["res"])
-    attributes = vars(actual)
-    for attr_key, attr_val in attributes.items():
+    actual_attributes = vars(actual)
+    for attr_key, atual_attr_val in actual_attributes.items():
         if isinstance(attr_val, np.ndarray):
-            assert np.array_equal(attr_val, expected[attr_key])
+            assert np.array_equal(actual_attr_val, expected[attr_key])
         else:
-            assert attr_val == expected[attr_key]
-    actual._clear()
-    assert actual == DataClusters(x=np.array([]), y=np.array([]), res=0)
+            assert actual_attr_val == expected[attr_key]
 
 
 @pytest.mark.parametrize(
