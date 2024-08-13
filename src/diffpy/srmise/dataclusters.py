@@ -41,12 +41,12 @@ class DataClusters:
     y : sequence of y values
       The array of PDF values, G(r)
     res : int
-      The clustering resolution, i.e., the number of points another point has to 
+      The clustering resolution, i.e., the number of points another point has to
       be away from the center of an existing cluster to before a new cluster is
       formed.  A value of zero allows every point to be cluster.
     data_order : array
       The array of x, y indices ordered by decreasing y
-    clusters : 
+    clusters :
       The array of cluster ranges
     current_idx - int
       The index of data_order currently considered
@@ -62,7 +62,7 @@ class DataClusters:
         y : sequence of y values
           The array of PDF values, G(r)
         res : int
-          The clustering resolution, i.e., the number of points another point has to 
+          The clustering resolution, i.e., the number of points another point has to
           be away from the center of an existing cluster to before a new cluster is
           formed.  A value of zero allows every point to be cluster.
         """
@@ -144,7 +144,7 @@ class DataClusters:
         y : sequence of y values
           The array of PDF values, G(r)
         res : int
-          The clustering resolution, i.e., the number of points another point has to 
+          The clustering resolution, i.e., the number of points another point has to
           be away from the center of an existing cluster to before a new cluster is
           formed.  A value of zero allows every point to be cluster.
         """
