@@ -56,7 +56,7 @@ def test___eq__():
 def test_DataClusters_constructor(inputs, expected):
     actual = DataClusters(x=inputs["x"], y=inputs["y"], res=inputs["res"])
     actual_attributes = vars(actual)
-    for attr_key, atual_attr_val in actual_attributes.items():
+    for attr_key, actual_attr_val in actual_attributes.items():
         if isinstance(attr_val, np.ndarray):
             assert np.array_equal(actual_attr_val, expected[attr_key])
         else:
