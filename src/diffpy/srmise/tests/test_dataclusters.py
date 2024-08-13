@@ -44,13 +44,32 @@ def test___eq__():
                 "y": np.array([3, 2, 1]),
                 "res": 4,
             },
-            DataClusters(np.array([1, 2, 3]), np.array([3, 2, 1]), 4),
+            {
+                "x": np.array([1, 2, 3]),
+                "y": np.array([3, 2, 1]),
+                "res": 4,
+                "data_order": [2, 1, 0],
+                "clusters": np.array([[0, 0]]),
+                "current_idx": 2,
+                "lastpoint_idx": 0,
+                "INIT": 0,
+                "READY": 1,
+                "CLUSTERING": 2,
+                "DONE": 3,
+                "lastcluster_idx": None,
+                "status": 1,
+            }
         ),
     ],
 )
 def test_set_data(inputs, expected):
     actual = DataClusters(x=inputs["x"], y=inputs["y"], res=inputs["res"])
-    assert actual == expected
+    attributes = vars(actual)
+    for attr_key, attr_val in attributes.items():
+        if isinstance(attr_val, np.ndarray):
+            assert np.array_equal(attr_val, expected[attr_key])
+        else:
+            assert attr_val == expected[attr_key]
 
 
 @pytest.mark.parametrize(
@@ -70,8 +89,7 @@ def test_set_data(inputs, expected):
                 "y": np.array([3]),
                 "res": -1,
             },
-            "Resolution is the Determines how closely clusters are formed in the clustering algorithm. "
-            "Please set it to be non-negative.",
+            "Value of resolution parameter is less than zero.  Please rerun specifying a non-negative res",
         ),
     ],
 )
