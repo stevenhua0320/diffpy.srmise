@@ -135,7 +135,10 @@ class DataClusters:
         if len(x) != len(y):
             raise ValueError("Sequences x and y must have the same length.")
         if res < 0:
-            raise ValueError("Resolution res must be non-negative.")
+            raise ValueError(
+                "Resolution is the Determines how closely clusters are formed in the clustering algorithm. "
+                "Please set it to be non-negative."
+            )
         # Test for sorting?
         self.x = x
         self.y = y
