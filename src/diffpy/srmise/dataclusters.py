@@ -71,8 +71,8 @@ class DataClusters:
         self.READY = 1
         self.CLUSTERING = 2
         self.DONE = 3
-        self.clear()
-        self.setdata(x, y, res)
+        self._clear()
+        self._setdata(x, y, res)
 
         return
 
@@ -101,7 +101,7 @@ class DataClusters:
             and self.DONE == other.DONE
         )
 
-    def clear(self):
+    def _clear(self):
         """
         Clear all data and reset the cluster object to a transient initial state.
 
@@ -134,7 +134,7 @@ class DataClusters:
             self.status = self.READY
         return
 
-    def setdata(self, x, y, res):
+    def _setdata(self, x, y, res):
         """Assign data members for x- and y-coordinates, and resolution.
 
         Parameters

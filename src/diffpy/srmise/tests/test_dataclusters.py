@@ -6,15 +6,6 @@ import pytest
 from diffpy.srmise.dataclusters import DataClusters
 
 
-def test_clear():
-    # Initialize DataClusters with input parameters
-    actual = DataClusters(x=np.array([1, 2, 3]), y=np.array([3, 2, 1]), res=4)
-    expected = DataClusters(x=np.array([]), y=np.array([]), res=0)
-    # Perform the clear operation
-    actual.clear()
-    assert actual == expected
-
-
 def test___eq__():
     actual = DataClusters(np.array([1, 2, 3]), np.array([3, 2, 1]), 1)
     expected = DataClusters(np.array([1, 2, 3]), np.array([3, 2, 1]), 1)
@@ -44,14 +35,34 @@ def test___eq__():
                 "y": np.array([3, 2, 1]),
                 "res": 4,
             },
-            DataClusters(x=np.array([1, 2, 3]), y=np.array([3, 2, 1]), res=4),
+            {
+                "x": np.array([1, 2, 3]),
+                "y": np.array([3, 2, 1]),
+                "res": 4,
+                "data_order": [2, 1, 0],
+                "clusters": np.array([[0, 0]]),
+                "current_idx": 2,
+                "lastpoint_idx": 0,
+                "INIT": 0,
+                "READY": 1,
+                "CLUSTERING": 2,
+                "DONE": 3,
+                "lastcluster_idx": None,
+                "status": 1,
+            },
         ),
     ],
 )
-def test_set_data(inputs, expected):
-    actual = DataClusters(x=np.array([]), y=np.array([]), res=0)
-    actual.setdata(x=inputs["x"], y=inputs["y"], res=inputs["res"])
-    assert expected == actual
+def test_DataClusters_constructor(inputs, expected):
+    actual = DataClusters(x=inputs["x"], y=inputs["y"], res=inputs["res"])
+    attributes = vars(actual)
+    for attr_key, attr_val in attributes.items():
+        if isinstance(attr_val, np.ndarray):
+            assert np.array_equal(attr_val, expected[attr_key])
+        else:
+            assert attr_val == expected[attr_key]
+    actual._clear()
+    assert actual == DataClusters(x=np.array([]), y=np.array([]), res=0)
 
 
 @pytest.mark.parametrize(
