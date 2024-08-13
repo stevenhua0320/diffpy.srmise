@@ -58,7 +58,7 @@ def test___eq__():
                 "DONE": 3,
                 "lastcluster_idx": None,
                 "status": 1,
-            }
+            },
         ),
     ],
 )
