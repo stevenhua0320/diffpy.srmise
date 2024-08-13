@@ -22,43 +22,57 @@ logger = logging.getLogger("diffpy.srmise")
 
 
 class DataClusters:
-    """Find clusters corresponding to peaks in numerical x-, y-value arrays.
+    """Find clusters corresponding to peaks in the PDF (y-array)
 
-    DataClusters determines which points, given a pair of x- and y-value
-    sequences, roughly correspond to which visible peaks in that data.  This
-    division is contiguous, with borders between clusters near relative
+    DataClusters determines which points in inter-atomic distane, r,
+    correspond to peaks in the PDF.  The division between clusters
+    is contiguous, with borders between clusters likely near relative
     minima in the data.
 
     Clusters are iteratively formed around points with the largest
-    y-coordinates.  New clusters are added only when the unclustered data
+    PDF values.  New clusters are added only when the unclustered data
     point under consideration is greater than a given distance (the
     'resolution') from the nearest existing cluster.
 
     Data members
-    x - sequence of x coordinates.
-    y - sequence of y values
-    res - clustering 'resolution'
-    data_order - array of x, y indices ordered by decreasing y
-    clusters - array of cluster ranges
-    current_idx - index of data_order currently considered
+    ------------
+    x : array
+      The array of r values.
+    y : sequence of y values
+      The array of PDF values, G(r)
+    res : int
+      The clustering resolution, i.e., the number of points another point has to
+      be away from the center of an existing cluster to before a new cluster is
+      formed.  A value of zero allows every point to be cluster.
+    data_order : array
+      The array of x, y indices ordered by decreasing y
+    clusters :
+      The array of cluster ranges
+    current_idx - int
+      The index of data_order currently considered
     """
 
     def __init__(self, x, y, res):
-        """Initializes the data to be clustered, and the 'resolution' to use.
+        """Constructor
 
         Parameters
-        x - numeric sequence of x-value sorted in ascending order
-        y - corresponding sequence of y-values
-        res - clustering 'resolution'
+        ----------
+        x : array
+          The array of r values.
+        y : sequence of y values
+          The array of PDF values, G(r)
+        res : int
+          The clustering resolution, i.e., the number of points another point has to
+          be away from the center of an existing cluster to before a new cluster is
+          formed.  A value of zero allows every point to be cluster.
         """
         # Track internal state of clustering.
         self.INIT = 0
         self.READY = 1
         self.CLUSTERING = 2
         self.DONE = 3
-
-        self.clear()
-        self.setdata(x, y, res)
+        self._clear()
+        self._setdata(x, y, res)
 
         return
 
@@ -87,7 +101,7 @@ class DataClusters:
             and self.DONE == other.DONE
         )
 
-    def clear(self):
+    def _clear(self):
         """
         Clear all data and reset the cluster object to a transient initial state.
 
@@ -120,35 +134,37 @@ class DataClusters:
             self.status = self.READY
         return
 
-    def setdata(self, x, y, res):
+    def _setdata(self, x, y, res):
         """Assign data members for x- and y-coordinates, and resolution.
 
         Parameters
-        x - numeric sequence of x-value sorted in ascending order
-        y - corresponding sequence of y-values
-        res - clustering 'resolution'
+        ----------
+        x : array
+          The array of r values.
+        y : sequence of y values
+          The array of PDF values, G(r)
+        res : int
+          The clustering resolution, i.e., the number of points another point has to
+          be away from the center of an existing cluster to before a new cluster is
+          formed.  A value of zero allows every point to be cluster.
         """
-        # Test for error conditions
-        # 1) Length mismatch
-        # 2) Bound errors for res
-        # 3) r isn't sorted?
         if len(x) != len(y):
             raise ValueError("Sequences x and y must have the same length.")
         if res < 0:
-            raise ValueError("Resolution res must be non-negative.")
-        # Test for sorting?
+            raise ValueError(
+                "Value of resolution parameter is less than zero.  Please rerun specifying a non-negative res"
+            )
         self.x = x
         self.y = y
         self.res = res
-        # If x sequence size is empty, set the object into Initialized state.
-        if x.size == 0 and res == 0:
+        if x.size == 0:
             self.data_order = np.array([])
             self.clusters = np.array([[]])
             self.current_idx = 0
             self.lastpoint_idx = None
             self.status = self.INIT
         else:
-            self.data_order = self.y.argsort()  # Defines order of clustering
+            self.data_order = self.y.argsort()
             self.clusters = np.array([[self.data_order[-1], self.data_order[-1]]])
             self.current_idx = len(self.data_order) - 1
             self.lastpoint_idx = self.data_order[-1]
