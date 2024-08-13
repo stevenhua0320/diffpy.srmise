@@ -44,15 +44,32 @@ def test___eq__():
                 "y": np.array([3, 2, 1]),
                 "res": 4,
             },
-            DataClusters(x=np.array([1, 2, 3]), y=np.array([3, 2, 1]), res=4),
+            {
+                "x": np.array([1, 2, 3]),
+                "y": np.array([3, 2, 1]),
+                "res": 4,
+                "data_order": [2, 1, 0],
+                "clusters": np.array([[0, 0]]),
+                "current_idx": 2,
+                "lastpoint_idx": 0,
+                "INIT": 0,
+                "READY": 1,
+                "CLUSTERING": 2,
+                "DONE": 3,
+                "lastcluster_idx": None,
+                "status": 1,
+            },
         ),
     ],
 )
 def test_set_data(inputs, expected):
-    actual = DataClusters(x=np.array([]), y=np.array([]), res=0)
-    actual.setdata(x=inputs["x"], y=inputs["y"], res=inputs["res"])
-    assert expected == actual
-
+    actual = DataClusters(x=inputs["x"], y=inputs["y"], res=inputs["res"])
+    attributes = vars(actual)
+    for attr_key, attr_val in attributes.items():
+        if isinstance(attr_val, np.ndarray):
+            assert np.array_equal(attr_val, expected[attr_key])
+        else:
+            assert attr_val == expected[attr_key]
 
 
 @pytest.mark.parametrize(
