@@ -142,7 +142,8 @@ class Arbitrary(BaselineFunction):
         r : array-like or int
             sequence or scalar over which pars is evaluated
         free : array-like of bools
-            sequence of booleans which determines which derivatives are needed. True for evaluation, False for no evaluation.
+            sequence of booleans which determines which derivatives are needed.
+            True for evaluation, False for no evaluation.
 
         Returns
         -------
