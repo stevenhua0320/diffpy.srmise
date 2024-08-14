@@ -121,7 +121,7 @@ class Polynomial(BaselineFunction):
             emsg = "Argument free must have " + str(self.npars) + " elements."
             raise ValueError(emsg)
         jacobian = [None for p in range(self.npars)]
-        if (free is False).sum() == self.npars:
+        if free.count(False) == self.npars:
             return jacobian
 
         # The partial derivative with respect to the nth coefficient of a
