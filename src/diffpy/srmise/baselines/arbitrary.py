@@ -43,15 +43,18 @@ class Arbitrary(BaselineFunction):
         """Initialize an arbitrary baseline.
 
         Parameters
-        npars: Number of parameters which define the function
-        valuef: Function which calculates the value of the baseline
-               at x.
-        jacobianf: (None) Function which calculates the Jacobian of the
+        ----------
+        npars : int
+            The number of parameters which define the function
+        valuef : array-like or int
+            The function which calculates the value of the baseline at x.
+        jacobianf : array-like or None
+            The function which calculates the Jacobian of the
                   baseline function with respect to free pars.
-        estimatef: (None) Function which estimates function parameters given the
-                  data x and y.
-        Cache: (None) A class (not instance) which implements caching of
-               BaseFunction evaluations.
+        estimatef : array-like or None
+            The function which estimates function parameters given the data x and y.
+        Cache :  None or callable
+            The class (not instance) which implements caching of BaseFunction evaluations.
         """
         # Guarantee valid number of parameters
         try:
@@ -103,11 +106,17 @@ class Arbitrary(BaselineFunction):
         """Estimate parameters for data baseline.
 
         Parameters
-        r: (Numpy array) Data along r from which to estimate
-        y: (Numpy array) Data along y from which to estimate
+        ----------
+        r : array-like
+            The data along r from which to estimate
+        y : array-like
+            The data along y from which to estimate
 
-        Returns Numpy array of parameters in the default internal format.
-        Raises NotImplementedError if no estimation routine is defined, and
+        Returns
+        -------
+        The numpy array of parameters in the default internal format.
+
+        we raise NotImplementedError if no estimation routine is defined, and
         SrMiseEstimationError if parameters cannot be estimated for any other."""
         if self.estimatef is None:
             emsg = "No estimation routine provided to Arbitrary."
@@ -124,13 +133,23 @@ class Arbitrary(BaselineFunction):
         """Return the Jacobian of a polynomial.
 
         Parameters
-        pars: Sequence of parameters
-             pars[0] = a_0
-             pars[1] = a_1
-             ...
-        r: sequence or scalar over which pars is evaluated
-        free: sequence of booleans which determines which derivatives are
-              needed.  True for evaluation, False for no evaluation."""
+        ----------
+        pars : array-like
+            The sequence of parameters
+                pars[0] = a_0
+                pars[1] = a_1
+                ...
+        r : array-like or int
+            The sequence or scalar over which pars is evaluated
+        free : array-like of bools
+            The sequence of booleans which determines which derivatives are needed.
+            True for evaluation, False for no evaluation.
+
+        Returns
+        -------
+        numpy.ndarray
+            The Jacobian of polynomial with respect to free pars.
+        """
         nfree = None
         if self.jacobianf is None:
             nfree = (pars is True).sum()
@@ -159,12 +178,23 @@ class Arbitrary(BaselineFunction):
         """Convert parameter values from in_format to out_format.
 
         Parameters
-        pars: Sequence of parameters
-        in_format: A format defined for this class
-        out_format: A format defined for this class
+        ----------
+        pars : array-like
+            The sequence of parameters
+        in_format : internal
+            The format defined for this class
+        out_format: internal
+            The format defined for this class
 
-        Defined Formats
-        internal: [a_0, a_1, ...]"""
+        Defined Format
+        --------------
+        internal: [a_0, a_1, ...]
+
+        Returns
+        -------
+        numpy.ndarray
+            The standard output of transformed parameters
+        """
         temp = np.array(pars)
 
         # Convert to intermediate format "internal"
@@ -181,14 +211,28 @@ class Arbitrary(BaselineFunction):
         return temp
 
     def _valueraw(self, pars, r):
-        """Return value of polynomial for the given parameters and r values.
+        """Compute the value of the polynomial given a set of parameters and evaluation points.
+
+        This method ensures that the input parameters conform to the expected count
+        and then delegates the computation to an internal method `valuef`.
 
         Parameters
-        pars: Sequence of parameters
-            pars[0] = a_0
-            pars[1] = a_1
-            ...
-        r: sequence or scalar over which pars is evaluated"""
+        ----------
+        pars : array_like
+            The sequence of coefficients for the polynomial where each element corresponds to:
+            - pars[0] = a_0, the constant term
+            - pars[1] = a_1, the coefficient of the first degree term, and so on.
+            The length of `pars` must match the expected number of parameters defined in the class.
+
+        r : array_like or float
+            The sequence of points or a single point at which the polynomial is to be evaluated.
+            If a scalar is provided, it will be treated as a single point for evaluation.
+
+        Returns
+        -------
+        ndarray or float
+            The computed values of the polynomial for each point in `r`.
+        """
         if len(pars) != self.npars:
             emsg = "Argument pars must have " + str(self.npars) + " elements."
             raise ValueError(emsg)
