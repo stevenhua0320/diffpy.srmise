@@ -90,7 +90,7 @@ class Polynomial(BaselineFunction):
             # TODO: Make this more sophisticated.
             try:
                 cut = np.max([len(y) / 10, 1])
-                cut_idx = y.argsort()[:cut]
+                cut_idx = y.argsort()[: int(cut)]
 
                 import numpy.linalg as la
 
@@ -121,7 +121,7 @@ class Polynomial(BaselineFunction):
             emsg = "Argument free must have " + str(self.npars) + " elements."
             raise ValueError(emsg)
         jacobian = [None for p in range(self.npars)]
-        if (free is False).sum() == self.npars:
+        if np.sum(np.logical_not(free)) == self.npars:
             return jacobian
 
         # The partial derivative with respect to the nth coefficient of a
