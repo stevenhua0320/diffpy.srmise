@@ -88,7 +88,7 @@ class NanoSpherical(BaselineFunction):
             emsg = "Argument free must have " + str(self.npars) + " elements."
             raise ValueError(emsg)
         jacobian = [None for p in range(self.npars)]
-        if (free is False).sum() == self.npars:
+        if np.sum(np.logical_not(free)) == self.npars:
             return jacobian
 
         if np.isscalar(r):
@@ -247,7 +247,6 @@ if __name__ == "__main__":
     for tup in zip(r, val, *outjac):
         for t in tup:
             if t is None:
-                print("%s" % None).ljust(10),
+                print(f"{None}".ljust(10))
             else:
-                print("% .3g" % t).ljust(10),
-        print
+                print(f"{t:.3g}".ljust(10))
