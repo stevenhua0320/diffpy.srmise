@@ -45,16 +45,16 @@ class Arbitrary(BaselineFunction):
         Parameters
         ----------
         npars : int
-            Number of parameters which define the function
+            The number of parameters which define the function
         valuef : array-like or int
-            Function which calculates the value of the baseline at x.
+            The function which calculates the value of the baseline at x.
         jacobianf : array-like or None
-            Function which calculates the Jacobian of the
+            The function which calculates the Jacobian of the
                   baseline function with respect to free pars.
         estimatef : array-like or None
-            Function which estimates function parameters given the data x and y.
+            The function which estimates function parameters given the data x and y.
         Cache :  None or callable
-            A class (not instance) which implements caching of BaseFunction evaluations.
+            The class (not instance) which implements caching of BaseFunction evaluations.
         """
         # Guarantee valid number of parameters
         try:
@@ -108,13 +108,13 @@ class Arbitrary(BaselineFunction):
         Parameters
         ----------
         r : array-like
-            Data along r from which to estimate
+            The data along r from which to estimate
         y : array-like
-            Data along y from which to estimate
+            The data along y from which to estimate
 
         Returns
         -------
-        Numpy array of parameters in the default internal format.
+        The numpy array of parameters in the default internal format.
 
         we raise NotImplementedError if no estimation routine is defined, and
         SrMiseEstimationError if parameters cannot be estimated for any other."""
@@ -135,20 +135,20 @@ class Arbitrary(BaselineFunction):
         Parameters
         ----------
         pars : array-like
-            Sequence of parameters
+            The sequence of parameters
                 pars[0] = a_0
                 pars[1] = a_1
                 ...
         r : array-like or int
-            sequence or scalar over which pars is evaluated
+            The sequence or scalar over which pars is evaluated
         free : array-like of bools
-            sequence of booleans which determines which derivatives are needed.
+            The sequence of booleans which determines which derivatives are needed.
             True for evaluation, False for no evaluation.
 
         Returns
         -------
         numpy.ndarray
-            Jacobian of polynomial with respect to free pars.
+            The Jacobian of polynomial with respect to free pars.
         """
         nfree = None
         if self.jacobianf is None:
@@ -180,11 +180,11 @@ class Arbitrary(BaselineFunction):
         Parameters
         ----------
         pars : array-like
-            Sequence of parameters
+            The sequence of parameters
         in_format : internal
-            A format defined for this class
+            The format defined for this class
         out_format: internal
-            A format defined for this class
+            The format defined for this class
 
         Defined Format
         --------------
@@ -193,7 +193,7 @@ class Arbitrary(BaselineFunction):
         Returns
         -------
         numpy.ndarray
-            Standard output of transformed parameters
+            The standard output of transformed parameters
         """
         temp = np.array(pars)
 
@@ -219,13 +219,13 @@ class Arbitrary(BaselineFunction):
         Parameters
         ----------
         pars : array_like
-            A sequence of coefficients for the polynomial where each element corresponds to:
+            The sequence of coefficients for the polynomial where each element corresponds to:
             - pars[0] = a_0, the constant term
             - pars[1] = a_1, the coefficient of the first degree term, and so on.
             The length of `pars` must match the expected number of parameters defined in the class.
 
         r : array_like or float
-            A sequence of points or a single point at which the polynomial is to be evaluated.
+            The sequence of points or a single point at which the polynomial is to be evaluated.
             If a scalar is provided, it will be treated as a single point for evaluation.
 
         Returns
