@@ -247,8 +247,6 @@ if __name__ == "__main__":
     for tup in zip(r, val, *outjac):
         for t in tup:
             if t is None:
-                formatted_t = f"{None}"
-                print(formatted_t.ljust(10))
+                print(f"{None}".ljust(10))
             else:
-                formatted_t = f"{t:.3g}".ljust(10)
-                print(formatted_t)
+                print(f"{t:.3g}".ljust(10))
