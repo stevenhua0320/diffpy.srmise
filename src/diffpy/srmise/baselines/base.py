@@ -181,5 +181,5 @@ if __name__ == "__main__":
     evaluator = AICc()
 
     pars = [[3, 0.2, 10], [3.5, 0.2, 10]]
-    ideal_peaks = Peaks([pf.createpeak(p, "pwa") for p in pars])
+    ideal_peaks = Peaks([pf.actualize(p, "pwa") for p in pars])
     y = ideal_peaks.value(r) + 0.1 * randn(len(r))

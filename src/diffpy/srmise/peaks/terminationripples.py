@@ -290,13 +290,13 @@ if __name__ == "__main__":
     evaluator = AICc()
 
     pars = [[3, 0.2, 10], [3.5, 0.2, 10]]
-    ideal_peaks = Peaks([pf1.createpeak(p, "pwa") for p in pars])
-    ripple_peaks = Peaks([pf2.createpeak(p, "pwa") for p in pars])
+    ideal_peaks = Peaks([pf1.actualize(p, "pwa") for p in pars])
+    ripple_peaks = Peaks([pf2.actualize(p, "pwa") for p in pars])
     y_ideal = ideal_peaks.value(r)
     y_ripple = ripple_peaks.value(r) + 0.1 * randn(len(r))
 
     guesspars = [[2.7, 0.15, 5], [3.7, 0.3, 5]]
-    guess_peaks = Peaks([pf2.createpeak(p, "pwa") for p in guesspars])
+    guess_peaks = Peaks([pf2.actualize(p, "pwa") for p in guesspars])
     cluster = ModelCluster(guess_peaks, r, y_ripple, err, None, AICc, [pf2])
 
     qual1 = cluster.quality()

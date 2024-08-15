@@ -427,11 +427,11 @@ if __name__ == "__main__":
     evaluator = AICc()
 
     pars = [[3, 0.2, 10], [3.5, 0.2, 10]]
-    ideal_peaks = Peaks([pf.createpeak(p, "pwa") for p in pars])
+    ideal_peaks = Peaks([pf.actualize(p, "pwa") for p in pars])
     y = ideal_peaks.value(r) + 0.1 * randn(len(r))
 
     guesspars = [[2.7, 0.15, 5], [3.7, 0.3, 5]]
-    guess_peaks = Peaks([pf.createpeak(p, "pwa") for p in guesspars])
+    guess_peaks = Peaks([pf.actualize(p, "pwa") for p in guesspars])
     cluster = ModelCluster(guess_peaks, r, y, err, None, AICc, [pf])
 
     qual1 = cluster.quality()
