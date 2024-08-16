@@ -558,7 +558,7 @@ class ModelPart(object):
         if count_fixed:
             return self._owner.npars
         else:
-            return (self.free is True).sum()
+            return np.sum(self.free)
 
     def __str__(self):
         """Return string representation of ModelPart parameters."""
