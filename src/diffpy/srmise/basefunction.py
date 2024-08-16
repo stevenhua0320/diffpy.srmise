@@ -99,7 +99,7 @@ class BaseFunction(object):
         # arbitrary types, parameters are indexed by these keys as well as
         # integer indices.  Restricting keys to strings keeps things sane.
         for p in self.parameterdict.keys():
-            if isinstance(p, str):
+            if not isinstance(p, str):
                 emsg = "Argument parameterdict's keys must be strings."
                 raise ValueError(emsg)
         vals = self.parameterdict.values()
