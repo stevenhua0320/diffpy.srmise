@@ -1408,8 +1408,8 @@ class ModelCluster(object):
 if __name__ == "__main__":
     from numpy.random import randn
 
-    from diffpy.srmise.modelevaluators import AICc
-    from diffpy.srmise.peaks import GaussianOverR
+    from diffpy.srmise.modelevaluators.aicc import AICc
+    from diffpy.srmise.peaks.gaussianoverr import GaussianOverR
 
     pf = GaussianOverR(0.7)
     res = 0.01
