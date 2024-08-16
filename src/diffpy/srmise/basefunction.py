@@ -18,7 +18,6 @@ import re
 import sys
 
 import numpy as np
-from numpy.compat import unicode
 
 from diffpy.srmise.srmiseerrors import SrMiseDataFormatError
 
@@ -100,7 +99,7 @@ class BaseFunction(object):
         # arbitrary types, parameters are indexed by these keys as well as
         # integer indices.  Restricting keys to strings keeps things sane.
         for p in self.parameterdict.keys():
-            if type(p) not in (str, unicode):
+            if isinstance(p, str):
                 emsg = "Argument parameterdict's keys must be strings."
                 raise ValueError(emsg)
         vals = self.parameterdict.values()
