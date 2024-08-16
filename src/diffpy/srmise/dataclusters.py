@@ -172,7 +172,7 @@ class DataClusters:
         self.lastcluster_idx = None
         return
 
-    def next(self):
+    def cluster_next_point(self):
         """Cluster point with largest y-coordinate left, returning self.
 
         next() always adds at least one additional point to the existing
@@ -217,14 +217,13 @@ class DataClusters:
             else:
                 # insert right of nearest cluster
                 self.lastcluster_idx = nearest_cluster[0] + 1
-            self.clusters = np.insert(self.clusters, self.lastcluster_idx, [test_idx, test_idx], 0)
+            self.clusters = np.insert(self.clusters, int(self.lastcluster_idx), [test_idx, test_idx], 0)
         return self
 
     def makeclusters(self):
         """Cluster all remaining data."""
-        for i in self:
-            pass
-        return
+        while self.current_idx > 0:
+            self.cluster_next_point()
 
     def find_nearest_cluster2(self, x):
         """Return [cluster index, distance] for cluster nearest to x.
@@ -286,8 +285,8 @@ class DataClusters:
         # Calculate which of the two nearest clusters is closer
         distances = np.array(
             [
-                self.x[idx] - self.x[self.clusters[near_idx - 1, 1]],
-                self.x[idx] - self.x[self.clusters[near_idx, 0]],
+                self.x[idx] - self.x[self.clusters[int(near_idx) - 1, 1]],
+                self.x[idx] - self.x[self.clusters[int(near_idx), 0]],
             ]
         )
         if distances[0] < np.abs(distances[1]):
