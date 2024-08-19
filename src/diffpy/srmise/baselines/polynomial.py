@@ -90,7 +90,7 @@ class Polynomial(BaselineFunction):
             # TODO: Make this more sophisticated.
             try:
                 cut = np.max([len(y) / 10, 1])
-                cut_idx = y.argsort()[:int(cut)]
+                cut_idx = y.argsort()[: int(cut)]
 
                 import numpy.linalg as la
 
