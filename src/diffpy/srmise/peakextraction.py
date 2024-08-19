@@ -33,29 +33,44 @@ logger = logging.getLogger("diffpy.srmise")
 class PeakExtraction(object):
     """Class for peak extraction.
 
-    Data members
-    x: x coordinates of the data
-    y: y coordinates of the data
-    dx: uncertainties in the x coordinates (not used)
-    dy: uncertainties in the y coordinates
-    effective_dy: uncertainties in the y coordinates actually used during extraction
-    rng: [xmin, xmax] Range of x coordinates over which to extract peaks
-    pf: Sequence of peak functions that can be extracted
-    initial_peaks: Peaks present at start of extraction
-    baseline: Baseline for data
-    cres: Resolution of clustering
-    error_method: ErrorEvaluator class used to compare models
+    Parameters
+    ----------
+    x : array-like
+        The x coordinates of the data
+    y : array-like
+        The y coordinates of the data
+    dx : array-like
+        The uncertainties in the x coordinates (not used)
+    dy : array-like
+        The uncertainties in the y coordinates
+    effective_dy : array-like
+        The uncertainties in the y coordinates actually used during extraction
+    rng : list
+        The [xmin, xmax] Range of x coordinates over which to extract peaks
+    pf : array-like
+        The sequence of peak functions that can be extracted
+    initial_peaks: Peaks object
+        The peaks present at start of extraction
+    baseline : Baseline object
+        The baseline for data
+    cres : float
+        The resolution of clustering
+    error_method : ErrorEvaluator class
+        The Evaluation class used to compare models
 
     Calculated members
-    extracted: ModelCluster after extraction
-    extraction_type: Type of extraction
+    ------------------
+    extracted : ModelCluster object
+        The ModelCluster object after extraction
+    extraction_type : Type of extraction
     """
 
     def __init__(self, newvars=[]):
         """Initialize PeakExtraction object.
 
         Parameters
-        newvars: Sequence of strings that represent additional extraction parameters."""
+        newvars : array-like
+            Sequence of strings that represent additional extraction parameters."""
         self.clear()
         self.extractvars = dict.fromkeys(
             (
@@ -77,7 +92,9 @@ class PeakExtraction(object):
         return
 
     def clear(self):
-        """Clear all members."""
+        """Clear all members.
+
+        The purpose of the method is to ensure the object is in initialized state."""
         self.x = None
         self.y = None
         self.dx = None
@@ -119,17 +136,24 @@ class PeakExtraction(object):
     def setvars(self, quiet=False, **kwds):
         """Set one or more extraction variables.
 
-        Variables
-        quiet: [False] Log changes quietly.
-
-        Keywords
-        cres: The clustering resolution, must be > 0.
-        effective_dy: The uncertainties actually used during extraction
-        pf: Sequence of PeakFunctionBase subclass instances.
-        baseline: Baseline instance or BaselineFunction instance (use built-in estimation)
-        error_method: ErrorEvaluator subclass instance used to compare models (default AIC)
-        initial_peaks: Peaks instance.  These peaks are present at the start of extraction.
-        rng: Sequence specifying the least and greatest x-values over which to extract peaks.
+        Parameters
+        ----------
+        quiet : bool
+            The log changes quietly. Default is False.
+        cres : float
+            The clustering resolution, must be > 0.
+        effective_dy : array-like
+            The uncertainties actually used during extraction
+        pf : list
+            The sequence of PeakFunctionBase subclass instances.
+        baseline : Baseline instance or BaselineFunction instance
+            The Baseline instance or BaselineFunction instance that use built-in estimation
+        error_method : ErrorEvaluator subclass instance
+            The ErrorEvaluator subclass instance used to compare models. Default is AIC.
+        initial_peaks : Peaks instance
+            These peaks are present at the start of extraction.
+        rng : array-like
+            The sequence specifying the least and greatest x-values over which to extract peaks.
         """
         for k, v in kwds.items():
             if k in self.extractvars:
