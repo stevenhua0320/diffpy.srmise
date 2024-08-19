@@ -1331,9 +1331,9 @@ if __name__ == "__main__":
 
     from numpy.random import randn
 
+    from diffpy.srmise.dataclusters import DataClusters
     from diffpy.srmise.modelevaluators.aicc import AICc
     from diffpy.srmise.peaks.gaussianoverr import GaussianOverR
-    from diffpy.srmise.dataclusters import DataClusters
 
     srmiselog.setlevel("info")
     srmiselog.liveplotting(False)
