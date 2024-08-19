@@ -147,24 +147,27 @@ class PeakExtraction(object):
         """Set unset(=None) extraction variables to default values.
 
         Certain variables may be partially set for convenience, and are transformed
-        appropriately.  See 'Default values' below.
+        appropriately. See 'Default values assigned' below.
 
         Parameters
-        Any number of strings corresponding to extraction variables.  These
-        variables are reset to their default values even if another value
-        already exists.
+        ----------
+        *args : str
+                The variable argument list where each string corresponds to an extraction
+                variable name.
 
-        Default values:
-        cres -> 4 times the average spacing between elements in x
-        effective_dy -> The data dy if all elements > 0, otherwise 5% of max(y)-min(y).
-                        If effective_dy is a positive scalar, then an array of that
-                        value of appropriate length.
-        pf -> [GaussianOverR(maxwidth=x[-1]-x[0])]
-        baseline -> Flat baseline located at y=0.
-        error_method -> AIC (Aikake Information Criterion)
-        initial_peaks -> No initial peaks
-        rng -> [x[0], x[-1]].  Partially set ranges like [None, 100.] replace None with
-               the appropriate limit in the data.
+        Default values assigned:
+        - `cres` : 4 times the average spacing between elements in `x`.
+        - `effective_dy` : If all elements in `y` are positive, it's set to the data `dy`;
+                           otherwise, it's 5% of the range (`max(y)` - `min(y)`). If `effective_dy`
+                           is a positive scalar, an array of that value with a length matching `y` is used.
+        - `pf` : A list containing a single Gaussian overlap function with the maximum width
+                spanning the entire `x` range (`x[-1] - x[0]`).
+        - `baseline` : A flat baseline at `y=0`, indicating no background signal.
+        - `error_method` : Uses the AIC (Akaike Information Criterion) for evaluating model fits.
+        - `initial_peaks` : Assumes no initial peak guesses, implying peaks will be detected from scratch.
+        - `rng` : The default range is set to span the entire `x` dataset, i.e., `[x[0], x[-1]]`.
+                 If a range is partially defined, e.g., `[None, 100.]`, the `None` value is replaced
+                with the respective boundary of the `x` data.
 
         Note that the default values of very important parameters like the uncertainty
         and clustering resolution are crude guesses at best.
@@ -240,7 +243,13 @@ class PeakExtraction(object):
 
         Uses initial peaks instead if no peaks have been extracted.
 
-        Takes same keywords as ModelCluster.plottable()"""
+        Takes same keywords as ModelCluster.plottable()
+
+        Parameters
+        ----------
+        **kwds :args
+            The keyword arguments to pass to matplotlib.
+        """
         plt.clf()
         if self.extracted is not None:
             plt.plot(*self.extracted.plottable(kwds))
@@ -268,9 +277,14 @@ class PeakExtraction(object):
     def read(self, filename):
         """load PeakExtraction object from file
 
-        filename -- file from which to read
+        Parameters
+        ----------
+        filename : str
+            The file from which to read
 
-        returns self
+        Returns
+        -------
+        self
         """
         try:
             self.readstr(open(filename, "rb").read())
@@ -288,7 +302,10 @@ class PeakExtraction(object):
         """Initialize members from string.
 
         Parameters
-        datastring: The raw data to read"""
+        ----------
+        datastring : array-like
+            The raw data to read
+        """
         from diffpy.srmise.basefunction import BaseFunction
 
         self.clear()
@@ -501,7 +518,10 @@ class PeakExtraction(object):
         """Write string representation of PeakExtraction instance to file.
 
         Parameters
-        filename: the name of the file to write"""
+        ----------
+        filename : str
+            The name of the file to write
+        """
         bytes = self.writestr()
         f = open(filename, "w")
         f.write(bytes)
@@ -509,7 +529,12 @@ class PeakExtraction(object):
         return
 
     def writestr(self):
-        """Return string representation of PeakExtraction object."""
+        """Return string representation of PeakExtraction object.
+
+        Returns
+        -------
+        The str representation of PeakExtraction object
+        """
         import time
         from getpass import getuser
 
@@ -678,11 +703,16 @@ class PeakExtraction(object):
         Peaks already extracted, if any, are taken into account.  If none exist,
         use those specified by initial_peaks instead.
 
-        Parameters:
-        x: Coordinate of the point of interest
-        add: (True) Automatically add peak to extracted peaks or initial_peaks.
+        Parameters
+        ----------
+        x : array-like
+            The oordinate of the point of interest
+        add : bool
+            Automatically add peak to extracted peaks or initial_peaks. Default is True.
 
-        Return a Peak object, or None if estimation fails.
+        Returns
+        -------
+        The Peak object, or None if estimation fails.
         """
         # Make sure all required extraction variables have some value
         self.defaultvars()
@@ -734,7 +764,10 @@ class PeakExtraction(object):
         """Add peaks to extracted peaks, or initial_peaks if no extracted peaks exist.
 
         Parameters
-        peaks: A Peaks instance"""
+        ----------
+        peaks: Peaks object
+            The peaks instance
+        """
         if self.extracted is not None:
             self.extracted.replacepeaks(peaks)
         else:
