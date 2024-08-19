@@ -125,7 +125,17 @@ class PeakStability:
         )
 
     def setcurrent(self, idx):
-        """Make the idxth model the active one."""
+        """Make the idxth model the active one.
+
+        Parameters
+        ----------
+        idx : int
+            The index of the model to be tested.
+
+        Returns
+        -------
+        None
+        """
         self.current = idx
         if idx is not None:
             result = self.results[idx]
@@ -140,11 +150,15 @@ class PeakStability:
     def animate(self, results=None, step=False, **kwds):
         """Show animation of extracted peaks from first to last.
 
-        Parameters:
-        step - Require keypress to show next plot
-        results - The indices of results to show
+           Keywords passed to pyplot.plot()
 
-        Keywords passed to pyplot.plot()"""
+        Parameters
+        ----------
+        step : bool
+            Require keypress to show next plot
+        results array-like
+            The indices of results to show
+        """
         if results is None:
             results = range(len(self.results))
 
@@ -165,9 +179,16 @@ class PeakStability:
         self.setcurrent(oldcurrent)
 
     def run(self, err, savecovs=False):
-        """err is sequence of uncertainties to run at.
+        """Running the uncertainty for the results.
 
-        If savecovs is True, return the covariance matrix for each final fit."""
+        Parameters
+        ----------
+        err : array-like
+            The sequence of uncertainties to run at.
+        savecovs : bool
+            boolean to determine to save covariance matrix. Default is False.
+            If savecovs is True, return the covariance matrix for each final fit."""
+
         self.results = []
         covs = []
         for i, e in enumerate(err):
