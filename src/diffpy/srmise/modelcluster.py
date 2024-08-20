@@ -887,11 +887,27 @@ class ModelCluster(object):
         return
 
     def deletepeak(self, idx):
-        """Delete the peak at the given index."""
+        """Delete the peak at the given index.
+
+        Parameters
+        ----------
+        idx : int
+            Index of peak to delete.
+
+        Returns
+        -------
+        None
+        """
         self.replacepeaks([], slice(idx, idx + 1))
 
     def estimatepeak(self):
-        """Attempt to add single peak to empty cluster.  Return True if successful."""
+        """Attempt to add single peak to empty cluster.  Return True if successful.
+
+        Returns
+        -------
+        bool
+            True if successful, False otherwise.
+        """
         # STUB!!! ###
         # Currently only a single peak function is supported.  Dynamic
         # selection from multiple types may require additional support
@@ -926,16 +942,26 @@ class ModelCluster(object):
         """Perform a chi-square fit of the model to data in cluster.
 
         Parameters
-        justify - Revert to initial model (if one exists) if new model
-                  has only a single peak and the quality of the fit suggests
-                  additional peaks are present.
-        ntrials - The maximum number of function evaluations.
-                  '0' indicates the fitting algorithm's default.
-        fitbaseline - Whether to fit baseline along with peaks
-        estimate - Estimate a single peak from data if model is empty.
-        cov - Optional ModelCovariance object preserves covariance information.
-        cov_format - Parameterization to use in cov.
+        ----------
+        justify : bool
+            Revert to initial model (if one exists) if new model
+            has only a single peak and the quality of the fit suggests
+            additional peaks are present. Default is False.
+        ntrials : int
+            The maximum number of function evaluations.
+            '0' indicates the fitting algorithm's default.
+        fitbaseline : bool
+            Whether to fit baseline along with peaks. Default is False.
+        estimate : bool
+            Estimate a single peak from data if model is empty. Default is True.
+        cov : ModelCovariance or None
+            Optional ModelCovariance object preserves covariance information.
+        cov_format : str
+            Parameterization to use in cov.
 
+        Returns
+        -------
+        ModelEvaluator or None
         If fitting changes a model, return ModelEvaluator instance.  Otherwise
         return None.
         """
@@ -1040,10 +1066,16 @@ class ModelCluster(object):
         """Fit cluster if it has grown sufficiently large since its last fit.
 
         Parameters
-        minpoints - The minimum number of points an empty cluster requires to fit.
-        growth_threshold - Fit non-empty model if (currentsize/oldsize) >= this value.
+        ----------
+        minpoints : int
+            The minimum number of points an empty cluster requires to fit.
+        growth_threshold : float
+            Fit non-empty model if (currentsize/oldsize) >= this value.
 
-        Return ModelEvaluator instance if fit changed, otherwise None.
+        Returns
+        -------
+        ModelEvaluator or None
+            Return ModelEvaluator instance if fit changed, otherwise None.
         """
         if self.never_fit:
             return None
@@ -1115,10 +1147,16 @@ class ModelCluster(object):
         a maximum very close to x may prevent optimal results.
 
         Parameters
-        x - Position at which to match
-        y - Height to match.
+        ----------
+        x : array-like
+            The position at which to match
+        y : array-like
+            The height to match.
 
-        Return ModelEvaluator instance if fit changed, otherwise None."""
+        Returns
+        -------
+        ModelEvaluator or None
+            Return ModelEvaluator instance if fit changed, otherwise None."""
         # No reduction neccessary
         if self.model.value(x) < y:
             logger.debug("reduce_to: No reduction necessary.")
@@ -1142,7 +1180,19 @@ class ModelCluster(object):
         return quality
 
     def value(self, r=None):
-        """Return value of baseline+model over cluster."""
+        """Return value of baseline+model over cluster.
+
+        Parameters
+        ----------
+        r : array-like, optional
+            value(s) over which to calculate the baseline's value.
+            The default is over the entire cluster.
+
+        Returns
+        -------
+        float
+            The value of baseline+model over cluster.
+        """
         if len(self.model) == 0:
             return self.valuebl(r)
         else:
@@ -1157,8 +1207,14 @@ class ModelCluster(object):
         If no baseline exists its value is 0 everywhere.
 
         Parameters
+        ----------
         r - value(s) over which to calculate the baseline's value.
             The default is over the entire cluster.
+
+        Returns
+        -------
+        float
+            The value of baseline's value.
         """
         if self.baseline is None:
             if r is None:
@@ -1183,10 +1239,18 @@ class ModelCluster(object):
         details see ModelEvaluator documentation.
 
         Parameters
-        evaluator - A ModelEvaluator class (not instance) to use instead of default.
+        ----------
+        evaluator : ModelEvaluator class or None
+            The ModelEvaluator class to use. Default is None.
 
         Keywords
+        --------
         kwds - Keyword arguments passed the the ModelEvaluator's evaluate() method.
+
+        Returns
+        -------
+        ModelEvaluator instance
+            The ModelEvaluator instance with quality calculated
         """
         if evaluator is None:
             evaluator_inst = self.error_method()
@@ -1199,7 +1263,14 @@ class ModelCluster(object):
         """Return sequence suitable for plotting cluster model+baseline with matplotlib.
 
         Parameters
-        joined - Return sum of all peaks, or each one individually.
+        ----------
+        joined : bool
+            Return sum of all peaks if joined is True, or each one individually if False.
+
+        Returns
+        -------
+        array-like
+            A sequence of plottable objects.
         """
         if joined:
             return [self.r_cluster, self.y_cluster, self.r_cluster, self.value()]
@@ -1212,14 +1283,26 @@ class ModelCluster(object):
             return toreturn
 
     def plottable_residual(self):
-        """Return sequence suitable for plotting cluster residual with matplotlib."""
+        """Return sequence suitable for plotting cluster residual with matplotlib.
+
+        Returns
+        -------
+        array-like
+            A sequence of plottable clusters and residuals.
+        """
         return [self.r_cluster, self.residual()]
 
     def augment(self, source):
         """Add peaks from another ModelCluster that improve this one's quality.
 
         Parameters
-        source - A ModelCluster instance
+        ----------
+        source : ModelCluster instance
+            The ModelCluster instance to augment the model's quality.
+
+        Returns
+        -------
+        None
         """
         best_model = self.model.copy()
         best_qual = self.quality()
