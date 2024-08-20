@@ -153,9 +153,9 @@ class ModelCovariance(object):
 
         Parameters
         ----------
-        in_format : Any
+        in_format : str
             The current format of parameters
-        out_format : Any
+        out_format : str
             The new format for parameters
 
         Keywords
@@ -282,7 +282,7 @@ class ModelCovariance(object):
         Returns
         -------
         float
-        The uncertainty of variable at index i.
+            The uncertainty of variable at index i.
         """
         (l, m) = i if i in self.pmap else self.ipmap[i]
         return np.sqrt(self.getcovariance(i, i))
@@ -329,7 +329,7 @@ class ModelCovariance(object):
         Returns
         -------
         (float, float)
-        The value and uncertainty of variable at index i.
+            The value and uncertainty of variable at index i.
         """
         return (self.getvalue(i), self.getuncertainty(i))
 
