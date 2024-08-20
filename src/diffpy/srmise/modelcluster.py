@@ -369,18 +369,26 @@ class ModelCluster(object):
     def __init__(self, model, *args, **kwds):
         """Intialize explicitly, or from existing ModelCluster.
 
-        Parameters [Explicit creation]
-        model - Peaks object, or None->empty model
-        baseline - Baseline object, or None->0
-        r_data - Numpy array of r coordinates
-        y_data - Numpy array of y values
-        y_error - Numpy array of uncertainties in y
-        cluster_slice - slice object defining the range of cluster.  None->all data
-        error_method - an ErrorEvaluator subclass
-        peak_funcs - a sequence of PeakFunction instances
-
-        Parameters [Creation from existing ModelCluster]
-        model - ModelCluster instance, or sequence of ModelCluster instances
+        Parameters
+        ----------
+        model : (lists of) ModelCluster instance
+            The ModelCluster instances to be clustered.
+            If it is None, then a ModelCluster object is created.
+        baseline : Baseline object
+            The Baseline object, if it is None, set to 0.
+        r_data : array-like
+            The numpy array of r coordinates
+        y_data : array-like
+            The numpy array of y values
+        y_error : array-like
+            The numpy array of uncertainties in y
+        cluster_slice : slice object
+            The slice object defining the range of cluster. If the input is None,
+            then it will take the entire range.
+        error_method : ErrorEvaluator subclass
+            The error evaluator to use to calculate quality of model to data.
+        peak_funcs : a sequence of PeakFunction instances
+            The peak instances to use to calculate the cluster of data.
         """
         self.last_fit_size = 0
         self.slice = None
@@ -437,7 +445,13 @@ class ModelCluster(object):
         """Add peaks (and their value) to self.
 
         Parameters
-        peaks - A Peaks object
+        ----------
+        peaks : A Peaks object
+            The peaks to be added
+
+        Returns
+        -------
+        None
         """
         self.replacepeaks(peaks)
         self.y_data += peaks.value(self.r_data)
@@ -447,8 +461,9 @@ class ModelCluster(object):
         """Return partial string representation.
 
         Keywords
-        pfbaselist - List of peak function bases.  Otherwise define list from self.
-        blfbaselist - List of baseline function bases. Otherwise define list from self.
+        --------
+        pfbaselist - List of peak function bases. Otherwise, define list from self.
+        blfbaselist - List of baseline function bases.Otherwise, define list from self.
         """
         from diffpy.srmise.basefunction import BaseFunction
 
@@ -524,8 +539,9 @@ class ModelCluster(object):
         """Create ModelCluster from string.
 
         Keywords
-        pfbaselist - List of peak function bases
-        blfbaselist - List of baseline function bases
+        --------
+        pfbaselist : List of peak function bases
+        blfbaselist : List of baseline function bases
         """
         from diffpy.srmise.basefunction import BaseFunction
 
@@ -696,8 +712,16 @@ class ModelCluster(object):
         unchanged.
 
         Parameters
-        m1 - A ModelCluster
-        m2 - A ModelCluster
+        ----------
+        m1 : ModelCluster instance
+            The first ModelCluster instance.
+        m2 : ModelCluster instance
+            The second ModelCluster instance.
+
+        Returns
+        -------
+        ModelCluster instance
+            The new ModelCluster instance between m1 and m2.
         """
         # Check for members that must be shared.
         if not (m1.r_data is m2.r_data):
@@ -778,7 +802,17 @@ class ModelCluster(object):
         )
 
     def change_slice(self, new_slice):
-        """Change the slice which represents the extent of a cluster."""
+        """Change the slice which represents the extent of a cluster.
+
+        Parameters
+        ----------
+        new_slice : slice object
+            The new slice to change.
+
+        Returns
+        -------
+        None
+        """
         old_slice = self.slice
         self.slice = new_slice
         self.r_cluster = self.r_data[new_slice]
@@ -815,10 +849,16 @@ class ModelCluster(object):
         """Return number of parameters in model and baseline.
 
         Parameters
-        count_baseline - [True] Boolean determines whether or not to count
-                                parameters from baseline.
-        count_fixed - [True] Boolean determines whether or not to include
-                             non-free parameters.
+        ----------
+        count_baseline : bool
+            The boolean determines whether to count parameters from baseline. Default is True.
+        count_fixed : bool
+        The boolean determines whether to include non-free parameters. Default is True.
+
+        Returns
+        -------
+        n : int
+            The number of parameters in model and baseline.
         """
         n = self.model.npars(count_fixed=count_fixed)
         if count_baseline and self.baseline is not None:
@@ -829,8 +869,15 @@ class ModelCluster(object):
         """Replace peaks given by delslice by those in newpeaks.
 
         Parameters
-        newpeaks - Add each Peak in this Peaks to cluster.
-        delslice - Existing peaks given by slice object are deleted.
+        ----------
+        newpeaks : Peak instance
+            The peak that id added to each existing peak to cluster.
+        delslice : Peak instance
+            The existing peaks given by slice object are deleted.
+
+        Returns
+        -------
+        None
         """
         for p in self.model[delslice]:
             if not p.removable:
