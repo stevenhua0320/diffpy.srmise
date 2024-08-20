@@ -62,12 +62,20 @@ class MultimodelSelection(PeakStability):
     def makeaics(self, dgs, dr, filename=None):
         """Test quality of each model for all possible uncertainties.
 
-        Parameters:
-        dgs - Array of uncertainties over which to test each model.
-        dr - The sampling rate to use.  This determines the actual data to use
-             for testing, since sometimes the actual result is different than the
-             nominal value.
-        filename - Optional file to save pickled results
+        Parameters
+        ----------
+        dgs : array-like
+            The array of uncertainties over which to test each model.
+        dr : float
+            The sampling rate to use.  This determines the actual data to use
+            for testing, since sometimes the actual result is different than the
+            nominal value.
+        filename : str
+            Optional file to save pickled results
+
+        Returns
+        -------
+        None
         """
         aics_out = {}  # Version of self.aics that holds only the statistic, not the AIC object.
         self.dgs = np.array(dgs)
@@ -122,7 +130,17 @@ class MultimodelSelection(PeakStability):
         return
 
     def loadaics(self, filename):
-        """Load file containing results of the testall method."""
+        """Load file containing results of the testall method.
+
+        Parameters
+        ----------
+        filename : str
+            Filename to load.
+
+        Returns
+        -------
+        None
+        """
         try:
             import cPickle as pickle
         except ImportError:
@@ -153,6 +171,7 @@ class MultimodelSelection(PeakStability):
         return
 
     def makeaicweights(self):
+        """Make weights for the aic Modelevaluators."""
         self.aicweights = {}
         em = self.ppe.error_method
 
@@ -160,6 +179,7 @@ class MultimodelSelection(PeakStability):
             self.aicweights[dg] = em.akaikeweights(self.aics[dg])
 
     def makeaicprobs(self):
+        """Make probabilities for the sequence of AICs."""
         self.aicprobs = {}
         em = self.ppe.error_method
 
@@ -167,6 +187,7 @@ class MultimodelSelection(PeakStability):
             self.aicprobs[dg] = em.akaikeprobs(self.aics[dg])
 
     def makesortedprobs(self):
+        """Make probabilities for the sequence of AICs in a sorted order."""
         self.sortedprobs = {}
 
         for dg in self.dgs:
@@ -175,9 +196,12 @@ class MultimodelSelection(PeakStability):
     def animate_probs(self, step=False, duration=0.0, **kwds):
         """Show animation of extracted peaks from first to last.
 
-        Parameters:
-        step - Require keypress to show next plot
-        duration - Minimum time in seconds to complete animation. Default 0.
+        Parameters
+        ----------
+        step : bool
+            Require keypress to show next plot, default is False.
+        duration : float
+            Minimum time in seconds to complete animation. Default is 0.
 
         Keywords passed to pyplot.plot()"""
         if duration > 0:
@@ -217,9 +241,12 @@ class MultimodelSelection(PeakStability):
     def animate_classprobs(self, step=False, duration=0.0, **kwds):
         """Show animation of extracted peaks from first to last.
 
-        Parameters:
-        step - Require keypress to show next plot
-        duration - Minimum time in seconds to complete animation. Default 0.
+        Parameters
+        ----------
+        step : bool
+            Require keypress to show next plot, default is False.
+        duration : float
+            Minimum time in seconds to complete animation. Default is 0.
 
         Keywords passed to pyplot.plot()"""
         if duration > 0:
@@ -294,10 +321,16 @@ class MultimodelSelection(PeakStability):
         2) The exemplar (first model) of each class isn't the best representative
         3) The parameters vary so smoothly there aren't actually definite classes
 
-        Parameters:
-        r - The r values over which to evaluate the models
-        tolerance - The fraction below which models are considered the same
+        Parameters
+        ----------
+        r : array-like
+            The r values over which to evaluate the models
+        tolerance : float
+            The fraction below which models are considered the same
 
+        Returns
+        -------
+        None
         """
         self.classes = []
         self.classes_idx = {}
@@ -394,6 +427,7 @@ class MultimodelSelection(PeakStability):
             self.sortedclasses[dg] = bestinclass
 
     def makeclassweights(self):
+        """Make weights for all classes."""
         self.classweights = {}
         em = self.ppe.error_method
 
@@ -402,6 +436,7 @@ class MultimodelSelection(PeakStability):
             self.classweights[dg] = em.akaikeweights([self.aics[dg][b] for b in bestinclass])
 
     def makeclassprobs(self):
+        """Make probabilities for all classes."""
         self.classprobs = {}
         em = self.ppe.error_method
 
@@ -410,17 +445,38 @@ class MultimodelSelection(PeakStability):
             self.classprobs[dg] = em.akaikeprobs([self.aics[dg][b] for b in bestinclass])
 
     def makesortedclassprobs(self):
+        """Make probabilities for all classes in sorted order."""
         self.sortedclassprobs = {}
 
         for dg in self.dgs:
             self.sortedclassprobs[dg] = np.argsort(self.classprobs[dg]).tolist()
 
     def dg_key(self, dg_in):
-        """Return the dg value usable as a key nearest to dg_in."""
+        """Return the dg value usable as a key nearest to dg_in.
+
+        Parameters
+        ----------
+        dg_in : The uncertainties of the model
+
+        Returns
+        -------
+        float
+            The dg value usable as a key nearest to dg_in."""
         idx = (np.abs(self.dgs - dg_in)).argmin()
         return self.dgs[idx]
 
     def bestclasses(self, dgs=None):
+        """Return the best classes for all models.
+
+        Parameters
+        ----------
+        dgs : array-like, optional
+            The uncertainties of the models, by default None
+
+        Returns
+        -------
+        array-like
+            The best classes for all models."""
         if dgs is None:
             dgs = self.dgs
         best = []
@@ -429,6 +485,18 @@ class MultimodelSelection(PeakStability):
         return np.unique(best)
 
     def bestmodels(self, dgs=None):
+        """Return the best models for all models.
+
+        Parameters
+        ----------
+        dgs : array-like, optional
+            The uncertainties of the models, by default None
+
+        Returns
+        -------
+        array-like
+            Sequence of best model
+        """
         if dgs is None:
             dgs = self.dgs
         best = []
@@ -438,6 +506,19 @@ class MultimodelSelection(PeakStability):
         return np.unique(best)
 
     def classbestdgs(self, cls, dgs=None):
+        """Return the best uncertainties for the models.
+
+        Parameters
+        ----------
+        cls : ModelEvaluator Class
+            Override corder with a specific class index, or None to ignore classes entirely.
+        dgs : array-like, optional
+            The uncertainties of the models, by default None
+
+        Returns
+        -------
+        array-like
+            Sequence of best uncertainties for the models."""
         if dgs is None:
             dgs = self.dgs
         bestdgs = []
@@ -447,7 +528,20 @@ class MultimodelSelection(PeakStability):
         return bestdgs
 
     def modelbestdgs(self, model, dgs=None):
-        """Return uncertainties where given model has greatest Akaike probability."""
+        """Return uncertainties where given model has greatest Akaike probability.
+
+        Parameters
+        ----------
+        model : ModelEvaluator Class
+            The model evaluator class to use
+        dgs : array-like, optional
+            The uncertainties of the models, by default None
+
+        Returns
+        -------
+        array-like
+            The uncertainties where given model has greatest Akaike probability
+        """
         if dgs is None:
             dgs = self.dgs
         bestdgs = []
@@ -461,7 +555,8 @@ class MultimodelSelection(PeakStability):
     def plot3dclassprobs(self, **kwds):
         """Return 3D plot of class probabilities.
 
-        Keywords:
+        Keywords
+        --------
         dGs - Sequence of dG values to plot. Default is all values.
         highlight - Sequence of dG values to highlight on plot.  Default is [].
         classes - Sequence of indices of classes to plot. Default is all classes.
@@ -486,7 +581,9 @@ class MultimodelSelection(PeakStability):
 
         All other keywords are passed to the colorbar.
 
-        Returns a dictionary containing the following figure elements:
+        Returns
+        -------
+        a dictionary containing the following figure elements:
         "fig" - The figure
         "axis" - The image axis
         "cbaxis" - The colorbar axis, if it exists.
@@ -633,15 +730,22 @@ class MultimodelSelection(PeakStability):
     def get_model(self, dG, **kwds):
         """Return index of best model of best class at given dG.
 
-        Parameters:
-        dG - The uncertainty used to calculate probabilities
+        Parameters
+        ----------
+        dG : array-like
+            The uncertainty used to calculate probabilities
 
-
-        Keywords:
+        Keywords
+        --------
         corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).
         morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).
                  Returns a model from a class, or from the collection of all models if classes are ignored.
         cls - Override corder with a specific class index, or None to ignore classes entirely.
+
+        Returns
+        -------
+        int
+            Index of best model of best class at given dG.
         """
         corder = kwds.pop("corder", 0)
         morder = kwds.pop("morder", 0)
@@ -658,12 +762,19 @@ class MultimodelSelection(PeakStability):
     def get_class(self, dG, **kwds):
         """Return index of best class at given dG.
 
-        Parameters:
-        dG - The uncertainty used to calculate probabilities
+        Parameters
+        ----------
+        dG : array-like
+            The uncertainty used to calculate probabilities
 
-
-        Keywords:
+        Keywords
+        --------
         corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).
+
+        Returns
+        -------
+        int
+            Index of best model of best class at given dG.
         """
         corder = kwds.pop("corder", 0)
         return self.sortedclassprobs[dG][-1 - corder]  # index of corderth best class
@@ -671,15 +782,22 @@ class MultimodelSelection(PeakStability):
     def get_prob(self, dG, **kwds):
         """Return Akaike probability of best model of best class at given dG.
 
-        Parameters:
-        dG - The uncertainty used to calculate probabilities
+        Parameters
+        ----------
+        dG : array-like
+            The uncertainty used to calculate probabilities
 
-
-        Keywords:
+        Keywords
+        --------
         corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).
         morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).
                  Returns a model from a class, or from the collection of all models if classes are ignored.
         cls - Override corder with a specific class index, or None to ignore classes entirely.
+
+        Returns
+        -------
+        array-like
+            The sequence of Akaike probability of best model of best class at given dG.
         """
         idx = self.get_model(dG, **kwds)
         if "cls" in kwds and kwds["cls"] is None:
@@ -691,15 +809,22 @@ class MultimodelSelection(PeakStability):
     def get_nfree(self, dG, **kwds):
         """Return number of free parameters of best model of best class at given dG.
 
-        Parameters:
-        dG - The uncertainty used to calculate probabilities
+        Parameters
+        ----------
+        dG : array-like
+            The uncertainty used to calculate probabilities
 
-
-        Keywords:
+        Keywords
+        --------
         corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).
         morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).
                  Returns a model from a class, or from the collection of all models if classes are ignored.
         cls - Override corder with a specific class index, or None to ignore classes entirely.
+
+        Returns
+        -------
+        int
+            Number of free parameters of best model of best class at given dG.
         """
         idx = self.get_model(dG, **kwds)
         model = self.results[idx][1]
@@ -709,15 +834,22 @@ class MultimodelSelection(PeakStability):
     def get_aic(self, dG, **kwds):
         """Return number of free parameters of best model of best class at given dG.
 
-        Parameters:
-        dG - The uncertainty used to calculate probabilities
+        Parameters
+        ----------
+        dG : array-like
+            The uncertainty used to calculate probabilities
 
-
-        Keywords:
+        Keywords
+        --------
         corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).
         morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).
                  Returns a model from a class, or from the collection of all models if classes are ignored.
         cls - Override corder with a specific class index, or None to ignore classes entirely.
+
+        Returns
+        -------
+        int
+            Number of free parameters of best model of best class at given dG.
         """
         idx = self.get_model(dG, **kwds)
         return self.aics[dG][idx].stat
@@ -725,17 +857,25 @@ class MultimodelSelection(PeakStability):
     def get(self, dG, *args, **kwds):
         """Return tuple of values corresponding to string arguments for best model of best class at given dG.
 
-        Parameters:
-        dG - The uncertainty used to calculate probabilities
+        Parameters
+        ----------
+        dG : array-like
+            The uncertainty used to calculate probabilities
 
         Permissible arguments: "aic", "class", "dG", "model", "nfree", "prob"
         ("dG" simply returns the provided dG value)
 
-        Keywords:
+        Keywords
+        --------
         corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).
         morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).
                  Returns a model from a class, or from the collection of all models if classes are ignored.
         cls - Override corder with a specific class index, or None to ignore classes entirely.
+
+        Returns
+        -------
+        tuple
+            The values corresponding to string arguments for best model of best class at given dG.
         """
         fdict = {
             "aic": self.get_aic,
@@ -754,6 +894,16 @@ class MultimodelSelection(PeakStability):
         """Return the post-hoc dG for which the given model's Akaike probability is maximized.
 
         Each model is mapped to its class' best member.
+
+        Parameters
+        ----------
+        model : array-like
+            The model to get the post-hoc dG.
+
+        Returns
+        -------
+        array-like
+            The post-hoc dG for the given model where the given model's Akaike probability is maximized.
         """
         cls = self.classes_idx[model]
         probs = [self.classprobs[dg][cls] for dg in self.dgs]
@@ -762,7 +912,18 @@ class MultimodelSelection(PeakStability):
 
     def maxprobdG_bymodel(self, model):
         """Return the post-hoc dG for which the given model's Akaike probability is maximized.
-        Classes are not considered."""
+        Classes are not considered.
+
+        Parameters
+        ----------
+        model : array-like
+            The model to get the post-hoc dG.
+
+        Returns
+        -------
+        array-like
+            The post-hoc dG by the given model's Akaike probability is maximize
+        """
         probs = [self.aicprobs[dg][model] for dg in self.dgs]
         prob_idx = np.argmax(probs)
         return self.dgs[prob_idx]
@@ -770,13 +931,33 @@ class MultimodelSelection(PeakStability):
     def maxprobmodel_byclass(self, dG):
         """Calculate the model which maximizes probability at given dG.
 
-        The best class is mapped to its best model."""
+        The best class is mapped to its best model.
+
+        Parameters
+        ----------
+        dG : array-like
+            The uncertainty used to calculate probabilities
+
+        Returns
+        -------
+        float
+            The model mapped by class which maximizes probability at given dG."""
         cls = self.sortedclassprobs[dG][-1]
         m = self.sortedclasses[dG][cls][-1]
         return m
 
     def maxprobmodel_bymodel(self, dG):
         """Return the model which maximizes probability at given dG.
-        Classes are not considered."""
+        Classes are not considered.
+
+        Parameters
+        ----------
+        dG : array-like
+            The uncertainty used to calculate probabilities
+
+        Returns
+        -------
+        model : array-like
+            The model which maximizes probability at given dG."""
         # Note that if there are identical models this returns the one of greatest dg.
         return self.sortedprobs[dG][-1]
