@@ -36,40 +36,36 @@ logger = logging.getLogger("diffpy.srmise")
 
 
 class PDFPeakExtraction(PeakExtraction):
-    """Class for peak extraction of peaks from the PDF.
+    """PDFPeakExtraction extends the PeakExtraction class to specialize in extracting
+    peaks from PDF (Probability Density Function) data.
 
-    Data members in addition to those from PeakExtraction
-    filename: Source PDF file
-    nyquist: Whether or not to fit final model at Nyquist sampling rate
-    qmax: qmax to use during extraction. Use 0 for infinity.
-    qmax_reportedbypdf: The qmax read from a file containing a PDF
-    qmax_fromdata: The qmax determined directly from the PDF data
-    scale: Whether or not to use increased uncertainties when supersampling.
-           This can speed extraction by reducing the number of very small
-           peaks found while supersampled, but also means small features
-           are more likely to be missed.  This option puts the chi-square error
-           of a fit on roughly the same scale before and after resampling.
-           This option has no effect when Nyquist is False, and defaults
-           to False when Nyquist is True.
-    supersample: Make sure data is supersampled by at least this factor
-                 above Nyquist sampling before starting extraction.
-
-    Note that resampling the PDF does not properly propagate the corresponding
-    uncertainties, which are merely interpolated (and possibly scaled, see above).
-    Further, all uncertainties are treated as statistically independent, but above
-    the Nyquist rate the uncertainties of nearby points are highly correlated.
-    The most trustworthy results are therefore obtained by providing data sampled
-    at the Nyquist rate with correctly propagated uncertainties.
-
-    In some cases the number of free parameters of the best model found may
-    exceed the number of independent points in the PDF.  This is frequently
-    true when the PDF is oversampled and/or the reported uncertainties in the
-    PDF are very small.  If this prevents resampling at the Nyquist rate (when
-    this is desired) the degree of oversampling is reported.
+    Parameters
+    ----------
+    filename : str
+        The source PDF file path.
+    nyquist : bool, optional
+        Specifies whether to fit the final model at the Nyquist sampling rate.
+        Defaults to False.
+    qmax : float, optional
+        The maximum q value to use during peak extraction. Use 0 to denote infinity.
+        Defaults to 0.
+    qmax_reportedbypdf : float
+        The qmax value read directly from the PDF file.
+    qmax_fromdata : float
+        The qmax value determined directly from the PDF data.
+    scale : bool, optional
+        Determines whether to use increased uncertainties during supersampling.
+        This can expedite extraction by minimizing the detection of minuscule peaks,
+        albeit risking the overlook of minor features. When `Nyquist` is True,
+        uncertainties are scaled to maintain a similar chi-square error pre-
+        and post-resampling. Defaults to False if `Nyquist` is True.
+    supersample : int, optional
+        Ensures the data is supersampled by at least this factor above the
+        Nyquist rate before initiating peak extraction. Defaults to 1.
     """
 
     def __init__(self):
-        """Initialize."""
+        """Initialize the PDFPeakExtraction class."""
         newvars = ["qmax", "supersample", "nyquist", "scale"]
         PeakExtraction.__init__(self, newvars)
         return
@@ -78,7 +74,9 @@ class PDFPeakExtraction(PeakExtraction):
         """Load dataset.
 
         Parameters
-        pdf: A PDFDataSet object, or the name of a file readable by one.
+        ----------
+        pdf: PDFDataSet instance or str
+            The PDFDataSet instance or a PDF file name.
 
         """
         self.clear()
@@ -93,7 +91,14 @@ class PDFPeakExtraction(PeakExtraction):
         return
 
     def setdata(self, x, y, dx=None, dy=None):
-        """Set data."""
+        """Set data.
+
+        Parameters
+        ----------
+        x : array-like
+            The x-coordinates of the data.
+        y : array-like
+            The y-coordinates of the data."""
         PeakExtraction.setdata(self, x, y, dx, dy)
         try:
             self.qmax_fromdata = find_qmax(self.x, self.y)[0]
@@ -101,7 +106,9 @@ class PDFPeakExtraction(PeakExtraction):
             logger.info("Could not determine qmax from the data.")
 
     def clear(self):
-        """Clear all members."""
+        """Clear all members.
+
+        The purpose of the method is to ensure the object is in a clean state."""
         # TODO: Clear additional members
         self.filename = None
         self.nyquist = None
@@ -115,22 +122,48 @@ class PDFPeakExtraction(PeakExtraction):
     def setvars(self, quiet=False, **kwds):
         """Set one or more extraction variables.
 
-        Variables
-        quiet: [False] Log changes quietly.
+        Parameters
+        ----------
+        quiet : bool, optional
+            Log changes quietly. Default is False.
 
-        Keywords
-        cres: The clustering resolution, must be >= 0.
-        effective_dy: The uncertainties actually used during extraction
-        dg: Alias for effective_dy
-        pf: Sequence of PeakFunctionBase subclass instances.
-        baseline: Baseline instance or BaselineFunction instance (use built-in estimation)
-        error_method: ErrorEvaluator subclass instance used to compare models (default AIC)
-        initial_peaks: Peaks instance.  These peaks are present at the start of extraction.
-        rng: Sequence specifying the least and greatest x-values over which to extract peaks.
-        qmax: The qmax value for the pdf. Using "automatic" will estimate it from data.
-        nyquist: Use nyquist sampling or not (boolean)
-        supersample: Degree of supersampling above Nyquist rate to use.
-        scale: Scale uncertainties on recursion when nyquist is True (boolean)."""
+        **kwds : keyword arguments
+            Additional variables to set. Possible keywords include:
+
+        - cres : float
+            The clustering resolution, must be greater than or equal to 0.
+
+        - effective_dy : float
+            The uncertainties actually used during extraction. Aliased as 'dg'.
+
+        - pf : list of PeakFunctionBase subclasses instances
+            Sequence of peak function base subclass instances.
+
+        - baseline : Baseline or BaselineFunction instance
+            Baseline instance or BaselineFunction instance for built-in estimation.
+
+        - error_method : ErrorEvaluator subclass instance
+            Error evaluator subclass instance used to compare models. Default is AIC.
+
+        - initial_peaks : Peaks instance
+            Peaks instance representing the peaks present at the start of extraction.
+
+        - rng : tuple of (float, float)
+            Specifies the least and greatest x-values over which to extract peaks.
+
+        - qmax : float or "automatic"
+            The qmax value for the probability density function (pdf).
+            If set to "automatic", it will be estimated from the data.
+
+        - nyquist : bool
+            Whether to use nyquist sampling or not.
+
+        - supersample : int
+            Degree of supersampling above the Nyquist rate to use.
+
+        - scale : bool
+            Scale uncertainties on recursion when nyquist is True.
+        """
         # Treat "dg" as alias for "effective_dy"
         if "dg" in kwds:
             if "effective_dy" not in kwds:
@@ -152,7 +185,12 @@ class PDFPeakExtraction(PeakExtraction):
         PeakExtraction.setvars(self, quiet, **kwds)
 
     def defaultvars(self, *args):
-        """Set default values."""
+        """Set default values.
+
+        Parameters
+        ----------
+        *args : argparse.Namespace
+            Arguments passed to PeakExtraction.setdata()."""
         nargs = list(args)
 
         # qmax preference: reported, then fromdata, then 0.
@@ -198,7 +236,7 @@ class PDFPeakExtraction(PeakExtraction):
                     nargs.remove("cres")
 
         if self.pf is None or "pf" in args:
-            from diffpy.srmise.peaks import GaussianOverR
+            from diffpy.srmise.peaks.gaussianoverr import GaussianOverR
 
             self.pf = [GaussianOverR(0.7)]
             if "pf" in args:
@@ -224,10 +262,21 @@ class PDFPeakExtraction(PeakExtraction):
         new grid.
 
         Parameters
-        dr: The sampling interval
+        ----------
+        dr : float
+            The sampling interval for resampling the data.
 
-        Keywords
-        eps: [10^-6] Suppress information lost warning when dr-dr_nyquist < eps"""
+        **kwds : dict, optional
+            Additional keyword arguments.
+
+            - eps : float, default=1e-6
+                Suppresses the information lost warning when the difference between `dr`
+                and the Nyquist interval `dr_nyquist` is less than `eps`.
+
+        Returns
+        -------
+        tuple of ndarray
+            A tuple containing the resampled (x, y, error in x, effective error in y)."""
         self.defaultvars()  # Find correct range if necessary.
         eps = kwds.get("eps", 10**-6)
 
@@ -262,7 +311,14 @@ class PDFPeakExtraction(PeakExtraction):
         is enabled, and scale is True.
 
         Parameters
-        dr: The sampling interval"""
+        ----------
+        dr: float
+            The sampling interval
+
+        Returns
+        -------
+        float
+            The uncertainties scaled."""
         if self.qmax > 0 and self.nyquist and self.scale:
             dr_nyquist = np.pi / self.qmax
             return np.max([np.sqrt(dr_nyquist / dr), 1.0])
@@ -270,7 +326,20 @@ class PDFPeakExtraction(PeakExtraction):
             return 1.0
 
     def extract(self, **kwds):
-        """Extract peaks from the PDF. Returns ModelCovariance instance summarizing results."""
+        """Extract peaks from the PDF. Returns ModelCovariance instance summarizing results.
+
+        Parameters
+        ----------
+        **kwds : dict
+            Additional keyword arguments that might influence the extraction process.
+            These could include parameters like `qmax`, `supersample`, `nyquist`, etc., which
+            affect resampling and model refinement strategies.
+
+        Returns
+        -------
+        ModelCovariance
+            An instance of ModelCovariance summarizing the covariance of the extracted model parameters.
+        """
         # TODO: The sanest way forward is to create a PeakExtraction object that does
         # the calculations for resampled data.  All the relevant extraction variables
         # can be carefully controlled this way as well.  Furthermore, it continues to
@@ -298,7 +367,7 @@ class PDFPeakExtraction(PeakExtraction):
             if dr_raw > dr_nyquist:
                 # Technically I should yell for dr_raw >= dr_nyquist, since information
                 # loss may occur at equality.
-                logger.warn(
+                logger.warning(
                     "The input PDF appears to be missing information: The "
                     "sampling interval of the input PDF (%s) is larger than "
                     "the Nyquist interval (%s) defined by qmax=%s.  This information "
@@ -362,7 +431,7 @@ class PDFPeakExtraction(PeakExtraction):
 
             logger.info("\n".join(msg), ext)
 
-            from diffpy.srmise.peaks import TerminationRipples
+            from diffpy.srmise.peaks.terminationripples import TerminationRipples
 
             owners = list(set([p.owner() for p in ext.model]))
             tfuncs = {}
@@ -459,7 +528,7 @@ class PDFPeakExtraction(PeakExtraction):
             logger.info(str(cov))
             # logger.info("Correlations > .8:\n%s", "\n".join(str(c) for c in cov.correlationwarning(.8)))
         except SrMiseUndefinedCovarianceError:
-            logger.warn("Covariance not defined for final model.  Fit may not have converged.")
+            logger.warning("Covariance not defined for final model.  Fit may not have converged.")
             logger.info(str(ext))
 
         # Update calculated instance variables
@@ -471,7 +540,19 @@ class PDFPeakExtraction(PeakExtraction):
         return cov
 
     def fit(self, **kwds):
-        """Fit peaks in the PDF. Returns ModelCovariance instance summarizing results."""
+        """Fit peaks in the PDF. Returns ModelCovariance instance summarizing results.
+
+        Parameters
+        ----------
+        **kwds : dict
+            Keyword arguments passed to ModelCovariance instance. Different keywords could have
+            different strategies to fit. See ModelCovariance class for more information.
+
+        Returns
+        -------
+        ModelCovariance instance
+            The fitted ModelCovariance instance.
+        """
 
         self.clearcalc()
 
@@ -488,7 +569,7 @@ class PDFPeakExtraction(PeakExtraction):
             if dr_raw > dr_nyquist:
                 # Technically I should yell for dr_raw >= dr_nyquist, since information
                 # loss may occur at equality.
-                logger.warn(
+                logger.warning(
                     "The input PDF appears to be missing information: The "
                     "sampling interval of the input PDF (%s) is larger than "
                     "the Nyquist interval (%s) defined by qmax=%s.  This information "
@@ -532,7 +613,7 @@ class PDFPeakExtraction(PeakExtraction):
         try:
             logger.info(str(cov))
         except SrMiseUndefinedCovarianceError:
-            logger.warn("Covariance not defined for final model.  Fit may not have converged.")
+            logger.warning("Covariance not defined for final model.  Fit may not have converged.")
 
         # Update calculated instance variables
         self.extraction_type = "fit"
@@ -555,7 +636,17 @@ class PDFPeakExtraction(PeakExtraction):
         return datastring
 
     def readmetadata(self, metastr):
-        """Read metadata from string."""
+        """Read metadata from string.
+
+        Parameters
+        ----------
+        metastr : str
+            Metadata string to read.
+
+        Returns
+        -------
+        None
+        """
 
         # filename
         res = re.search(r"^filename=(.*)$", metastr, re.M)
@@ -617,7 +708,17 @@ class PDFPeakExtraction(PeakExtraction):
         """Write string summarizing extracted peaks to file.
 
         Parameters
-        filename: the name of the file to write"""
+        ----------
+        filename : str
+            The name of the file to write
+
+        comments : str
+            The comments to write
+
+        Returns
+        -------
+        None
+        """
         bytes = self.writepwastr(comments)
         f = open(filename, "w")
         f.write(bytes)
@@ -631,7 +732,13 @@ class PDFPeakExtraction(PeakExtraction):
         this file.
 
         Parameters
-        comments: String added to header containing notes about the output.
+        ----------
+        comments : str
+            The string added to header containing notes about the output.
+
+        Returns
+        -------
+        None
         """
 
         if self.extracted is None:
@@ -813,11 +920,18 @@ def resample(orig_r, orig_y, new_r):
     """Resample sequence with Whittaker-Shannon interpolation formula.
 
     Parameters
-    orig_r: (Numpy array) The r grid of the original sample.
-    orig_y: (Numpy array) The data to resample.
-    new_r: (Numpy array) The resampled r grid.
+    ----------
+    orig_r : array-like
+        The r grid of the original sample.
+    orig_y : array-like
+        The data to resample.
+    new_r : array-like
+        The resampled r grid.
 
-    Returns sequence of same type as new_r with the resampled values.
+    Returns
+    -------
+    new_y : array-like
+        The sequence of same type as new_r with the resampled values.
     """
     n = len(orig_r)
     dr = (orig_r[-1] - orig_r[0]) / (n - 1)
@@ -842,8 +956,19 @@ def find_qmax(r, y, showgraphs=False):
     """Determine approximate qmax from PDF.
 
     Parameters
-    r: The r values of the PDF.
-    y: The corresponding y values of the PDF."""
+    ----------
+    r : array-like
+        The r values of the PDF.
+    y : array-like
+        The corresponding y values of the PDF.
+    showgraphs : bool
+        If True, the graphs are shown.
+
+    Returns
+    -------
+    tuple
+        The qmax of the PDF and its corresponding uncertainties.
+    """
     if len(r) != len(y):
         emsg = "Argument arrays must have the same length."
         raise ValueError(emsg)
@@ -914,10 +1039,15 @@ def stdratio(data):
     deviation.
 
     Parameters
-    data: Sequence of data values
+    ----------
+    data : array-like
+        The sequence of data values
 
-    Returns an array of length floor(len(data)/2)-1.  The ith element is
-    equivalent to std(data[:i+2])/std(data[i+2:2i+4])."""
+    Returns
+    -------
+    array-like
+        an array of length floor(len(data)/2)-1.  The ith element is
+        equivalent to std(data[:i+2])/std(data[i+2:2i+4])."""
 
     limit = int(np.floor(len(data) / 2))
     std_left = np.zeros(limit)
