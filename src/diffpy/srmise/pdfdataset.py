@@ -32,16 +32,22 @@ class PDFComponent(object):
     """Common base class."""
 
     def __init__(self, name):
-        """initialize
+        """initialize the object
 
-        name -- object name
+        Parameter
+        ---------
+        name : str
+            object name
         """
         self.name = name
 
     def close(self, force=False):
         """close myself
 
-        force -- if forcibly (no wait)
+        Parameter
+        ---------
+        force : bool
+            Force to close if True, default is False.
         """
         pass
 
@@ -49,31 +55,44 @@ class PDFComponent(object):
 class PDFDataSet(PDFComponent):
     """PDFDataSet is a class for experimental PDF data.
 
-    Data members:
-        robs       -- list of observed r points
-        Gobs       -- list of observed G values
-        drobs      -- list of standard deviations of robs
-        dGobs      -- list of standard deviations of Gobs
-        stype      -- scattering type, 'X' or 'N'
-        qmax       -- maximum value of Q in inverse Angstroms.  Termination
-                      ripples are neglected for qmax=0.
-        qdamp      -- specifies width of Gaussian damping factor in pdf_obs due
-                      to imperfect Q resolution
-        qbroad     -- quadratic peak broadening factor related to dataset
-        spdiameter -- particle diameter for shape damping function
-                      Note: This attribute was moved to PDFStructure.
-                      It is kept for backward compatibility when reading
-                      PDFgui project files.
-        dscale     -- scale factor of this dataset
-        rmin       -- same as robs[0]
-        rmax       -- same as robs[-1]
-        filename   -- set to absolute path after reading from file
-        metadata   -- dictionary for other experimental conditions, such as
-                      temperature or doping
+    Attributes
+    ----------
+    robs : list
+        The list of observed r points.
+    Gobs : list
+        The list of observed G values.
+    drobs : list
+        The list of standard deviations of `robs`.
+    dGobs : list
+        The list of standard deviations of `Gobs`.
+    stype : str
+        The scattering type, either 'X' or 'N'.
+    qmax : float
+        The maximum value of Q in inverse Angstroms. Termination ripples are neglected for qmax=0.
+    qdamp : float
+        Specifies width of Gaussian damping factor in pdf_obs due to imperfect Q resolution.
+    qbroad : float
+        The quadratic peak broadening factor related to the dataset.
+    spdiameter : float
+        The particle diameter for shape damping function. Note: This attribute was moved to PDFStructure.
+        It is retained here for backward compatibility when reading PDFgui project files.
+    dscale : float
+        The scale factor of this dataset.
+    rmin : float
+        The same as `robs[0]`.
+    rmax : float
+        The same as `robs[-1]`.
+    filename : str
+        Set to the absolute path after reading from a file.
+    metadata : dict
+        The dictionary for other experimental conditions, such as temperature or doping.
 
-    Global member:
-        persistentItems -- list of attributes saved in project file
-        refinableVars   -- set (dict) of refinable variable names.
+    Class Members
+    -------------
+    persistentItems : list
+        The list of attributes saved in the project file.
+    refinableVars : set
+        The set (or dict-like) of refinable variable names.
     """
 
     persistentItems = [
@@ -95,14 +114,17 @@ class PDFDataSet(PDFComponent):
     def __init__(self, name):
         """Initialize.
 
-        name -- name of the data set. It must be a unique identifier.
+        name : str
+            The name of the data set. It must be a unique identifier.
         """
         PDFComponent.__init__(self, name)
         self.clear()
         return
 
     def clear(self):
-        """reset all data members to initial empty values"""
+        """reset all data members to initial empty values
+
+        The purpose of this method is to set the PDF dataset to initial empty values."""
         self.robs = []
         self.Gobs = []
         self.drobs = []
@@ -121,12 +143,21 @@ class PDFDataSet(PDFComponent):
         return
 
     def setvar(self, var, value):
-        """Assign data member using PdfFit-style variable.
-        Used by applyParameters().
+        """Assign a data member using PdfFit-style variable notation.
+        This method is typically utilized by the `applyParameters()` function.
 
-        var   -- string representation of dataset PdfFit variable.
-                 Possible values: qdamp, qbroad, dscale
-        value -- new value of the variable
+        Parameters
+        ----------
+        var : str
+            String representation of the dataset PdfFit variable.
+            Possible values include: 'qdamp', 'qbroad', 'dscale'.
+
+        value : float
+            The new value to which the variable `var` will be set.
+
+        Returns
+        -------
+        None
         """
         barevar = var.strip()
         fvalue = float(value)
@@ -141,10 +172,16 @@ class PDFDataSet(PDFComponent):
         """Obtain value corresponding to PdfFit dataset variable.
         Used by findParameters().
 
-        var   -- string representation of dataset PdfFit variable.
-                 Possible values: qdamp, qbroad, dscale
+        Parameters
+        ----------
+        var : str
+            string representation of dataset PdfFit variable.
+            Possible values: qdamp, qbroad, dscale
 
-        returns value of var
+        Returns
+        -------
+        float
+            value of var
         """
         barevar = var.strip()
         if barevar in PDFDataSet.refinableVars:
@@ -157,9 +194,12 @@ class PDFDataSet(PDFComponent):
     def read(self, filename):
         """load data from PDFGetX2 or PDFGetN gr file
 
-        filename -- file to read from
+        filename : str
+            file to read from
 
-        returns self
+        Returns
+        -------
+        self
         """
         try:
             self.readStr(open(filename, "rb").read())
@@ -176,9 +216,13 @@ class PDFDataSet(PDFComponent):
     def readStr(self, datastring):
         """read experimental PDF data from a string
 
-        datastring -- string of raw data
+        Parameter
+        ---------
+        datastring : str
+            string of raw data
 
-        returns self
+        Returns
+        self
         """
         self.clear()
         # useful regex patterns:
@@ -299,9 +343,14 @@ class PDFDataSet(PDFComponent):
     def write(self, filename):
         """Write experimental PDF data to a file.
 
-        filename -- name of file to write to
+        Parameters
+        ----------
+        filename : str
+            name of file to write to
 
-        No return value.
+        Returns
+        -------
+        None
         """
         bytes = self.writeStr()
         f = open(filename, "w")
@@ -312,7 +361,11 @@ class PDFDataSet(PDFComponent):
     def writeStr(self):
         """String representation of experimental PDF data.
 
-        Return data string.
+
+        Returns
+        -------
+        str
+            The PDF data string.
         """
         lines = []
         # write metadata
@@ -357,8 +410,15 @@ class PDFDataSet(PDFComponent):
     def copy(self, other=None):
         """copy self to other. if other is None, create new instance
 
-        other -- ref to other object
-        returns reference to copied object
+        Parameters
+        ----------
+        other : PDFDataSet instance
+            ref to other object
+
+        Returns
+        -------
+        PDFDataSet instance
+            reference to copied object
         """
         if other is None:
             other = PDFDataSet(self.name)
