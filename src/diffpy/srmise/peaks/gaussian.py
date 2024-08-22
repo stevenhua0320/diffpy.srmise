@@ -210,7 +210,7 @@ class Gaussian(PeakFunction):
 
         This method calculates the partial derivatives of a Gaussian function
         with respect to its parameters, considering a limiting width. The Gaussian's
-        width approaches its maximum (`fwhm`) as the effective width parameter
+        width approaches its maximum FWHM (maxwidth) as the effective width parameter
         (`pars[1]`) tends to infinity.
 
         Parameters
@@ -218,7 +218,7 @@ class Gaussian(PeakFunction):
         pars : array-like
             Sequence of parameters defining a single width-limited Gaussian:
             - pars[0]: Peak position.
-            - pars[1]: Effective width, which scales up to the full width at half maximum (fwhm) as
+            - pars[1]: Effective width, which scales up to the full width at half maximum (fwhm=maxwidth) as
             `pars[1]` approaches infinity. It is mathematically represented as `tan(pi/2 * fwhm / maxwidth)`.
             - pars[2]: Multiplicative constant 'a', equivalent to the peak area.
 
@@ -349,8 +349,8 @@ class Gaussian(PeakFunction):
         """Compute the value of a width-limited Gaussian for the specified parameters at given radial distances.
 
         This function calculates the value of a Gaussian distribution, where its effective width is constrained and
-        related to the full width at half maximum (FWHM). As `pars[1]` approaches infinity,
-        the effective width reaches `maxwidth`. The returned values represent the Gaussian's intensity
+        related to the maxwidth. As `pars[1]` approaches infinity,
+        the effective width reaches `FWHM` (maxwidth). The returned values represent the Gaussian's intensity
         across the provided radial coordinates `r`.
 
         Parameters
