@@ -26,20 +26,26 @@ class TerminationRipples(PeakFunction):
     """Methods for evaluation and parameter estimation of a peak function with termination ripples."""
 
     def __init__(self, base, qmax, extension=4.0, supersample=5.0, Cache=None):
-        """Peak function which adds termination ripples to existing function.
+        """Peak function constructor which adds termination ripples to existing function.
 
         Unlike other peak functions, TerminationRipples can only be evaluated
         over a uniform grid, or at a single value using an ad hoc uniform grid
         defined by qmax, extension, and supersample.
 
         Parameters
-        base: Instance of PeakFunction subclass.
-        qmax: Cut-off frequency in reciprocal space.
-        extension: How many multiples of 2pi/qmax to extend calculations in
-                   order to avoid edge effects.
-        supersample: Number intervals over 2pi/qmax when a natural interval
-                     cannot be determined while extending calculations.
-        Cache: A class (not instance) which implements caching of PeakFunction
+        ----------
+        base : PeakFunction instance
+            The PeakFunction instance subclass.
+        qmax : float
+            The cut-off frequency in reciprocal space.
+        extension : float
+            How many multiples of 2pi/qmax to extend calculations in
+            order to avoid edge effects. Default is 4.0.
+        supersample : float
+            Number intervals over 2pi/qmax when a natural interval
+            cannot be determined while extending calculations. Default is 5.0.
+        Cache : class
+            The class (not instance) which implements caching of PeakFunction
                evaluations."""
         parameterdict = base.parameterdict
         formats = base.parformats
@@ -66,12 +72,19 @@ class TerminationRipples(PeakFunction):
         Uses estimation routine provided by base peak function.
 
         Parameters
-        r: (Numpy array) Data along r from which to estimate
-        y: (Numpy array) Data along y from which to estimate
+        ----------
+        r : array-like
+            Data along r from which to estimate
+        y : array-like
+            Data along y from which to estimate
 
-        Returns Numpy array of parameters in the default internal format.
-        Raises SrMiseEstimationError if parameters cannot be estimated for any
-        reason."""
+        Returns
+        -------
+        array-like
+            Numpy array of parameters in the default internal format.
+            Raises SrMiseEstimationError if parameters cannot be estimated for any
+            reason.
+        """
         return self.base.estimate_parameters(r, y)
 
     # TODO: Can this be implemented sanely for termination ripples?
@@ -82,44 +95,91 @@ class TerminationRipples(PeakFunction):
         SrMiseScalingError if the parameters cannot be scaled.
 
         Parameters
-        pars: (Array) Parameters corresponding to a single peak
-        x: (float) Position of the border
-        scale: (float > 0) Size of scaling at x."""
+        ----------
+         pars : array-like
+            The parameters corresponding to a single peak
+        x : float
+            The position of the border
+        scale : float
+            The size of scaling at x. Must be positive.
+
+        Returns
+        -------
+        array-like
+            The numpy array of scaled parameters.
+        """
         return self.base.scale_at(pars, x, scale)
 
     def _jacobianraw(self, pars, r, free):
         """Return Jacobian of base function with termination ripples.
 
         Parameters
-        pars: Sequence of parameters for a single peak
-        r: sequence or scalar over which pars is evaluated
-        free: sequence of booleans which determines which derivatives are
-              needed.  True for evaluation, False for no evaluation."""
+        ----------
+        pars : array-like
+            The sequence of parameters for a single peak
+        r : array-like
+            The sequence or scalar over which pars is evaluated
+        free : array-like
+            The sequence of booleans which determines which derivatives are
+            needed.  True for evaluation, False for no evaluation.
+
+        Returns
+        -------
+        array-like
+            The Jacobian matrix of base function with termination ripples.
+        """
         return self.base._jacobianraw(pars, r, free)
 
     def _transform_derivativesraw(self, pars, in_format, out_format):
         """Return gradient matrix for the pars converted from in_format to out_format.
 
         Parameters
-        pars: Sequence of parameters
-        in_format: A format defined for base peak function
-        out_format: A format defined for base peak function"""
+        ----------
+        pars : array-like
+            The sequence of parameters
+        in_format : str
+            The format defined for base peak function
+        out_format : str
+            The format defined for base peak function
+
+        Returns
+        -------
+        ndarray
+            The Jacobian matrix of base function with termination ripples with out_format.
+        """
         return self.base._transform_derivativesraw(pars, in_format, out_format)
 
     def _transform_parametersraw(self, pars, in_format, out_format):
         """Convert parameter values from in_format to out_format.
 
         Parameters
-        pars: Sequence of parameters
-        in_format: A format defined for base peak function
-        out_format: A format defined for base peak function"""
+        ----------
+        pars : array-like
+            The sequence of parameters
+        in_format : str
+            The format defined for base peak function
+        out_format : str
+            The format defined for base peak function
+
+        Returns
+        -------
+        array-like
+            The sequence of parameter values with out_format.
+        """
         return self.base._transform_parametersraw(pars, in_format, out_format)
 
     def _valueraw(self, pars, r):
         """Return value of base peak function for the given parameters and r values.
 
-        pars: Sequence of parameters for a single peak
-        r: sequence or scalar over which pars is evaluated"""
+        pars : array-like
+            The sequence of parameters for a single peak
+        r : array-like or float
+            The sequence or scalar over which pars is evaluated
+
+        Returns
+        -------
+        float
+            The value of base peak function for the given parameters and r."""
         return self.base._valueraw(pars, r)
 
     # Overridden PeakFunction functions ####
@@ -130,12 +190,22 @@ class TerminationRipples(PeakFunction):
     def jacobian(self, peak, r, rng=None):
         """Calculate (rippled) jacobian, possibly restricted by range.
 
-        peak: The Peak to be evaluated
-        r: sequence or scalar over which peak is evaluated
-        rng: Optional slice object restricts which r-values are evaluated.
-               The output has same length as r, but unevaluated objects have
-               a default value of 0.  If caching is enabled these may be
-               previously calculated values instead."""
+        Parameters
+        ----------
+        peak : PeakFunction instance
+            The Peak to be evaluated
+        r : array-like
+            The sequence or scalar over which peak is evaluated
+        rng : slice object
+            Optional slice object restricts which r-values are evaluated.
+            The output has same length as r, but unevaluated objects have
+            a default value of 0.  If caching is enabled these may be
+            previously calculated values instead. Default is None
+
+        Returns
+        -------
+        jac : array-like
+            The Jacobian of base function with termination ripples."""
         if self is not peak._owner:
             raise ValueError(
                 "Argument 'peak' must be evaluated by the "
@@ -180,12 +250,22 @@ class TerminationRipples(PeakFunction):
         to minimize the impact of edge-effects from introducing termination
         ripples into an existing peak function.
 
-        peak: The Peak to be evaluated
-        r: sequence or scalar over which peak is evaluated
-        rng: Optional slice object restricts which r-values are evaluated.
-               The output has same length as r, but unevaluated objects have
-               a default value of 0.  If caching is enabled these may be
-               previously calculated values instead.
+        Parameters
+        ----------
+        peak : Peak instance
+            The Peak to be evaluated
+        r : array-like
+            The sequence or scalar over which peak is evaluated
+        rng : slice object
+            Optional slice object restricts which r-values are evaluated.
+            The output has same length as r, but unevaluated objects have
+            a default value of 0.  If caching is enabled these may be
+            previously calculated values instead. Default is None.
+
+        Returns
+        -------
+        output : array-like
+            The (rippled) value of peak, possibly restricted by range.
         """
         if self is not peak._owner:
             raise ValueError(
@@ -245,8 +325,17 @@ class TerminationRipples(PeakFunction):
         function sin(2*pi*r/qmax)/r.
 
         Parameters
-        sequence: (numpy array) The sequence to alter.
-        delta: The spacing between elements in sequence."""
+        ----------
+        sequence : array-like
+            The sequence to alter.
+        delta : int
+            The spacing between elements in sequence.
+
+        Returns
+        -------
+        array-like
+            The sequence with high-frequency components removed.
+        """
         padlen = int(2 ** np.ceil(np.log2(len(sequence))))
         padseq = fp.fft(sequence, padlen)
         dq = 2 * np.pi / ((padlen - 1) * delta)
@@ -260,7 +349,19 @@ class TerminationRipples(PeakFunction):
         return np.real(padseq[0 : len(sequence)])
 
     def extend_grid(self, r, dr):
-        """Return (extended r, slice giving original range)."""
+        """Return (extended r, slice giving original range).
+
+        Parameters
+        ----------
+        r : array-like or float
+            The sequence or scalar over which peak is evaluated
+        dr : array-like or float
+            The uncertainties over which peak is evaluated
+
+        Returns
+        -------
+        tuple
+            The extended r, slice giving original range."""
         ext = self.extension * 2 * np.pi / self.qmax
         left_ext = np.arange(r[0] - dr, max(0.0, r[0] - ext - dr), -dr)[::-1]
         right_ext = np.arange(r[-1] + dr, r[-1] + ext + dr, dr)
