@@ -361,7 +361,7 @@ class GaussianOverR(PeakFunction):
         -------
         array_like
             The transformed parameters in the `out_format`.
-    """
+        """
         temp = np.array(pars)
 
         # Do I need to change anything?  The internal parameters may need to be
