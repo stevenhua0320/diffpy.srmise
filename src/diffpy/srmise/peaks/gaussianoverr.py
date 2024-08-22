@@ -414,8 +414,8 @@ class GaussianOverR(PeakFunction):
     def _valueraw(self, pars, r):
         """Compute the value of a width-limited Gaussian/r for the specified parameters at given radial distances.
 
-        This function calculates the value of a Gaussian/r distribution, where its effective width is constrained and
-        related to the maxwidth. As `pars[1]` approaches infinity,
+        This function calculates the value of a Gaussian/r distribution,
+        where its effective width is constrained and related to the maxwidth. As `pars[1]` approaches infinity,
         the effective width reaches `FWHM` (maxwidth). The returned values represent the Gaussian's intensity
         across the provided radial coordinates `r`.
 
