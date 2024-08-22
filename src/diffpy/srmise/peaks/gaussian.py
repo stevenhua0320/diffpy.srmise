@@ -78,12 +78,19 @@ class Gaussian(PeakFunction):
         """Estimate parameters for single peak from data provided.
 
         Parameters
-        r: (Numpy array) Data along r from which to estimate
-        y: (Numpy array) Data along y from which to estimate
+        ----------
+        r : array-like
+            The data along r from which to estimate
+        y : array-like
+            The data along y from which to estimate
 
-        Returns Numpy array of parameters in the default internal format.
-        Raises SrMiseEstimationError if parameters cannot be estimated for any
-        reason."""
+        Returns
+        -------
+        array-like
+            Numpy array of parameters in the default internal format.
+            Raises SrMiseEstimationError if parameters cannot be estimated for any
+            reason.
+        """
         if len(r) != len(y):
             emsg = "Arrays r, y must have equal length."
             raise SrMiseEstimationError(emsg)
@@ -154,9 +161,18 @@ class Gaussian(PeakFunction):
         SrMiseScalingError if the parameters cannot be scaled.
 
         Parameters
-        pars: (Array) Parameters corresponding to a single peak
-        x: (float) Position of the border
-        scale: (float > 0) Size of scaling at x."""
+        ----------
+        pars : array-like
+            The parameters corresponding to a single peak
+        x : float
+            The position of the border
+        scale : float
+            The size of scaling at x. Must be positive.
+
+        Returns
+        -------
+        tuple
+            mu, area, and sigma that are scaled."""
         if scale <= 0:
             emsg = "".join(["Cannot scale by ", str(scale), "."])
             raise SrMiseScalingError(emsg)
@@ -190,16 +206,36 @@ class Gaussian(PeakFunction):
         return tpars
 
     def _jacobianraw(self, pars, r, free):
-        """Return Jacobian of width-limited Gaussian.
+        """Compute the Jacobian of a width-limited Gaussian function.
 
-        pars: Sequence of parameters for a single width-limited Gaussian
-        pars[0]=peak position
-        pars[1]=effective width, up to fwhm=maxwidth as par[1] -> inf.
-              =tan(pi/2*fwhm/maxwidth)
-        pars[2]=multiplicative constant a, equivalent to peak area
-        r: sequence or scalar over which pars is evaluated
-        free: sequence of booleans which determines which derivatives are
-              needed.  True for evaluation, False for no evaluation.
+        This method calculates the partial derivatives of a Gaussian function
+        with respect to its parameters, considering a limiting width. The Gaussian's
+        width approaches its maximum FWHM (maxwidth) as the effective width parameter
+        (`pars[1]`) tends to infinity.
+
+        Parameters
+        ----------
+        pars : array-like
+            The sequence of parameters defining a single width-limited Gaussian:
+            - pars[0]: Peak position.
+            - pars[1]: Effective width, which scales up to the full width at half maximum (fwhm=maxwidth) as
+            `pars[1]` approaches infinity. It is mathematically represented as `tan(pi/2 * fwhm / maxwidth)`.
+            - pars[2]: Multiplicative constant 'a', equivalent to the peak area.
+
+        r : array-like or scalar
+            The sequence or scalar over which the Gaussian parameters `pars` are evaluated.
+
+        free : array-like of bools
+            Determines which derivatives need to be computed. A `True` value indicates that the derivative
+            with respect to the corresponding parameter in `pars` should be calculated;
+            `False` indicates no evaluation is needed.
+
+        Returns
+        -------
+        jacobian : ndarray
+            The Jacobian matrix, where each column corresponds to the derivative of the Gaussian function
+            with respect to one of the input parameters `pars`, evaluated at points `r`.
+            Only columns corresponding to `True` values in `free` are computed.
         """
         jacobian = [None, None, None]
         if (free is False).sum() == self.npars:
@@ -236,20 +272,29 @@ class Gaussian(PeakFunction):
         return jacobian
 
     def _transform_parametersraw(self, pars, in_format, out_format):
-        """Convert parameter values from in_format to out_format.
+        """Convert parameter values from one format to another.
 
-        Also restores parameters to a preferred range if it permits multiple
-        values that correspond to the same physical result.
+        This method also facilitates restoring parameters to a preferred range if the
+        target format allows for multiple representations of the same physical result.
 
         Parameters
-        pars: Sequence of parameters
-        in_format: A format defined for this class
-        out_format: A format defined for this class
+        ----------
+        pars : array_like
+            The sequence of parameters in the `in_format`.
+        in_format : str, optional
+            The input format of the parameters. Supported formats are:
+            - 'internal': [position, parameterized width-squared, area]
+            - 'pwa': [position, full width at half maximum, area]
+            - 'mu_sigma_area': [mu, sigma, area]
+            Default is 'internal'.
+        out_format : str, optional
+            The desired output format of the parameters. Same options as `in_format`.
+            Default is 'pwa'.
 
-        Defined Formats
-        internal: [position, parameterized width-squared, area]
-        pwa: [position, full width at half maximum, area]
-        mu_sigma_area: [mu, sigma, area]
+        Returns
+        -------
+        array_like
+            The transformed parameters in the `out_format`.
         """
         temp = np.array(pars)
 
@@ -301,14 +346,29 @@ class Gaussian(PeakFunction):
         return temp
 
     def _valueraw(self, pars, r):
-        """Return value of width-limited Gaussian for the given parameters and r values.
+        """Compute the value of a width-limited Gaussian for the specified parameters at given radial distances.
 
-        pars: Sequence of parameters for a single width-limited Gaussian
-        pars[0]=peak position
-        pars[1]=effective width, up to fwhm=maxwidth as par[1] -> inf.
-              =tan(pi/2*fwhm/maxwidth)
-        pars[2]=multiplicative constant a, equivalent to peak area
-        r: sequence or scalar over which pars is evaluated
+        This function calculates the value of a Gaussian distribution, where its effective width is constrained and
+        related to the maxwidth. As `pars[1]` approaches infinity,
+        the effective width reaches `FWHM` (maxwidth). The returned values represent the Gaussian's intensity
+        across the provided radial coordinates `r`.
+
+        Parameters
+        ----------
+        pars : array_like
+            A sequence of parameters defining the Gaussian shape:
+            - pars[0]: Peak position of the Gaussian.
+            - pars[1]: Effective width factor, approaching infinity implies the FWHM equals `maxwidth`.
+            It is related to the FWHM by `tan(pi/2*FWHM/maxwidth)`.
+            - pars[2]: Multiplicative constant 'a', equivalent to the peak area of the Gaussian when integrated.
+
+        r : array_like or float
+            The radial distances or a single value at which the Gaussian is to be evaluated.
+
+        Returns
+        -------
+        float
+            The value of a width-limited Gaussian for the specified parameters at given radial distances.
         """
         return (
             np.abs(pars[2])
@@ -322,7 +382,16 @@ class Gaussian(PeakFunction):
     # Other methods ####
 
     def max(self, pars):
-        """Return position and height of the peak maximum."""
+        """Return position and height of the peak maximum.
+        Parameters
+        ----------
+        pars : array_like
+            A sequence of parameters defining the Gaussian shape.
+
+        Returns
+        -------
+        array_like
+            The position and height of the peak maximum."""
         # TODO: Reconsider this behavior
         if len(pars) == 0:
             return None
