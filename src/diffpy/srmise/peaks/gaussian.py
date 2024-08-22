@@ -80,9 +80,9 @@ class Gaussian(PeakFunction):
         Parameters
         ----------
         r : array-like
-            Data along r from which to estimate
+            The data along r from which to estimate
         y : array-like
-            Data along y from which to estimate
+            The data along y from which to estimate
 
         Returns
         -------
@@ -163,11 +163,11 @@ class Gaussian(PeakFunction):
         Parameters
         ----------
         pars : array-like
-            Parameters corresponding to a single peak
+            The parameters corresponding to a single peak
         x : float
-            Position of the border
+            The position of the border
         scale : float
-            Size of scaling at x. Must be positive.
+            The size of scaling at x. Must be positive.
 
         Returns
         -------
@@ -216,7 +216,7 @@ class Gaussian(PeakFunction):
         Parameters
         ----------
         pars : array-like
-            Sequence of parameters defining a single width-limited Gaussian:
+            The sequence of parameters defining a single width-limited Gaussian:
             - pars[0]: Peak position.
             - pars[1]: Effective width, which scales up to the full width at half maximum (fwhm=maxwidth) as
             `pars[1]` approaches infinity. It is mathematically represented as `tan(pi/2 * fwhm / maxwidth)`.
@@ -363,7 +363,7 @@ class Gaussian(PeakFunction):
             - pars[2]: Multiplicative constant 'a', equivalent to the peak area of the Gaussian when integrated.
 
         r : array_like or float
-            Radial distances or a single value at which the Gaussian is to be evaluated.
+            The radial distances or a single value at which the Gaussian is to be evaluated.
 
         Returns
         -------
