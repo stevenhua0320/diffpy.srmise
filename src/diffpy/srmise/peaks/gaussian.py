@@ -227,7 +227,8 @@ class Gaussian(PeakFunction):
 
         free : array-like of bools
             Determines which derivatives need to be computed. A `True` value indicates that the derivative
-            with respect to the corresponding parameter in `pars` should be calculated; `False` indicates no evaluation is needed.
+            with respect to the corresponding parameter in `pars` should be calculated;
+            `False` indicates no evaluation is needed.
 
         Returns
         -------
