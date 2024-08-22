@@ -206,7 +206,6 @@ class Gaussian(PeakFunction):
         return tpars
 
     def _jacobianraw(self, pars, r, free):
-
         """Compute the Jacobian of a width-limited Gaussian function.
 
         This method calculates the partial derivatives of a Gaussian function
@@ -411,6 +410,7 @@ if __name__ == "__main__":
 
     import matplotlib.pyplot as plt
     from numpy.random import randn
+
     from diffpy.srmise.modelcluster import ModelCluster
     from diffpy.srmise.modelevaluators.aicc import AICc
     from diffpy.srmise.peaks.base import Peaks
