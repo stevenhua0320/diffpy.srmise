@@ -30,21 +30,37 @@ class FromSequence(BaselineFunction):
     interpolation domain.  This baseline function permits no free parameters."""
 
     def __init__(self, *args, **kwds):
-        """Initialize baseline corresponding to sequences x and y.
+        """Initialize a baseline object based on input sequences `x` and `y`.
 
-        Usage:
-        FromSequence(xlist, ylist) or
-        FromSequence(x=xlist, y=ylist)
+        This class provides two ways to initialize: by directly providing the sequences or by
+        specifying a file that contains the sequences.
 
-        FromSequence("filename") or
-        FromSequence(file="filename")
+        Parameters
+        ----------
+        *args : tuple
+            The variable length argument list. Can be used to pass `x` and `y` sequences directly.
 
+        **kwds : dict
+            The arbitrary keyword arguments. Can be used to specify `x`, `y` sequences or a `file` name.
 
-        Parameters/Keywords
-        x: Sequence of x values defining baseline.
-        y: Sequence of y values defining baseline.
-         or
-        file: Name of file with column of x values and column of y values.
+        x : array_like, optional
+            The sequence of x-values defining the baseline. Can be passed as a positional argument or via keyword.
+
+        y : array_like, optional
+            The sequence of y-values defining the baseline. Must be provided alongside `x`.
+
+        file : str, optional
+            The name of the file containing two columns: one for x-values and one for y-values.
+
+        Usage
+        -----
+        1. Directly with sequences:
+            - `FromSequence(xlist, ylist)`
+            - `FromSequence(x=xlist, y=ylist)`
+
+        2. From a file:
+            - `FromSequence("filename")`
+            - `FromSequence(file="filename")`
         """
         if len(args) == 1 and len(kwds) == 0:
             # load from file
@@ -88,8 +104,17 @@ class FromSequence(BaselineFunction):
         to estimate.
 
         Parameters
-        r: (Numpy array) Data along r from which to estimate, Ignored
-        y: (Numpy array) Data along y from which to estimate, Ignored"""
+        ----------
+        r : array-like
+            The data along r from which to estimate, Ignored
+        y : array-like
+            The data along y from which to estimate, Ignored
+
+        Returns
+        -------
+        array-like
+            The empty numpy array
+        """
         return np.array([])
 
     def _jacobianraw(self, pars, r, free):
@@ -98,9 +123,19 @@ class FromSequence(BaselineFunction):
         A FromSequence baseline has no parameters.
 
         Parameters
-        pars: Empty sequence
-        r: sequence or scalar over which pars is evaluated
-        free: Empty sequence."""
+        ----------
+        pars :array-like
+            The empty sequence
+        r : array-like
+            The sequence or scalar over which pars is evaluated
+        free : array-like
+            The empty sequence.
+
+        Returns
+        -------
+        array-like
+            The empty numpy array
+        """
         if len(pars) != self.npars:
             emsg = "Argument pars must have " + str(self.npars) + " elements."
             raise ValueError(emsg)
@@ -113,12 +148,23 @@ class FromSequence(BaselineFunction):
         """Convert parameter values from in_format to out_format.
 
         Parameters
-        pars: Sequence of parameters
-        in_format: A format defined for this class
-        out_format: A format defined for this class
+        ----------
+        pars : array-like
+            The sequence of parameters
+        in_format : str
+            The format defined for this class
+        out_format : str
+            The format defined for this class
 
         Defined Formats
-        n/a, FromSequence has no parameters"""
+        ---------------
+        n/a, FromSequence has no parameters
+
+        Returns
+        -------
+        array-like
+            The sequence of parameters converted to out_format
+        """
         temp = np.array(pars)
 
         # Convert to intermediate format "internal"
@@ -138,8 +184,17 @@ class FromSequence(BaselineFunction):
         """Return value of polynomial for the given parameters and r values.
 
         Parameters
-        pars: Empty sequence
-        r: sequence or scalar over which pars is evaluated"""
+        ----------
+        pars : array-like
+            The empty sequence
+        r : array-like
+            The sequence or scalar over which pars is evaluated
+
+        Returns
+        -------
+        float
+            The value of the polynomial for the given parameters
+        """
         if len(pars) != self.npars:
             emsg = "Argument pars must have " + str(self.npars) + " elements."
             raise ValueError(emsg)
@@ -163,7 +218,18 @@ class FromSequence(BaselineFunction):
         return __name__
 
     def xyrepr(self, var):
-        """Safe string output of x and y, compatible with eval()"""
+        """Safe string output of x and y, compatible with eval()
+
+        Parameters
+        ----------
+        var : array-like
+            The sequence or scalar over which to evaluate
+
+        Returns
+        -------
+        str
+            The x and y values of the given variable
+        """
         return "[%s]" % ", ".join([repr(v) for v in var])
 
     def readxy(self, filename):
