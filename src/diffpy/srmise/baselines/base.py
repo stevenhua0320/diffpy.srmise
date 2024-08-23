@@ -28,16 +28,19 @@ class BaselineFunction(BaseFunction):
 
     Class members
     -------------
-    parameterdict: A dictionary mapping string keys to their index in the
-                   sequence of parameters.  These keys apply only to
-                   the default "internal" format.
-    parformats: A sequence of strings defining what formats are recognized
-                by a baseline function.
-    default_formats: A dictionary which maps the strings "default_input" and
-                     "default_output" to strings also appearing in parformats.
-                     "default_input"-> format used internally within the class
-                     "default_output"-> Default format to use when converting
-                                        parameters for outside use.
+    parameterdict: dict
+        The dictionary mapping string keys to their index in the
+        sequence of parameters.  These keys apply only to
+        the default "internal" format.
+    parformats: array-like
+        The sequence of strings defining what formats are recognized
+        by a baseline function.
+    default_formats: dict
+        The dictionary which maps the strings "default_input" and
+        "default_output" to strings also appearing in parformats.
+        "default_input"-> format used internally within the class
+        "default_output"-> Default format to use when converting
+        parameters for outside use.
 
     Class methods (implemented by inheriting classes)
     -------------------------------------------------
@@ -70,19 +73,25 @@ class BaselineFunction(BaseFunction):
     ):
         """Set parameterdict defined by subclass
 
-        parameterdict: A dictionary mapping string keys to their index in a
-                       sequence of parameters for this BaselineFunction subclass.
-        parformats: A sequence strings containing all allowed input/output
-                    formats defined for the peak function's parameters.
-        default_formats: A dictionary mapping the string keys "internal" and
-                        "default_output" to formats from parformats.
-        metadict: Dictionary mapping string keys to tuple (v, m) where v is an
-                  additional argument required by function, and m is a method
-                  whose string output recreates v when passed to eval().
-        base: A basefunction subclass instance which this one decorates with
-              additional functionality.
-        Cache: A class (not instance) which implements caching of BaseFunction
-               evaluations."""
+        parameterdict : dict
+            The dictionary mapping string keys to their index in a
+            sequence of parameters for this BaselineFunction subclass.
+        parformats : array-like
+            The sequence strings containing all allowed input/output
+            formats defined for the peak function's parameters.
+        default_formats : dict
+            The dictionary mapping the string keys "internal" and
+            default_output" to formats from parformats.
+        metadict: dict
+            The dictionary mapping string keys to tuple (v, m) where v is an
+            additional argument required by function, and m is a method
+            whose string output recreates v when passed to eval().
+        base : The basefunction subclass
+            The basefunction subclass instance which this one decorates with
+            additional functionality.
+        Cache : class
+            The class (not instance) which implements caching of BaseFunction
+            evaluations."""
         BaseFunction.__init__(self, parameterdict, parformats, default_formats, metadict, base, Cache)
 
     # "Virtual" class methods ####
@@ -111,20 +120,31 @@ class Baseline(ModelPart):
     """Represents a baseline associated with a BaselineFunction subclass."""
 
     def __init__(self, owner, pars, free=None, removable=False, static_owner=False):
-        """Set instance members.
+        """Initialize the BaselineComponent instance with specified configurations.
 
-        owner: an instance of a BaselineFunction subclass
-        pars: Sequence of parameters which define the baseline
-        free: Sequence of Boolean variables.  If False, the corresponding
-              parameter will not be changed.
-        removable: (False) Boolean determines whether the baseline can be removed.
-        static_owner: (False) Whether or not the owner can be changed with
-                      changeowner()
+        Parameters
+        ----------
+        owner : BaselineFunction subclass instance
+            The owner object which is an instance of a subclass of BaselineFunction.
+        pars : array-like
+            The sequence of parameters defining the characteristics of the baseline.
+        free : Sequence of bool, optional
+            The sequence parallel to `pars` where each boolean value indicates whether
+            the corresponding parameter is adjustable. If False, that parameter is fixed.
+            Defaults to None, implying all parameters are free by default.
+        removable : bool, optional
+            A flag indicating whether the baseline can be removed during processing.
+            Defaults to False.
+        static_owner : bool, optional
+            Determines if the owner of the baseline can be altered using the
+    `       changeowner()` method. Defaults to False.
 
-        Note that free and removable are not mutually exclusive.  If any
-        values are not free but removable=True then the entire baseline may be
-        may be removed during peak extraction, but the held parameters for the
-        baseline will remain unchanged until that point.
+        Notes
+        -----
+        - The `free` and `removable` parameters are independent; a baseline can be marked
+        as removable even if some of its parameters are fixed (`free` is False). In such
+        cases, the baseline may be removed during peak extraction, but the fixed
+        parameters will persist until removal.
         """
         ModelPart.__init__(self, owner, pars, free, removable, static_owner)
 
@@ -132,9 +152,12 @@ class Baseline(ModelPart):
     def factory(baselinestr, ownerlist):
         """Instantiate a Peak from a string.
 
-        Parameters:
-        baselinestr: string representing Baseline
-        ownerlist: List of BaseFunctions that owner is in
+        Parameters
+        ----------
+        baselinestr : str
+            The string representing Baseline
+        ownerlist : array-like
+            The list of BaseFunctions that owner is in
         """
 
         data = baselinestr.strip().splitlines()
