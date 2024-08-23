@@ -122,29 +122,29 @@ class Baseline(ModelPart):
     def __init__(self, owner, pars, free=None, removable=False, static_owner=False):
         """Initialize the BaselineComponent instance with specified configurations.
 
-        Parameters
-        ----------
-        owner : BaselineFunction subclass instance
-            The owner object which is an instance of a subclass of BaselineFunction.
-        pars : array-like
-            The sequence of parameters defining the characteristics of the baseline.
-        free : Sequence of bool, optional
-            The sequence parallel to `pars` where each boolean value indicates whether
-            the corresponding parameter is adjustable. If False, that parameter is fixed.
-            Defaults to None, implying all parameters are free by default.
-        removable : bool, optional
-            A flag indicating whether the baseline can be removed during processing.
-            Defaults to False.
-        static_owner : bool, optional
-            Determines if the owner of the baseline can be altered using the
-    `       changeowner()` method. Defaults to False.
+            Parameters
+            ----------
+            owner : BaselineFunction subclass instance
+                The owner object which is an instance of a subclass of BaselineFunction.
+            pars : array-like
+                The sequence of parameters defining the characteristics of the baseline.
+            free : Sequence of bool, optional
+                The sequence parallel to `pars` where each boolean value indicates whether
+                the corresponding parameter is adjustable. If False, that parameter is fixed.
+                Defaults to None, implying all parameters are free by default.
+            removable : bool, optional
+                A flag indicating whether the baseline can be removed during processing.
+                Defaults to False.
+            static_owner : bool, optional
+                Determines if the owner of the baseline can be altered using the
+        `       changeowner()` method. Defaults to False.
 
-        Notes
-        -----
-        - The `free` and `removable` parameters are independent; a baseline can be marked
-        as removable even if some of its parameters are fixed (`free` is False). In such
-        cases, the baseline may be removed during peak extraction, but the fixed
-        parameters will persist until removal.
+            Notes
+            -----
+            - The `free` and `removable` parameters are independent; a baseline can be marked
+            as removable even if some of its parameters are fixed (`free` is False). In such
+            cases, the baseline may be removed during peak extraction, but the fixed
+            parameters will persist until removal.
         """
         ModelPart.__init__(self, owner, pars, free, removable, static_owner)
 
