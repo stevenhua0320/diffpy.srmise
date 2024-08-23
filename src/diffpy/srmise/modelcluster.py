@@ -82,10 +82,12 @@ class ModelCovariance(object):
 
         Parameters
         ----------
-        model - A ModelParts object
-        cov - The nxn covariance matrix for n model parameters. If the parameterization includes "fixed"
-              parameters not included in the covariance matrix, the matrix is expanded to include these
-              parameters with 0 uncertainty.
+        model :  ModelParts
+            The ModelParts instance
+        cov : ndarray
+            The nxn covariance matrix for n model parameters. If the parameterization includes "fixed"
+            parameters not included in the covariance matrix, the matrix is expanded to include these
+            parameters with 0 uncertainty.
         """
         tempcov = np.array(cov)
 
@@ -151,8 +153,10 @@ class ModelCovariance(object):
 
         Parameters
         ----------
-        in_format - The current format of parameters
-        out_format - The new format for parameters
+        in_format : str
+            The current format of parameters
+        out_format : str
+            The new format for parameters
 
         Keywords
         --------
@@ -229,6 +233,18 @@ class ModelCovariance(object):
 
         The standard deviation of fixed parameters is 0, in which case the correlation is
         undefined, but return 0 for simplicity.
+
+        Parameters
+        ----------
+        i : int
+            The index of variable in peak mapping
+        j : int
+            The index of variable in peak mapping
+
+        Returns
+        -------
+        float
+            The correlation between variables i and j
         """
         if self.cov is None:
             emsg = "Cannot get correlation on undefined covariance matrix."
@@ -257,6 +273,16 @@ class ModelCovariance(object):
 
         The variable may be specified as an integer, or as a two-component tuple of integers (l, m)
         which indicate the mth parameter of modelpart l.
+
+        Parameters
+        ----------
+        i : int
+            The index of variable in peak mapping
+
+        Returns
+        -------
+        float
+            The uncertainty of variable at index i.
         """
         (l, m) = i if i in self.pmap else self.ipmap[i]
         return np.sqrt(self.getcovariance(i, i))
@@ -266,6 +292,18 @@ class ModelCovariance(object):
 
         The variables may be specified as integers, or as a two-component tuple of integers (l, m)
         which indicate the mth parameter of modelpart l.
+
+        Parameters
+        ----------
+        i : int
+            The index of variable in peak mapping
+        j : int
+            The index of variable in peak mapping
+
+        Returns
+        -------
+        float
+            The covariance between variables at indeex i and j.
         """
         if self.cov is None:
             emsg = "Cannot get correlation on undefined covariance matrix."
@@ -282,6 +320,16 @@ class ModelCovariance(object):
 
         The variable may be specified as an integer, or as a two-component tuple of integers (l, m)
         which indicate the mth parameter of modelpart l.
+
+        Parameters
+        ----------
+        i : int
+            The index of variable in peak mapping
+
+        Returns
+        -------
+        (float, float)
+            The value and uncertainty of variable at index i.
         """
         return (self.getvalue(i), self.getuncertainty(i))
 
@@ -294,8 +342,13 @@ class ModelCovariance(object):
 
         Parameters
         ----------
-        threshold - A real number between 0 and 1.
+        threshold : float
+            A real number between 0 and 1.
 
+        Returns
+        -------
+        tuple (i, j, c)
+        Indices of the modelpart and their correlations.
         """
         if self.cov is None:
             emsg = "Cannot calculate correlation on undefined covariance matrix."
@@ -323,6 +376,16 @@ class ModelCovariance(object):
 
         The variable may be specified as an integer, or as a two-component tuple of integers (l, m)
         which indicate the mth parameter of modelpart l.
+
+        Parameters
+        ----------
+        i : int
+            The index of variable in peak mapping
+
+        Returns
+        -------
+        str
+        'value (uncertainty)' for variable at index i.
         """
         if self.model is None or self.cov is None:
             return "Model and/or Covariance matrix undefined."
