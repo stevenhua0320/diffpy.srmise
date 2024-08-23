@@ -55,9 +55,17 @@ class AICc(ModelEvaluator):
 
         Parameters
         fit: A ModelCluster
-        count_fixed: Whether fixed parameters are considered.
-        kshift: (0) Treat the model has having this many additional
-                parameters.  Negative values also allowed."""
+            The ModelCluster to evaluate.
+        count_fixed : bool
+            Whether fixed parameters are considered. Default is False.
+        kshift : int
+            Treat the model has having this many additional
+            parameters.  Negative values also allowed. Default is 0.
+
+        Returns
+        -------
+        float
+            Quality of AICc"""
         # Number of parameters.  By default, fixed parameters are ignored.
         k = fit.model.npars(count_fixed=count_fixed) + kshift
         if k < 0:
@@ -79,14 +87,39 @@ class AICc(ModelEvaluator):
         return self.stat
 
     def minpoints(self, npars):
-        """Calculates the minimum number of points required to make an estimate of a model's quality."""
+        """Calculates the minimum number of points required to make an estimate of a model's quality.
+
+        Parameters
+        ----------
+        npars : int
+            The number of points required to make an estimate of a model's quality.
+
+        Returns
+        -------
+        int
+            The minimum number of points required to make an estimate of a model's quality.
+        """
 
         # From the denominator of AICc, it is clear that the first positive finite contribution to
         # parameter cost is at n>=k+2
         return npars + 2
 
     def parpenalty(self, k, n):
-        """Returns the cost for adding k parameters to the current model cluster."""
+        """Returns the cost for adding k parameters to the current model cluster.
+
+        Parameters
+        ----------
+        k : int
+            The number of parameters to add.
+
+        n : int
+            The number of data points.
+
+        Returns
+        -------
+        float
+            The cost for adding k parameters to the current model cluster.
+        """
 
         # Weight the penalty for additional parameters.
         # If this isn't 1 there had better be a good reason.
@@ -101,6 +134,18 @@ class AICc(ModelEvaluator):
         and so adding it is justified if the cost of adding these parameters is less than the current
         chiSquared cost.  The validity of this assumption (which depends on an unknown chiSquared value)
         and the impact of the errors used should be examined more thoroughly in the future.
+
+        Parameters
+        ----------
+        fit : ModelCluster
+            The ModelCluster to evaluate.
+        k_prime : int
+            The prime number of parameters to add.
+
+        Returns
+        -------
+        bool
+            Whether the current model cluster is justified or not.
         """
 
         if self.chisq is None:
@@ -126,7 +171,18 @@ class AICc(ModelEvaluator):
 
     @staticmethod
     def akaikeweights(aics):
-        """Return sequence of Akaike weights for sequence of AICs"""
+        """Return sequence of Akaike weights for sequence of AICs
+
+        Parameters
+        ----------
+        aics : array-like
+            The squence of AIC instances
+
+        Returns
+        -------
+        array-like
+            The sequence of Akaike weights
+        """
 
         aic_stats = np.array([aic.stat for aic in aics])
         aic_min = min(aic_stats)
@@ -134,7 +190,17 @@ class AICc(ModelEvaluator):
 
     @staticmethod
     def akaikeprobs(aics):
-        """Return sequence of Akaike probabilities for sequence of AICs"""
+        """Return sequence of Akaike probabilities for sequence of AICs
+
+        Parameters
+        ----------
+        aics : array-like
+            The squence of AIC instances
+
+        Returns
+        -------
+        array-like
+            The sequence of Akaike probabilities"""
         aic_weights = AICc.akaikeweights(aics)
         return aic_weights / np.sum(aic_weights)
 
