@@ -42,8 +42,10 @@ class NanoSpherical(BaselineFunction):
         """Initialize a spherical nanoparticle baseline.
 
         Parameters
-        Cache - A class (not instance) which implements caching of BaseFunction
-               evaluations.
+        ----------
+        Cache : class
+            THe class (not instance) which implements caching of BaseFunction
+            evaluations.
         """
         # Define parameterdict
         parameterdict = {"scale": 0, "radius": 1}
@@ -74,12 +76,21 @@ class NanoSpherical(BaselineFunction):
         """Return the Jacobian of the spherical baseline.
 
         Parameters
-        pars - Sequence of parameters for a spherical baseline
-               pars[0] = scale
-               pars[1] = radius
-        r - sequence or scalar over which pars is evaluated.
-        free - sequence of booleans which determines which derivatives are
-               needed.  True for evaluation, False for no evaluation.
+        ----------
+        pars : array-like
+            The Sequence of parameters for a spherical baseline
+            pars[0] = scale
+            pars[1] = radius
+        r : array-like
+            The sequence or scalar over which pars is evaluated.
+        free : bool
+            The sequence of booleans which determines which derivatives are
+            needed. True for evaluation, False for no evaluation.
+
+        Returns
+        -------
+        array-like
+            The Jacobian of the nanospherical baseline.
         """
         if len(pars) != self.npars:
             emsg = "Argument pars must have " + str(self.npars) + " elements."
@@ -116,10 +127,18 @@ class NanoSpherical(BaselineFunction):
         """Return partial Jacobian wrt scale without bounds checking.
 
         Parameters
-        pars - Sequence of parameters for a spherical baseline
-               pars[0] = scale
-               pars[1] = radius
-        r - sequence or scalar over which pars is evaluated.
+        ----------
+        pars : array-like
+            The sequence of parameters for a spherical baseline
+            pars[0] = scale
+            pars[1] = radius
+        r : array-like
+            The sequence or scalar over which pars is evaluated.
+
+        Returns
+        -------
+        array-like
+            The partial Jacobian of the nanoparticle baseline wrt scale without bounds checking.
         """
         np.abs(pars[0])
         R = np.abs(pars[1])
@@ -134,10 +153,18 @@ class NanoSpherical(BaselineFunction):
         """Return partial Jacobian wrt radius without bounds checking.
 
         Parameters
-        pars - Sequence of parameters for a spherical baseline
-               pars[0] = scale
-               pars[1] = radius
-        r - sequence or scalar over which pars is evaluated.
+        ----------
+        pars : array-like
+            The Sequence of parameters for a spherical baseline
+            pars[0] = scale
+            pars[1] = radius
+        r : array-like
+            The sequence or scalar over which pars is evaluated.
+
+        Returns
+        -------
+        array-like
+            The partial Jacobian of the nanoparticle baseline wrt radius without bounds checking.
         """
         s = np.abs(pars[0])
         R = np.abs(pars[1])
@@ -150,12 +177,22 @@ class NanoSpherical(BaselineFunction):
         """Convert parameter values from in_format to out_format.
 
         Parameters
-        pars - Sequence of parameters
-        in_format - A format defined for this class
-        out_format - A format defined for this class
+        ----------
+        pars : array-like
+            The sequence of parameters
+        in_format : str
+            The format defined for this class
+        out_format : str
+            The format defined for this class
 
         Defined Formats
+        ---------------
         internal - [scale, radius]
+
+        Returns
+        -------
+        array-like
+            The transformed parameter values with out_format.
         """
         temp = np.array(pars)
 
@@ -180,10 +217,18 @@ class NanoSpherical(BaselineFunction):
         Outside the interval [0, radius] the baseline is 0.
 
         Parameters
-        pars - Sequence of parameters for a spherical baseline
-               pars[0] = scale
-               pars[1] = radius
-        r - sequence or scalar over which pars is evaluated.
+        ----------
+        pars : array-like
+            The sequence of parameters for a spherical baseline
+            pars[0] = scale
+            pars[1] = radius
+        r : array-like
+            The sequence or scalar over which pars is evaluated.
+
+        Returns
+        -------
+        float
+            The value of the spherical baseline.
         """
         if len(pars) != self.npars:
             emsg = "Argument pars must have " + str(self.npars) + " elements."
@@ -203,10 +248,18 @@ class NanoSpherical(BaselineFunction):
         """Return value of spherical baseline without bounds checking for given parameters and r values.
 
         Parameters
-        pars - Sequence of parameters for a spherical baseline
-               pars[0] = scale
-               pars[1] = radius
-        r - sequence or scalar over which pars is evaluated.
+        ----------
+        pars : array-like
+            The sequence of parameters for a spherical baseline
+            pars[0] = scale
+            pars[1] = radius
+        r : array-like
+            The sequence or scalar over which pars is evaluated.
+
+        Returns
+        -------
+        float
+            The value of spherical baseline without bounds checking for given parameters and r values
         """
         s = np.abs(pars[0])
         R = np.abs(pars[1])
@@ -214,7 +267,20 @@ class NanoSpherical(BaselineFunction):
         return -s * r * (1 - (3.0 / 4.0) * rdivR + (1.0 / 16.0) * rdivR**3)
 
     def _getdomain(self, pars, r):
-        """Return slice object for which r > 0 and r < twice the radius"""
+        """Return slice object for which r > 0 and r < twice the radius
+
+        Parameters
+        ----------
+        pars : array-like
+            The sequence of parameters for a spherical baseline
+        r : array-like
+            The sequence or scalar over which pars is evaluated.
+
+        Returns
+        -------
+        slice object
+            The slice object for which r > 0 and r < twice the radius
+        """
         low = r.searchsorted(0.0, side="right")
         high = r.searchsorted(2.0 * pars[1], side="left")
         return slice(low, high)
