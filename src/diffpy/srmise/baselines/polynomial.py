@@ -29,10 +29,13 @@ class Polynomial(BaselineFunction):
         """Initialize a polynomial function of degree d.
 
         Parameters
-        degree: The degree of the polynomial.  Any negative value is interpreted
-                as the polynomial of negative infinite degree.
-        Cache: A class (not instance) which implements caching of BaseFunction
-               evaluations.
+        ----------
+        degree: int
+            The degree of the polynomial.  Any negative value is interpreted
+            as the polynomial of negative infinite degree.
+        Cache: class
+            The class (not instance) which implements caching of BaseFunction
+            evaluations.
         """
         # Guarantee valid degree
         try:
@@ -62,13 +65,20 @@ class Polynomial(BaselineFunction):
         y=baseline+signal, where signal is primarily positive.
 
         Parameters
-        r: (Numpy array) Data along r from which to estimate
-        y: (Numpy array) Data along y from which to estimate
+        ----------
+        r : array-like
+            The data along r from which to estimate
+        y : array-like
+            The data along y from which to estimate
 
-        Returns Numpy array of parameters in the default internal format.
-        Raises NotImplementedError if estimation is not implemented for this
-        degree, or SrMiseEstimationError if parameters cannot be estimated for
-        any other reason."""
+        Returns
+        -------
+        array-like
+            The Numpy array of parameters in the default internal format.
+            Raises NotImplementedError if estimation is not implemented for this
+            degree, or SrMiseEstimationError if parameters cannot be estimated for
+            any other reason.
+        """
         if self.degree > 1:
             emsg = "Polynomial implements estimation for baselines of degree <= 1 only."
             raise NotImplementedError(emsg)
@@ -105,14 +115,23 @@ class Polynomial(BaselineFunction):
         """Return the Jacobian of a polynomial.
 
         Parameters
-        pars: Sequence of parameters for a polynomial of degree d
-        pars[0] = a_degree
-        pars[1] = a_(degree-1)
-        ...
-        pars[d] = a_0
-        r: sequence or scalar over which pars is evaluated
-        free: sequence of booleans which determines which derivatives are
-              needed.  True for evaluation, False for no evaluation.
+        ----------
+        pars : array-like
+            The sequence of parameters for a polynomial of degree d
+            pars[0] = a_degree
+            pars[1] = a_(degree-1)
+            ...
+            pars[d] = a_0
+        r : array-like
+            The sequence or scalar over which pars is evaluated
+        free : bool
+            The sequence of booleans which determines which derivatives are
+              needed. True for evaluation, False for no evaluation.
+
+        Returns
+        -------
+        jacobian: array-like
+            The Jacobian of polynomial with degree d
         """
         if len(pars) != self.npars:
             emsg = "Argument pars must have " + str(self.npars) + " elements."
@@ -135,12 +154,22 @@ class Polynomial(BaselineFunction):
         """Convert parameter values from in_format to out_format.
 
         Parameters
-        pars: Sequence of parameters
-        in_format: A format defined for this class
-        out_format: A format defined for this class
+        pars : array-like
+            The sequence of parameters
+        in_format : str
+            The format defined for this class
+        out_format : str
+            The format defined for this class
 
         Defined Formats
-        internal: [a_degree, a_(degree-1), ..., a_0]"""
+        ---------------
+        internal: [a_degree, a_(degree-1), ..., a_0]
+
+        Returns
+        -------
+        array-like
+            The transformed parameters in out_format
+        """
         temp = np.array(pars)
 
         # Convert to intermediate format "internal"
@@ -160,13 +189,22 @@ class Polynomial(BaselineFunction):
         """Return value of polynomial for the given parameters and r values.
 
         Parameters
-        pars: Sequence of parameters for a polynomial of degree d
-              pars[0] = a_degree
-              pars[1] = a_(degree-1)
-              ...
-              pars[d] = a_0
-              If degree is negative infinity, pars is an empty sequence.
-        r: sequence or scalar over which pars is evaluated"""
+        ----------
+        pars : array-like
+            The sequence of parameters for a polynomial of degree d
+            pars[0] = a_degree
+            pars[1] = a_(degree-1)
+            ...
+            pars[d] = a_0
+            If degree is negative infinity, pars is an empty sequence.
+        r : array-like
+            The sequence or scalar over which pars is evaluated
+
+        Returns
+        -------
+        float
+            The value of polynomial for the given parameters and r values.
+        """
         if len(pars) != self.npars:
             emsg = "Argument pars must have " + str(self.npars) + " elements."
             raise ValueError(emsg)
