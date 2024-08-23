@@ -53,8 +53,14 @@ class ModelEvaluator:
     worse models."""
 
     def __init__(self, method, higher_is_better):
-        """method = name of method (string)
-        higher_is_better = boolean
+        """Constructor of ModelEvaluator
+
+        Parameters
+        ----------
+        method : str
+            The name of method
+        higher_is_better : bool
+            The boolean to compare higher or lower degree model.
         """
         self.method = method
         self.higher_is_better = higher_is_better
@@ -123,7 +129,16 @@ class ModelEvaluator:
             return other.stat >= self.stat
 
     def chi_squared(self, expected, observed, error):
-        """Calculates chi-squared statistic."""
+        """Calculates chi-squared statistic.
+
+        Parameters
+        ----------
+        expected : float
+            The expected value.
+        observed : float
+            The observed value.
+        error : float
+            The error statistic."""
 
         self.chisq = np.sum((expected - observed) ** 2 / error**2)
         return self.chisq
