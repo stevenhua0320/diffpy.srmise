@@ -73,14 +73,26 @@ class ModelParts(list):
         Fitting is performed with the MINPACK leastsq() routine exposed by scipy.
 
         Parameters
-        r - Sequence of r values over which to fit
-        y - Sequence of y values over which to fit
-        y_error - Sequence of uncertainties in y
-        range - Slice object specifying region of r and y over which to fit.
-                Fits over all the data by default.
-        ntrials - The maximum number of function evaluations while fitting.
-        cov - Optional ModelCovariance object preserves covariance information.
-        cov_format - Parameterization to use in cov.
+        ----------
+        r : array-like
+            The sequence of r values over which to fit
+        y : array-like
+            The sequence of y values over which to fit
+        y_error : array-like
+            The sequence of uncertainties in y
+        range : slice object
+            The slice object specifying region of r and y over which to fit.
+            Fits over all the data by default.
+        ntrials : int
+            The maximum number of function evaluations while fitting.
+        cov : ModelCovariance instance
+            The Optional ModelCovariance object preserves covariance information.
+        cov_format : str
+            The parameterization to use in cov.
+
+        Returns
+        -------
+        None
         """
         freepars = self.unpack_freepars()
         if len(freepars) >= len(r):
@@ -226,8 +238,15 @@ class ModelParts(list):
         """Return total number of parameters in all parts.
 
         Parameters
-        count_fixed - Boolean which determines if fixed parameters are
-                      are included in the count.
+        ----------
+        count_fixed : bool
+            The boolean which determines if fixed parameters are
+            included in the count.
+
+        Returns
+        -------
+        n : int
+            The total number of parameters.
         """
         n = 0
         for p in self:
@@ -235,7 +254,17 @@ class ModelParts(list):
         return n
 
     def pack_freepars(self, freepars):
-        """Update parameters with values from sequence of freepars."""
+        """Update parameters with values from sequence of freepars.
+
+        Parameters
+        ----------
+        freepars : array-like
+            The sequence of free parameters.
+
+        Returns
+        -------
+        None
+        """
         if np.isnan(freepars).any():
             emsg = "Non-numeric free parameters."
             raise ValueError(emsg)
@@ -247,12 +276,23 @@ class ModelParts(list):
         """Calculate residual of all parameters.
 
         Parameters
-        freepars - sequence of free parameters
-        r - the input domain
-        y_expected - sequence of expected values
-        y_error - sequence of uncertainties in y-variable
-        range - Slice object specifying region of r and y over which to fit.
-                All the data by default.
+        ----------
+        freepars : array-like
+            The sequence of free parameters
+        r :  array-like
+            The input domain
+        y_expected : array-like
+            The sequence of expected values
+        y_error : array-like
+            The sequence of uncertainties in y-variable
+        range : slice object
+            The slice object specifying region of r and y over which to fit.
+            All the data by default.
+
+        Returns
+        -------
+        array-like
+            The residual of all parameters.
         """
         self.pack_freepars(freepars)
         total = self.value(r, range)
@@ -267,12 +307,22 @@ class ModelParts(list):
         """Calculate the Jacobian of freepars.
 
         Parameters
-        freepars - sequence of free parameters
-        r - the input domain
-        y_expected - sequence of expected values
-        y_error - sequence of uncertainties in y-variable
-        range - Slice object specifying region of r and y over which to fit.
-                All the data by default.
+        freepars : array-like
+            The sequence of free parameters
+        r : array-like
+            The input domain
+        y_expected : array-like
+            The sequence of expected values
+        y_error : array-like
+            The sequence of uncertainties in y-variable
+        range : slice object
+            The slice object specifying region of r and y over which to fit.
+            All the data by default.
+
+        Returns
+        -------
+        ndarray
+            The Jacobian of all parameters.
         """
         if len(freepars) == 0:
             raise ValueError(
@@ -297,9 +347,17 @@ class ModelParts(list):
         """Calculate total value of all parts over range.
 
         Parameters
-        r - the input domain
-        range - Slice object specifying region of r and y over which to fit.
-                All the data by default.
+        ----------
+        r : array-like
+            The input domain
+        range : slice object
+            The slice object specifying region of r and y over which to fit.
+            All the data by default.
+
+        Returns
+        -------
+        total : float
+            The total value of all slice region of r.
         """
         total = r * 0.0
         for p in self:
@@ -319,13 +377,23 @@ class ModelParts(list):
         defined by the formats for each individual ModelPart.
 
         Parameters
-        format - The format ("internal" by default) to use for all ModelParts.
-                 This may be overridden for specific peaks as shown below.
+        ----------
+        format : str
+            The format ("internal" by default) to use for all ModelParts.
+            This may be overridden for specific peaks as shown below.
 
         Keywords
-        f0 - The format of the 0th ModelPart
-        f1 - The format of the 1st ModelPart
+        --------
+        f0 : str
+            The format of the 0th ModelPart
+        f1 : str
+            The format of the 1st ModelPart
         etc.
+
+        Returns
+        -------
+        cov : ndarray
+            The estimated covariance matrix.
         """
         formats = [format for p in self]
 
@@ -344,23 +412,35 @@ class ModelParts(list):
         """Return deep copy of this ModelParts.
 
         The original and the copy are completely independent, except each
-        ModelPart and its copy still reference the same owner."""
+        ModelPart and its copy still reference the same owner.
+
+        Returns
+        -------
+        ModelParts
+            The deep copy of this ModelParts.
+        """
         return type(self).__call__([p.copy() for p in self])
 
     def __str__(self):
         """Return string representation of this ModelParts."""
         return "".join([str(p) + "\n" for p in self])
 
-    def __getslice__(self, i, j):
-        """Extends list.__getslice__"""
-        return self.__class__(list.__getitem__(self, i, j))
+    def __getitem__(self, index):
+        """Extends list.__getitem__"""
+        if isinstance(index, tuple) and len(index) == 2:
+            start, end = index
+            return self.__class__(super().__getitem__(slice(start, end)))
+        else:
+            return super().__getitem__(index)
 
     def transform(self, in_format="internal", out_format="internal"):
         """Transforms format of parameters in this modelpart.
 
         Parameters
-        in_format - The format the parameters are already in.
-        out_format - The format the parameters are transformed to.
+        in_format : str
+            The format the parameters are already in.
+        out_format : str
+            The format the parameters are transformed to.
         """
         for p in self:
             try:
@@ -378,41 +458,61 @@ class ModelParts(list):
 class ModelPart(object):
     """Represents a single part (instance of some function) of a model.
 
-    Members
+    Attributes
     -------
-    pars - Array containing the parameters of this model part
-    free - Array containing boolean values defining whether the corresponding parameter
-           is free or not.
-    removable - Boolean determining whether or not this model part can be
-                removed during extraction.
-    static_owner - Boolean determines if owner can be changed with changeowner()
+    pars : array-like
+        The array containing the parameters of this model part
+    free : array-like
+        The array containing boolean values defining whether the corresponding parameter
+        is free or not.
+    removable : bool
+        The boolean determining whether or not this model part can be
+        removed during extraction.
+    static_owner : bool
+        The boolean determines if owner can be changed with changeowner()
 
     Methods
     -------
-    changeowner - Change the owner of self
-    copy - Return deep copy of self
-    compress - Return parameters with non-free parameters removed
-    jacobian - Return jacobian
-    getfree - Return free parameter by index or keyword define by owner
-    npars - Return number of parameters in self
-    owner - Return self.owner
-    setfree - Set a free parameter by index or keyword defined by owner
-    update - Update free parameters with values in given sequence
-    value - Return value
-    writestr - Return string representation of self
+    changeowner(new_owner)
+        Change the owner of the model part instance.
+    copy()
+        Return a deep copy of the model part instance.
+    compress()
+        Return parameters with non-free parameters removed.
+    jacobian()
+        Compute and return the Jacobian matrix for the model part.
+    getfree(index=None, keyword=None)
+        Retrieve a free parameter by index or keyword defined by the owner.
+    npars()
+        Return the number of parameters in this model part.
+    owner()
+        Return the current owner of the model part.
+    setfree(index=None, value=None, keyword=None, new_value=None)
+        Set a free parameter by index or keyword defined by the owner.
+    update(values)
+        Update free parameters with values from a given sequence.
+    value()
+        Compute and return the value of the model part based on its parameters.
+    writestr()
+        Generate and return a string representation of the model part.
     """
 
     def __init__(self, owner, pars, free=None, removable=True, static_owner=False):
-        """Set instance members.
+        """Constructor for instance members.
 
         Parameters
-        owner - an instance of a BaseFunction subclass
-        pars - Sequence of parameters which specify the function explicitly
-        free - Sequence of Boolean variables.  If False, the corresponding
-               parameter will not be changed.
-        removable - Boolean determines whether this part can be removed.
-        static_owner - Whether or not the part can be changed with
-                       changeowner()
+        owner : BaseFunction subclass
+            The instance of a BaseFunction subclass
+        pars : array-like
+            The sequence of parameters which specify the function explicitly
+        free : array-like
+            The sequence of Boolean variables.  If False, the corresponding
+            parameter will not be changed.
+        removable : bool
+            The boolean determines whether this part can be removed.
+        static_owner : bool
+            Whether or not the part can be changed with
+            changeowner()
 
         Note that free and removable are not mutually exclusive.  If any
         pars are not free but removable=True then the part may be removed, but
@@ -447,7 +547,13 @@ class ModelPart(object):
         owner, or if the number of parameters is incompatible.
 
         Parameters
-        owner - an instance of a BaseFunction subclass
+        ----------
+        owner : BaseFunction subclass
+            The instance of a BaseFunction subclass
+
+        Returns
+        -------
+        None
         """
         if self.static_owner and self._owner is not owner:
             emsg = "Cannot change owner if static_owner is True."
@@ -458,31 +564,54 @@ class ModelPart(object):
         self._owner = owner
 
     def compress(self):
-        """Return part parameters with non-free values removed."""
+        """Return part parameters with non-free values removed.
+
+        Returns
+        -------
+        pars : array-like
+            The compressed parameters of the model part."""
         return self.pars[self.free]
 
     def jacobian(self, r, range=None):
         """Return jacobian of this part over r.
 
         Parameters
-        r - the input domain
-        range - Slice object specifying region of r and y over which to fit.
-                All the data by default.
+        ----------
+        r : array-like
+            The input domain
+        range : slice object
+            The slice object specifying region of r and y over which to fit.
+            All the data by default.
+
+        Returns
+        -------
+        jacobian : array-like
+            The jacobian of the model part.
         """
         return self._owner.jacobian(self, r, range)
 
     def owner(self):
-        """Return the BaseFunction subclass instance which owns this part."""
+        """Return the BaseFunction subclass instance which owns this part.
+
+        Returns
+        -------
+        BaseFunction subclass
+            The BaseFunction subclass which owns this part."""
         return self._owner
 
     def update(self, freepars):
         """Sequentially update free parameters from freepars.
 
         Parameters
-        freepars - sequence of new parameter values.  May contain more
-                   parameters than can actually be updated.
+        ----------
+        freepars : array-like
+            The sequence of new parameter values.  May contain more
+            parameters than can actually be updated.
 
-        Return number of parameters updated from freepars.
+        Returns
+        -------
+        numfree
+            number of parameters updated from freepars.
         """
         numfree = self.npars(count_fixed=False)
         if len(freepars) < numfree:
@@ -497,9 +626,17 @@ class ModelPart(object):
         """Return value of peak over r.
 
         Parameters
-        r - the input domain
-        range - Slice object specifying region of r and y over which to fit.
-                All the data by default.
+        ----------
+        r : array-like
+            The input domain
+        range : slice object
+            The slice object specifying region of r and y over which to fit.
+            All the data by default.
+
+        Returns
+        -------
+        value : array-like
+            The value of peak over r.
         """
         return self._owner.value(self, r, range)
 
@@ -507,15 +644,28 @@ class ModelPart(object):
         """Return a deep copy of this ModelPart.
 
         The original and the copy are completely independent, except they both
-        reference the same owner."""
+        reference the same owner.
+
+        Returns
+        -------
+        ModelPart
+            A deep copy of this ModelPart.
+        """
         return type(self).__call__(self._owner, self.pars, self.free, self.removable, self.static_owner)
 
     def __getitem__(self, key_or_idx):
         """Return parameter of peak corresponding with key_or_idx.
 
         Parameters
-        key_or_idx - An integer index, slice, or key from owner's parameter
-                     dictionary.
+        ----------
+        key_or_idx : Optional[int, slice, key]
+            The integer index, slice, or key from owner's parameter
+            dictionary.
+
+        Returns
+        -------
+        pars : array-like
+            The value of the peak corresponding to key_or_idx.
         """
         if key_or_idx in self._owner.parameterdict:
             return self.pars[self._owner.parameterdict[key_or_idx]]
@@ -526,8 +676,16 @@ class ModelPart(object):
         """Return value of free corresponding with key_or_idx.
 
         Parameters
-        key_or_idx - An integer index, slice, or key from owner's parameter
-                     dictionary."""
+        ----------
+        key_or_idx : Optional[int, slice object, key]
+            The integer index, slice, or key from owner's parameter
+            dictionary.
+
+        Returns
+        -------
+        freepars : array-like
+            The value of the free corresponding to key_or_idx.
+        """
         if key_or_idx in self._owner.parameterdict:
             return self.free[self._owner.parameterdict[key_or_idx]]
         else:
@@ -537,9 +695,17 @@ class ModelPart(object):
         """Set value of free corresponding with key_or_idx.
 
         Parameters
-        key_or_idx - An integer index, slice, or key from owner's parameter
-                     dictionary.
-        value: A boolean"""
+        ----------
+        key_or_idx : Optional[int, slice object, key]
+            The integer index, slice, or key from owner's parameter
+            dictionary.
+        value : bool
+            The boolean to set in free corresponding to key_or_idx.
+
+        Returns
+        -------
+        None
+        """
         if key_or_idx in self._owner.parameterdict:
             self.free[self._owner.parameterdict[key_or_idx]] = value
         else:
@@ -553,8 +719,15 @@ class ModelPart(object):
         """Return total number of parameters in all parts.
 
         Parameters
-        count_fixed - Boolean which determines if fixed parameters are
-                      are included in the count."""
+        ----------
+        count_fixed : bool
+            The boolean which determines if fixed parameters are
+            included in the count.
+
+        Returns
+        -------
+        int
+            The number of parameters in all parts."""
         if count_fixed:
             return self._owner.npars
         else:
@@ -586,7 +759,14 @@ class ModelPart(object):
         The value of owner is determined by its index in ownerlist.
 
         Parameters
-        ownerlist - List of owner functions
+        ----------
+        ownerlist : array-like
+            The list of owner functions
+
+        Returns
+        -------
+        datastring
+            The string representation of ModelPart.
         """
         if self._owner not in ownerlist:
             emsg = "ownerlist does not contain this ModelPart's owner."
@@ -607,5 +787,4 @@ class ModelPart(object):
 
 # simple test code
 if __name__ == "__main__":
-
     pass
