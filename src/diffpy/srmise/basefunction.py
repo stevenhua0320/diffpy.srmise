@@ -27,23 +27,28 @@ logger = logging.getLogger("diffpy.srmise")
 class BaseFunction(object):
     """Base class for mathematical functions which model numeric sequences.
 
-    Class members
+    Attributes
     -------------
-    parameterdict: A dictionary mapping string keys to their index in the
-                   sequence of parameters.  These keys apply only to the
-                   default "internal" format.
-    parformats: A sequence of strings defining what formats are recognized
-                by a function.
-    default_formats: A dictionary which maps the strings "default_input" and
-                     "default_output" to strings also appearing in parformats.
-                     "default_input"-> format used internally within the class
-                     "default_output"-> Default format to use when converting
-                                        parameters for outside use.
-    metadict: Dictionary mapping string keys to tuple (v, m) where v is an
-              additional argument required by function, and m is a method
-              whose string output recreates v when passed to eval().
-    base: A basefunction subclass instance which this one decorates with
-          additional functionality.
+    parameterdict : dict
+        The dictionary mapping string keys to their index in the
+        sequence of parameters.  These keys apply only to the
+        default "internal" format.
+    parformats : array-like
+        The sequence of strings defining what formats are recognized
+        by a function.
+    default_formats : dict
+        The dictionary which maps the strings "default_input" and
+        "default_output" to strings also appearing in parformats.
+        "default_input"-> format used internally within the class
+        "default_output"-> Default format to use when converting
+         parameters for outside use.
+    metadict : dict
+        The Dictionary mapping string keys to tuple (v, m) where v is an
+        additional argument required by function, and m is a method
+        whose string output recreates v when passed to eval().
+    base : BaseFunction subclass
+        The basefunction subclass instance which this one decorates with
+        additional functionality.
 
     Class methods (implemented by inheriting classes)
     -------------------------------------------------
@@ -74,19 +79,26 @@ class BaseFunction(object):
         """Set parameterdict defined by subclass
 
         Parameters
-        parameterdict - A dictionary mapping string keys (e.g. "position")
-                        to their index in a sequence of parameters for this
-                        PeakFunction subclass.  Every parameter must appear.
-        parformats - A sequence of strings containing all allowed input/output
-                     formats defined for the function's parameters.
-        default_formats - A dictionary mapping the string keys "internal" and
-                         "default_output" to formats from parformats.
-        metadict - Dictionary mapping string keys to additional arguments
-                   required by function.
-        base - A basefunction subclass instance which this one decorates with
-               additional functionality.
-        Cache - A class (not instance) which implements caching of BaseFunction
-                evaluations.
+        ----------
+        parameterdict : dict
+            The dictionary mapping string keys (e.g. "position")
+            to their index in a sequence of parameters for this
+            PeakFunction subclass.  Every parameter must appear.
+        parformats : array-like
+            The sequence of strings containing all allowed input/output
+            formats defined for the function's parameters.
+        default_formats : dict
+            The dictionary mapping the string keys "internal" and
+            "default_output" to formats from parformats.
+        metadict : dict
+            The dictionary mapping string keys to additional arguments
+            required by function.
+        base : basefunction subclass
+            The basefunction subclass instance which this one decorates with
+            additional functionality.
+        Cache : class
+            The class (not instance) which implements caching of BaseFunction
+            evaluations.
         """
         self.parameterdict = parameterdict
         self.npars = len(self.parameterdict)
@@ -177,12 +189,16 @@ class BaseFunction(object):
         """Calculate jacobian of p, possibly restricted by range.
 
         Parameters
-        p - The ModelPart to be evaluated
-        r - sequence or scalar over which function is evaluated
-        rng - Optional slice object restricts which r-values are evaluated.
-              The output has same length as r, but unevaluated objects have
-              a default value of 0.  If caching is enabled these may be
-              previously calculated values instead.
+        ----------
+        p : ModelPart instance
+            The ModelPart to be evaluated
+        r ：array-like
+            sequence or scalar over which function is evaluated
+        rng : slice object
+            Optional slice object restricts which r-values are evaluated.
+            The output has same length as r, but unevaluated objects have
+            a default value of 0.  If caching is enabled these may be
+            previously calculated values instead.
         """
         if self is not p._owner:
             emsg = "Argument 'p' must be evaluated by the BaseFunction " + "subclass which owns it."
@@ -207,9 +223,18 @@ class BaseFunction(object):
         """Return gradient matrix for pars converted from in_format to out_format.
 
         Parameters
-        pars - Sequence of parameters
-        in_format - A format defined for this class
-        out_format - A format defined for this class
+        ----------
+        pars : array-like
+            The sequence of parameters
+        in_format : str
+            The format defined for this class
+        out_format : str
+            The format defined for this class
+
+        Returns
+        -------
+        array-like
+            The gradient matrix for pars converted from in_format to out_format.
         """
         # Map unspecified formats to specific formats defined in default_formats
         if in_format is None:
@@ -242,9 +267,18 @@ class BaseFunction(object):
         values that correspond to the same physical result.
 
         Parameters
-        pars - Sequence of parameters
-        in_format - A format defined for this class
-        out_format - A format defined for this class
+        ----------
+        pars : array-like
+            The sequence of parameters
+        in_format ： str
+            The format defined for this class
+        out_format : str
+            The format defined for this class
+
+        Returns
+        -------
+        array-like
+            The new sequence of parameters with out_format.
         """
         # Map unspecified formats to specific formats defined in default_formats
         if in_format is None:
@@ -274,12 +308,21 @@ class BaseFunction(object):
         """Calculate value of ModelPart over r, possibly restricted by range.
 
         Parameters
-        p - The ModelPart to be evaluated
-        r - sequence or scalar over which function is evaluated
-        rng - Optional slice object restricts which r-values are evaluated.
-              The output has same length as r, but unevaluated objects have
-              a default value of 0.  If caching is enabled these may be
-              previously calculated values instead.
+        ----------
+        p : ModelPart instance
+            The ModelPart to be evaluated
+        r : array-like or float
+            The sequence or scalar over which function is evaluated
+        rng : slice object
+            Optional slice object restricts which r-values are evaluated.
+            The output has same length as r, but unevaluated objects have
+            a default value of 0.  If caching is enabled these may be
+            previously calculated values instead.
+
+        Returns
+        -------
+        array-like
+            The value of ModelPart over r, possibly restricted by range.
         """
         if self is not p._owner:
             emsg = "Argument 'p' must be evaluated by the BaseFunction " + "subclass which owns it."
@@ -311,11 +354,16 @@ class BaseFunction(object):
         In the trivial case where format="internal", returns an identity matrix.
 
         Parameters
-        p - A ModelPart
-        format - The format of the parameters
+        ----------
+        p : ModelPart instance
+            The ModelPart instance to be evaluated for gradient calculation.
+        format : str
+            The format of the parameters
 
         Returns
-        A 2D array containing the partial derivatives.
+        -------
+        array-like
+            A 2D array containing the partial derivatives.
         """
         return
 
@@ -330,7 +378,13 @@ class BaseFunction(object):
         in baselist.
 
         Parameters
-        baselist - List of BaseFunction (or subclass) instances.
+        ----------
+        baselist : array-like
+            The list of BaseFunction (or subclass) instances.
+
+        Returns
+        -------
+            The string representation of self.
         """
         if self.base is not None and self.base not in baselist:
             emsg = "baselist does not include this BaseFunction's base function."
@@ -358,8 +412,15 @@ class BaseFunction(object):
         index of that instance in baselist.
 
         Parameters
-        functionstr - The string representation of the BaseFunction instance
-        baselist - List of BaseFunction (or subclass) instances.
+        ----------
+        functionstr : str
+            The string representation of the BaseFunction instance
+        baselist : array-like
+            The list of BaseFunction (or subclass) instances.
+
+        Returns
+        Basefunction instance
+            The BaseFunction instance based on the parameter strings
         """
         data = functionstr.splitlines()
         data = "\n".join(data)
@@ -427,8 +488,16 @@ class BaseFunction(object):
         Does not handle circular dependencies.
 
         Parameters
-        f: A BaseFunction instance
-        fsafe: List of BaseFunction instances being built."""
+        ----------
+        f : BaseFunction instance
+            The BaseFunction instance
+        fsafe : array-like
+            The list of BaseFunction instances being built.
+
+        Returns
+        -------
+        None
+        """
         if f not in fsafe:
             if f.base is not None:
                 BaseFunction.safefunction(f.base, fsafe)
