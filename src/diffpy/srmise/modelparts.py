@@ -58,14 +58,14 @@ class ModelParts(list):
         list.__init__(self, *args, **kwds)
 
     def fit(
-            self,
-            r,
-            y,
-            y_error,
-            range=None,
-            ntrials=0,
-            cov=None,
-            cov_format="default_output",
+        self,
+        r,
+        y,
+        y_error,
+        range=None,
+        ntrials=0,
+        cov=None,
+        cov_format="default_output",
     ):
         """Chi-square fit of all free parameters to given data.
 
@@ -97,11 +97,11 @@ class ModelParts(list):
         freepars = self.unpack_freepars()
         if len(freepars) >= len(r):
             emsg = (
-                    "Cannot fit model with "
-                    + str(len(freepars))
-                    + " free parametersbut only "
-                    + str(len(r))
-                    + " data points."
+                "Cannot fit model with "
+                + str(len(freepars))
+                + " free parametersbut only "
+                + str(len(r))
+                + " data points."
             )
             raise SrMiseFitError(emsg)
         if len(freepars) == 0:
@@ -159,9 +159,9 @@ class ModelParts(list):
             import traceback
 
             emsg = (
-                    "Unexpected error in modelparts.fit().  Original exception:\n"
-                    + traceback.format_exc()
-                    + "End original exception."
+                "Unexpected error in modelparts.fit().  Original exception:\n"
+                + traceback.format_exc()
+                + "End original exception."
             )
             raise SrMiseFitError(emsg)
 
@@ -332,7 +332,7 @@ class ModelParts(list):
         self.pack_freepars(freepars)
         tempJac = []
         for p in self:
-            tempJac[len(tempJac):] = p.jacobian(r, range)
+            tempJac[len(tempJac) :] = p.jacobian(r, range)
         # Since the residual is (expected - calculated) the jacobian
         # of the residual has a minus sign.
         jac = -np.array([j for j in tempJac if j is not None])
@@ -531,8 +531,8 @@ class ModelPart(object):
             self.free = np.array(free, dtype=bool)
         if len(self.free) != owner.npars:
             emsg = (
-                    "The length of free must be equal to the number of "
-                    + "parameters specified by the model part owner."
+                "The length of free must be equal to the number of "
+                + "parameters specified by the model part owner."
             )
             raise ValueError(emsg)
 
@@ -741,10 +741,10 @@ class ModelPart(object):
         """ """
         if hasattr(other, "_owner"):
             return (
-                    (self._owner is other._owner)
-                    and np.all(self.pars == other.pars)
-                    and np.all(self.free == other.free)
-                    and self.removable == other.removable
+                (self._owner is other._owner)
+                and np.all(self.pars == other.pars)
+                and np.all(self.free == other.free)
+                and self.removable == other.removable
             )
         else:
             return False
