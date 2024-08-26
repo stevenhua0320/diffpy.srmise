@@ -42,4 +42,3 @@ diffpy.srmise.peaks.gaussian module
     :members:
     :undoc-members:
     :show-inheritance:
-
