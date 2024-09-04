@@ -44,7 +44,7 @@ http://diffpy.github.io/diffpy.srmise.
 Getting Started
 =================
 
-The diffpy.srmise package requires Python 2.6 or 2.7 and the following software:
+The diffpy.srmise package requires Python 3.10, 3.11, or 3.12 and the following software:
 
 * ``setuptools`` - software distribution tools for Python
 * ``NumPy`` - numerical mathematics and fast array operations for Python
