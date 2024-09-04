@@ -20,21 +20,21 @@ ripples, or otherwise do anything beyond chi-square fitting using the specified
 grid."""
 
 import matplotlib.pyplot as plt
-import numpy as np
 
-from diffpy.srmise import PDFPeakExtraction
 from diffpy.srmise.applications.plot import makeplot
-from diffpy.srmise.baselines import FromSequence
-from diffpy.srmise.peaks import Peaks, TerminationRipples
+from diffpy.srmise.baselines.fromsequence import FromSequence
+from diffpy.srmise.pdfpeakextraction import PDFPeakExtraction
+from diffpy.srmise.peaks.base import Peaks
+from diffpy.srmise.peaks.terminationripples import TerminationRipples
 
 
 def run(plot=True):
 
-    ## Initialize peak extraction
+    # Initialize peak extraction
     ppe = PDFPeakExtraction()
     ppe.loadpdf("data/C60_fine_qmax21.gr")
 
-    ## Set up interpolated baseline.
+    # Set up interpolated baseline.
     # The FromSequence baseline creates an interpolated baseline from provided
     # r and G(r) values, either two lists or a file containing (r, G(r)) pairs.
     # The baseline has no parameters. This particular baseline was estimated
@@ -43,7 +43,7 @@ def run(plot=True):
     blf = FromSequence("data/C60baseline.dat")
     bl = blf.actualize([])
 
-    ## Set up fitting parameters
+    # Set up fitting parameters
     # A summary of how parameters impact fitting is given below.
     # "rng" - Same as peak extraction
     # "baseline" - Same as peak extraction
@@ -66,7 +66,7 @@ def run(plot=True):
     kwds["dg"] = 5000  # ad hoc, but gives each point equal weight in fit.
     ppe.setvars(**kwds)
 
-    ## Set up termination ripples
+    # Set up termination ripples
     # Peak fitting never changes the peak function, so termination ripples
     # are not applied automatically as they are in peak extraction.
     # Termination ripples require setting the underlying peak function and qmax.
@@ -95,7 +95,7 @@ def run(plot=True):
     # Perform fit.
     ppe.fit()
 
-    ## Save results
+    # Save results
     ppe.write("output/fit_initial.srmise")
     ppe.writepwa("output/fit_initial.pwa")
 

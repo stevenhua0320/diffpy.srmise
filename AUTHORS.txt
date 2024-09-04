@@ -1,3 +1,0 @@
-SrMise (diffpy.srmise) authors:
-
-Luke Granlund

@@ -6,7 +6,9 @@ import os
 import re
 import sys
 
-__basedir__ = os.getcwdu()
+__basedir__ = os.getcwd()
+
+from numpy.compat import unicode
 
 # Example imports
 
@@ -18,20 +20,21 @@ class Test:
 
     def test(self, call, *args, **kwds):
         m = sys.modules[call.__module__]
-        testname = m.__name__+'.'+call.__name__
+        testname = m.__name__ + "." + call.__name__
         path = os.path.dirname(m.__file__)
         os.chdir(path)
         try:
             call(*args, **kwds)
-            self.messages.append("%s: success" %testname)
-        except Exception, e:
-            self.messages.append("%s: error, details below.\n%s" %(testname, e))
+            self.messages.append("%s: success" % testname)
+        except Exception as e:
+            self.messages.append("%s: error, details below.\n%s" % (testname, e))
         finally:
             os.chdir(__basedir__)
 
     def report(self):
-        print '==== Results of Tests ===='
-        print '\n'.join(self.messages)
+        print("==== Results of Tests ====")
+        print("\n".join(self.messages))
+
 
 def scrubeol(directory, filerestr):
     """Use unix-style endlines for files in directory matched by regex string.
@@ -50,11 +53,11 @@ def scrubeol(directory, filerestr):
         text = unicode(original.read())
         original.close()
 
-        updated = io.open(f, 'w', newline='\n')
+        updated = io.open(f, "w", newline="\n")
         updated.write(text)
         updated.close()
 
-        print "Updated %s to unix-style endlines." %f
+        print("Updated %s to unix-style endlines." % f)
 
 
 def rm(directory, filerestr):
@@ -72,30 +75,31 @@ def rm(directory, filerestr):
     for f in files:
         os.remove(f)
 
-        print "Deleted %s." %f
-
+        print("Deleted %s." % f)
 
 
 if __name__ == "__main__":
 
     # Temporarily add examples to path
-    lib_path = os.path.abspath(os.path.join('..','doc','examples'))
+    lib_path = os.path.abspath(os.path.join("..", "doc", "examples"))
     sys.path.append(lib_path)
 
     # Delete existing files that don't necessarily have a fixed name.
     rm("../doc/examples/output", r"known_dG.*\.pwa")
     rm("../doc/examples/output", r"unknown_dG.*\.pwa")
 
-    ### Testing examples
+    # Testing examples
     examples = Test()
-    test_names = ["extract_single_peak",
-                  "parameter_summary",
-                  "fit_initial",
-                  "query_results",
-                  "multimodel_known_dG1",
-                  "multimodel_known_dG2",
-                  "multimodel_unknown_dG1",
-                  "multimodel_unknown_dG2"]
+    test_names = [
+        "extract_single_peak",
+        "parameter_summary",
+        "fit_initial",
+        "query_results",
+        "multimodel_known_dG1",
+        "multimodel_known_dG2",
+        "multimodel_unknown_dG1",
+        "multimodel_unknown_dG2",
+    ]
 
     test_modules = []
     for test in test_names:
@@ -106,10 +110,8 @@ if __name__ == "__main__":
 
     examples.report()
 
-    ### Convert output of example files to Unix-style endlines for sdist.
-    if os.linesep != '\n':
-        print "==== Scrubbing Endlines ===="
+    # Convert output of example files to Unix-style endlines for sdist.
+    if os.linesep != "\n":
+        print("==== Scrubbing Endlines ====")
         # All *.srmise and *.pwa files in examples directory.
         scrubeol("../doc/examples/output", r".*(\.srmise|\.pwa)")
-
-

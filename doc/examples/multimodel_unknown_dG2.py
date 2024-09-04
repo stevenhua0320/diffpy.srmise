@@ -42,34 +42,55 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import diffpy.srmise.srmiselog as sml
-from diffpy.srmise import MultimodelSelection
 from diffpy.srmise.applications.plot import makeplot
+from diffpy.srmise.multimodelselection import MultimodelSelection
 
 # distances from ideal (unrefined) C60
-dcif = np.array([1.44, 2.329968944, 2.494153163, 2.88, 3.595985339,
-                 3.704477734, 4.132591264, 4.520339129, 4.659937888,
-                 4.877358006, 5.209968944, 5.405310018, 5.522583786,
-                 5.818426502, 6.099937888, 6.164518388, 6.529777754,
-                 6.686673127, 6.745638756, 6.989906831, 7.136693738])
+dcif = np.array(
+    [
+        1.44,
+        2.329968944,
+        2.494153163,
+        2.88,
+        3.595985339,
+        3.704477734,
+        4.132591264,
+        4.520339129,
+        4.659937888,
+        4.877358006,
+        5.209968944,
+        5.405310018,
+        5.522583786,
+        5.818426502,
+        6.099937888,
+        6.164518388,
+        6.529777754,
+        6.686673127,
+        6.745638756,
+        6.989906831,
+        7.136693738,
+    ]
+)
+
 
 def run(plot=True):
 
     # Suppress mundane output
     sml.setlevel("warning")
 
-    ## Create multimodeling object and load diffpy.srmise results from file.
+    # Create multimodeling object and load diffpy.srmise results from file.
     ms = MultimodelSelection()
     ms.load("output/unknown_dG_models.dat")
     ms.loadaics("output/unknown_dG_aics.dat")
 
-    ## Use Nyquist sampling
+    # Use Nyquist sampling
     # Standard AIC analysis assumes the data have independent uncertainties.
     # Nyquist sampling minimizes correlations in the PDF, which is the closest
     # approximation to independence possible for the PDF.
-    dr = np.pi/ms.ppe.qmax
-    (r,y,dr2,dy) = ms.ppe.resampledata(dr)
+    dr = np.pi / ms.ppe.qmax
+    (r, y, dr2, dy) = ms.ppe.resampledata(dr)
 
-    ## Classify models
+    # Classify models
     # All models are placed into classes.  Models in the same class
     # should be essentially identical (same peak parameters, etc.)
     # up to a small tolerance determined by comparing individual peaks. The
@@ -85,16 +106,16 @@ def run(plot=True):
     tolerance = 0.2
     ms.classify(r, tolerance)
 
-    ## Summarize various facts about the analysis.
+    # Summarize various facts about the analysis.
     num_models = len(ms.results)
     num_classes = len(ms.classes)
-    print "------- Multimodeling Summary --------"
-    print "Models: %i" %num_models
-    print "Classes: %i (tol=%s)" %(num_classes, tolerance)
-    print "Range of dgs: %f-%f" %(ms.dgs[0], ms.dgs[-1])
-    print "Nyquist-sampled data points: %i" %len(r)
+    print("------- Multimodeling Summary --------")
+    print("Models: %i" % num_models)
+    print("Classes: %i (tol=%s)" % (num_classes, tolerance))
+    print("Range of dgs: %f-%f" % (ms.dgs[0], ms.dgs[-1]))
+    print("Nyquist-sampled data points: %i" % len(r))
 
-    ## Find "best" models.
+    # Find "best" models.
     # In short, models with greatest Akaike probability.  Akaike probabilities
     # can only be validly compared if they were calculated for identical data,
     # namely identical PDF values *and* uncertainties, and are only reliable
@@ -115,16 +136,15 @@ def run(plot=True):
     best_classes = np.unique([ms.get_class(dG) for dG in ms.dgs])
     best_dGs = []
     for cls in best_classes:
-        cls_probs = [ms.get_prob(dG) if ms.get_class(dG) == cls else 0 \
-            for dG in ms.dgs]
+        cls_probs = [ms.get_prob(dG) if ms.get_class(dG) == cls else 0 for dG in ms.dgs]
         dG = ms.dgs[np.argmax(cls_probs)]
         best_dGs.append(dG)
 
-    print "\n--------- Best models for at least one dG ---------" %dG
-    print "   Best dG  Model  Class  Free       AIC     Prob  File"
+    print("\n--------- Best models for at least one dG ---------" % dG)
+    print("   Best dG  Model  Class  Free       AIC     Prob  File")
     for dG in best_dGs:
 
-        ## Generate information about best model.
+        # Generate information about best model.
         # The get(dG, *args, **kwds) method returns a tuple of values
         # corresponding to string arguments for the best model in best class at
         # given dG. When the corder keyword is given it returns the model from
@@ -135,24 +155,26 @@ def run(plot=True):
         # "aic" -> The AIC for this model given uncertainty dG
         # "prob" -> The AIC probability given uncertainty dG
         # These all have dedicated getter functions.
-        (model, cls, nfree, aic, prob) = \
-            ms.get(dG, "model", "class", "nfree", "aic", "prob")
+        (model, cls, nfree, aic, prob) = ms.get(dG, "model", "class", "nfree", "aic", "prob")
 
-        filename_base = "output/unknown_dG_m"+str(model)
+        filename_base = "output/unknown_dG_m" + str(model)
 
-        # Print info for this model
-        print "%10.4e  %5i  %5i  %4i  %10.4e %6.3f  %s" \
-            %(dG, model, cls, nfree, aic, prob, filename_base + ".pwa")
+        # print(info for this model
+        print(
+            "%10.4e  %5i  %5i  %4i  %10.4e %6.3f  %s" % (dG, model, cls, nfree, aic, prob, filename_base + ".pwa")
+        )
 
         # A message added as a comment to saved .pwa file.
         best_from = [dg for dg in ms.dgs if ms.get_class(dg) == cls]
-        msg = ["Multimodeling Summary",
-               "---------------------",
-              "Model: %i (of %i)" %(model, num_models),
-              "Class: %i (of %i, tol=%s)" %(cls, num_classes, tolerance),
-              "Best model from dG: %s-%s" %(best_from[0], best_from[-1]),
-              "Evaluated at dG: %s" %dG,
-              "Akaike probability: %g" %prob]
+        msg = [
+            "Multimodeling Summary",
+            "---------------------",
+            "Model: %i (of %i)" % (model, num_models),
+            "Class: %i (of %i, tol=%s)" % (cls, num_classes, tolerance),
+            "Best model from dG: %s-%s" % (best_from[0], best_from[-1]),
+            "Evaluated at dG: %s" % dG,
+            "Akaike probability: %g" % prob,
+        ]
         msg = "\n".join(msg)
 
         # Make this the active model
@@ -165,13 +187,11 @@ def run(plot=True):
         if plot:
             plt.figure()
             makeplot(ms.ppe, dcif)
-            plt.title("Model %i/Class %i (Best dG=%f, AIC prob=%f)" \
-                %(model, cls, dG, prob))
+            plt.title("Model %i/Class %i (Best dG=%f, AIC prob=%f)" % (model, cls, dG, prob))
             # Uncomment line below to save figures.
             # plt.savefig(filename_base + ".png", format="png")
 
-
-    ## 3D plot of Akaike probabilities
+    # 3D plot of Akaike probabilities
     # This plot shows the Akaike probabilities of all classes as a function
     # of assumed uncertainty dG.  This gives a rough sense of how the models
     # selected by an AIC-based analysis would vary if the experimental
@@ -179,13 +199,14 @@ def run(plot=True):
     # are highlighted at the various dG values found above.
     if plot:
         plt.figure()
-        ms.plot3dclassprobs(probfilter=[0.1, 1.], highlight=best_dGs)
+        ms.plot3dclassprobs(probfilter=[0.1, 1.0], highlight=best_dGs)
         plt.tight_layout()
         # Uncomment line below to save figure.
-        #plt.savefig("output/unknown_dG_probs.png", format="png", bbox_inches="tight")
+        # plt.savefig("output/unknown_dG_probs.png", format="png", bbox_inches="tight")
 
     if plot:
         plt.show()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     run()
