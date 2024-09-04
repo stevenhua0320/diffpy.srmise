@@ -37,7 +37,38 @@
 
 implementation of the ParSCAPE algorithm for peak extraction from atomic pair distribution functions (PDFs)
 
-* LONGER DESCRIPTION HERE
+SrMise is an implementation of the `ParSCAPE algorithm
+<https://dx.doi.org/10.1107/S2053273315005276>`_ for peak extraction from
+atomic pair distribution functions (PDFs).  It is designed to function even
+when *a priori* knowledge of the physical sample is limited, utilizing the
+Akaike Information Criterion (AIC) to estimate whether peaks are
+statistically justified relative to alternate models.  Three basic use cases
+are anticipated for SrMise.  The first is peak fitting a user-supplied
+collections of peaks.  The second is peak extraction from a PDF with no (or
+only partial) user-supplied peaks.  The third is an AIC-driven multimodeling
+analysis where the output of multiple SrMise trials are ranked.
+
+The framework for peak extraction defines peak-like clusters within the data,
+extracts a single peak within each cluster, and iteratively combines nearby
+clusters while performing a recursive search on the residual to identify
+occluded peaks.  Eventually this results in a single global cluster
+containing many peaks fit over all the data.  Over- and underfitting are
+discouraged by use of the AIC when adding or, during a pruning step, removing
+peaks.  Termination effects, which can lead to physically spurious peaks in
+the PDF, are incorporated in the mathematical peak model and the pruning step
+attempts to remove peaks which are fit better as termination ripples due to
+another peak.
+
+Where possible, SrMise provides physically reasonable default values
+for extraction parameters.  However, the PDF baseline should be estimated by
+the user before extraction, or by performing provisional peak extraction with
+varying baseline parameters.  The package defines a linear (crystalline)
+baseline, arbitrary polynomial baseline, a spherical nanoparticle baseline,
+and an arbitrary baseline interpolated from a list of user-supplied values.
+In addition, PDFs with accurate experimentally-determined uncertainties are
+necessary to provide the most reliable results, but historically such PDFs
+are rare.  In the absence of accurate uncertainties an *ad hoc* uncertainty
+must be specified.
 
 For more information about the diffpy.srmise library, please consult our `online documentation <https://diffpy.github.io/diffpy.srmise>`_.
 
