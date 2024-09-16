@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>diffpy.srmise.srmiseerrors &mdash; diffpy.srmise 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=f539c95a"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            diffpy.srmise
+          </a>
+              <div class="version">
+                0.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../release.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/diffpy.srmise.html">Package API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">diffpy.srmise</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">diffpy.srmise.srmiseerrors</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for diffpy.srmise.srmiseerrors</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1">##############################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># SrMise            by Luke Granlund</span>
+<span class="c1">#                   (c) 2014 trustees of the Michigan State University</span>
+<span class="c1">#                   (c) 2024 trustees of Columia University in the City of New York</span>
+<span class="c1">#                   All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># File coded by:    Luke Granlund</span>
+<span class="c1">#</span>
+<span class="c1"># See LICENSE.txt for license information.</span>
+<span class="c1">#</span>
+<span class="c1">##############################################################################</span>
+<span class="sd">&quot;&quot;&quot;Defines all custom exceptions used by diffpy.srmise.</span>
+
+<span class="sd">   Classes</span>
+<span class="sd">   -------</span>
+<span class="sd">   SrMiseError: Subclass of Exception, and superclass of all diffpy.srmise exceptions.</span>
+<span class="sd">   SrMiseDataFormatError: Error in format of diffpy.srmise data.</span>
+<span class="sd">   SrMiseEstimationError: Parameter estimation error.</span>
+<span class="sd">   SrMiseFileError: Error while reading/writing files.</span>
+<span class="sd">   SrMiseFitError: Error while fitting.</span>
+<span class="sd">   SrMiseLogError: Error while logging.</span>
+<span class="sd">   SrMiseModelEvaluatorError: Error while computing or comparing model quality.</span>
+<span class="sd">   SrMisePDFKeyError: Error in key referencing component of PDF dataset.</span>
+<span class="sd">   SrMiseQmaxError: Error in value of Qmax.</span>
+<span class="sd">   SrMiseScalingError: Error while scaling a peak function.</span>
+<span class="sd">   SrMiseStaticOwnerError: Error when changing ModelPart instance owner.</span>
+<span class="sd">   &quot;&quot;&quot;</span>
+
+
+<span class="c1"># Superclass class for diffpy.srmise.mise</span>
+<div class="viewcode-block" id="SrMiseError">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.srmiseerrors.SrMiseError">[docs]</a>
+<span class="k">class</span> <span class="nc">SrMiseError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Superclass of all diffpy.srmise exceptions.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;initialize</span>
+
+<span class="sd">        info: description string&quot;&quot;&quot;</span>
+        <span class="ne">Exception</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="o">=</span> <span class="n">info</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span></div>
+
+
+
+<span class="c1"># SrMiseError subclasses ###</span>
+
+
+<div class="viewcode-block" id="SrMiseDataFormatError">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.srmiseerrors.SrMiseDataFormatError">[docs]</a>
+<span class="k">class</span> <span class="nc">SrMiseDataFormatError</span><span class="p">(</span><span class="n">SrMiseError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;diffpy.srmise exception class.  Error in formatted data.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;initialize</span>
+
+<span class="sd">        info -- description string&quot;&quot;&quot;</span>
+        <span class="n">SrMiseError</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="SrMiseEstimationError">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.srmiseerrors.SrMiseEstimationError">[docs]</a>
+<span class="k">class</span> <span class="nc">SrMiseEstimationError</span><span class="p">(</span><span class="n">SrMiseError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;diffpy.srmise.modelevaluator exception class.  Parameter estimation error.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;initialize</span>
+
+<span class="sd">        info -- description string&quot;&quot;&quot;</span>
+        <span class="n">SrMiseError</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="SrMiseFileError">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.srmiseerrors.SrMiseFileError">[docs]</a>
+<span class="k">class</span> <span class="nc">SrMiseFileError</span><span class="p">(</span><span class="n">SrMiseError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;diffpy.srmise exception class.  Error while reading/writing files.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;initialize</span>
+
+<span class="sd">        info -- description string&quot;&quot;&quot;</span>
+        <span class="n">SrMiseError</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="SrMiseFitError">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.srmiseerrors.SrMiseFitError">[docs]</a>
+<span class="k">class</span> <span class="nc">SrMiseFitError</span><span class="p">(</span><span class="n">SrMiseError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;diffpy.srmise exception class.  Error occurred during fitting.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;initialize</span>
+
+<span class="sd">        info -- description string&quot;&quot;&quot;</span>
+        <span class="n">SrMiseError</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="SrMiseLogError">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.srmiseerrors.SrMiseLogError">[docs]</a>
+<span class="k">class</span> <span class="nc">SrMiseLogError</span><span class="p">(</span><span class="n">SrMiseError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;diffpy.srmise exception class.  Error while handling logging capabilities.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;initialize</span>
+
+<span class="sd">        info -- description string&quot;&quot;&quot;</span>
+        <span class="n">SrMiseError</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="SrMiseModelEvaluatorError">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.srmiseerrors.SrMiseModelEvaluatorError">[docs]</a>
+<span class="k">class</span> <span class="nc">SrMiseModelEvaluatorError</span><span class="p">(</span><span class="n">SrMiseError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;diffpy.srmise.modelevaluator exception class.  Error when comparing models.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;initialize</span>
+
+<span class="sd">        info -- description string&quot;&quot;&quot;</span>
+        <span class="n">SrMiseError</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="SrMiseQmaxError">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.srmiseerrors.SrMiseQmaxError">[docs]</a>
+<span class="k">class</span> <span class="nc">SrMiseQmaxError</span><span class="p">(</span><span class="n">SrMiseError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;diffpy.srmise.modelevaluator exception class.  Error when setting qmax.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;initialize</span>
+
+<span class="sd">        info -- description string&quot;&quot;&quot;</span>
+        <span class="n">SrMiseError</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="SrMiseScalingError">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.srmiseerrors.SrMiseScalingError">[docs]</a>
+<span class="k">class</span> <span class="nc">SrMiseScalingError</span><span class="p">(</span><span class="n">SrMiseError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;diffpy.srmise.peaks exception class.  Error when scaling a peak function.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;initialize</span>
+
+<span class="sd">        info -- description string&quot;&quot;&quot;</span>
+        <span class="n">SrMiseError</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="SrMiseStaticOwnerError">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.srmiseerrors.SrMiseStaticOwnerError">[docs]</a>
+<span class="k">class</span> <span class="nc">SrMiseStaticOwnerError</span><span class="p">(</span><span class="n">SrMiseError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;diffpy.srmise exception class.  Attempt to change owner of static model part.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;initialize</span>
+
+<span class="sd">        info -- description string&quot;&quot;&quot;</span>
+        <span class="n">SrMiseError</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="SrMiseTransformationError">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.srmiseerrors.SrMiseTransformationError">[docs]</a>
+<span class="k">class</span> <span class="nc">SrMiseTransformationError</span><span class="p">(</span><span class="n">SrMiseError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;diffpy.srmise exception class.  Error transforming model/covariance parameters.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;initialize</span>
+
+<span class="sd">        info -- description string&quot;&quot;&quot;</span>
+        <span class="n">SrMiseError</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="SrMiseUndefinedCovarianceError">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.srmiseerrors.SrMiseUndefinedCovarianceError">[docs]</a>
+<span class="k">class</span> <span class="nc">SrMiseUndefinedCovarianceError</span><span class="p">(</span><span class="n">SrMiseError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;diffpy.srmise exception class.  Attempted to perform on undefined covariance.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;initialize</span>
+
+<span class="sd">        info -- description string&quot;&quot;&quot;</span>
+        <span class="n">SrMiseError</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="SrMisePDFKeyError">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.srmiseerrors.SrMisePDFKeyError">[docs]</a>
+<span class="k">class</span> <span class="nc">SrMisePDFKeyError</span><span class="p">(</span><span class="n">SrMiseError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;diffpy.srmise exception class.  Requested PDF key can&#39;t be found.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;initialize</span>
+
+<span class="sd">        info -- description string&quot;&quot;&quot;</span>
+        <span class="n">SrMiseError</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, The Trustees of Columbia University in the City of New York.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>diffpy.srmise.multimodelselection &mdash; diffpy.srmise 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=f539c95a"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            diffpy.srmise
+          </a>
+              <div class="version">
+                0.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../release.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/diffpy.srmise.html">Package API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">diffpy.srmise</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">diffpy.srmise.multimodelselection</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for diffpy.srmise.multimodelselection</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1">##############################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># SrMise            by Luke Granlund</span>
+<span class="c1">#                   (c) 2014 trustees of the Michigan State University</span>
+<span class="c1">#                   (c) 2024 trustees of Columia University in the City of New York</span>
+<span class="c1">#                   All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># File coded by:    Luke Granlund</span>
+<span class="c1">#</span>
+<span class="c1"># See LICENSE.txt for license information.</span>
+<span class="c1">#</span>
+<span class="c1">##############################################################################</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">transforms</span>
+
+<span class="kn">from</span> <span class="nn">diffpy.srmise.modelcluster</span> <span class="kn">import</span> <span class="n">ModelCluster</span>
+<span class="kn">from</span> <span class="nn">diffpy.srmise.peakstability</span> <span class="kn">import</span> <span class="n">PeakStability</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;diffpy.srmise&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="eatkwds">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.eatkwds">[docs]</a>
+<span class="k">def</span> <span class="nf">eatkwds</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convenience function to remove all keywords in args from kwds.&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">kwds</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Keyword </span><span class="si">%s</span><span class="s2">=</span><span class="si">%s</span><span class="s2"> ignored.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">kwds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">k</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">kwds</span></div>
+
+
+
+<div class="viewcode-block" id="MultimodelSelection">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection">[docs]</a>
+<span class="k">class</span> <span class="nc">MultimodelSelection</span><span class="p">(</span><span class="n">PeakStability</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Quick and dirty multimodel selection using AIC and its offspring.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dgs_idx</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes_idx</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">class_tolerance</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Track the best models</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aics</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aicweights</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aicprobs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sortedprobs</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># Track the best models (separated into classes)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classweights</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classprobs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sortedclassprobs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sortedclasses</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># dg-&gt;as self.classes, but with model indices sorted by best AIC</span>
+
+        <span class="n">PeakStability</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span>
+
+<div class="viewcode-block" id="MultimodelSelection.makeaics">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.makeaics">[docs]</a>
+    <span class="k">def</span> <span class="nf">makeaics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dgs</span><span class="p">,</span> <span class="n">dr</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Test quality of each model for all possible uncertainties.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dgs : array-like</span>
+<span class="sd">            The array of uncertainties over which to test each model.</span>
+<span class="sd">        dr : float</span>
+<span class="sd">            The sampling rate to use.  This determines the actual data to use</span>
+<span class="sd">            for testing, since sometimes the actual result is different than the</span>
+<span class="sd">            nominal value.</span>
+<span class="sd">        filename : str</span>
+<span class="sd">            Optional file to save pickled results</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">aics_out</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># Version of self.aics that holds only the statistic, not the AIC object.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dgs</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dgs_idx</span><span class="p">[</span><span class="n">dg</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">aics</span><span class="p">[</span><span class="n">dg</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">aics_out</span><span class="p">[</span><span class="n">dg</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">dr</span><span class="p">,</span> <span class="n">dy</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ppe</span><span class="o">.</span><span class="n">resampledata</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">model_idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Testing model </span><span class="si">%s</span><span class="s2"> of </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">model_idx</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)))</span>
+
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">model_idx</span><span class="p">]</span>
+            <span class="n">em</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ppe</span><span class="o">.</span><span class="n">error_method</span>
+
+            <span class="c1"># This section dependent on spaghetti code elsewhere in srmise!</span>
+            <span class="c1"># Short cut evaluation of AICs which doesn&#39;t require calculating chi-square</span>
+            <span class="c1"># over and over again.  This method assumes that the various uncertainties</span>
+            <span class="c1"># being evaluated are all proportional to each other, and that constant of</span>
+            <span class="c1"># proportionality can be determined from self.dgs.  It also depends on the</span>
+            <span class="c1"># non-obvious behavior of modelevaluators.AIC (and its inheritors) that the</span>
+            <span class="c1"># chi-square value is only recalculated if its current value is None.  That</span>
+            <span class="c1"># code is old and pretty ugly, and if that functionality changes this will</span>
+            <span class="c1"># also break.  That said, PeakStability, MultimodelSelection, and the entire</span>
+            <span class="c1"># modelevaluators subpackage are in need of a rewrite, and so it would be</span>
+            <span class="c1"># best to do them all at once.</span>
+            <span class="n">dg0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">mc</span> <span class="o">=</span> <span class="n">ModelCluster</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">result</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">r</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">dg0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)),</span> <span class="kc">None</span><span class="p">,</span> <span class="n">em</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ppe</span><span class="o">.</span><span class="n">pf</span><span class="p">)</span>
+            <span class="n">em0</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">quality</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">dg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">:</span>
+                <span class="n">em_instance</span> <span class="o">=</span> <span class="n">em</span><span class="p">()</span>
+                <span class="n">em_instance</span><span class="o">.</span><span class="n">chisq</span> <span class="o">=</span> <span class="n">em0</span><span class="o">.</span><span class="n">chisq</span> <span class="o">*</span> <span class="p">(</span><span class="n">dg0</span> <span class="o">/</span> <span class="n">dg</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>  <span class="c1"># rescale chi-square</span>
+                <span class="n">em_instance</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">mc</span><span class="p">)</span>  <span class="c1"># evaluate AIC without recalculating chi-square</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">aics</span><span class="p">[</span><span class="n">dg</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">em_instance</span><span class="p">)</span>
+                <span class="n">aics_out</span><span class="p">[</span><span class="n">dg</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">em_instance</span><span class="o">.</span><span class="n">stat</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">makeaicweights</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">makeaicprobs</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">makesortedprobs</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">cPickle</span> <span class="k">as</span> <span class="nn">pickle</span>
+            <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">pickle</span>
+            <span class="n">out_s</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">aics_out</span><span class="p">,</span> <span class="n">out_s</span><span class="p">)</span>
+            <span class="n">out_s</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.loadaics">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.loadaics">[docs]</a>
+    <span class="k">def</span> <span class="nf">loadaics</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load file containing results of the testall method.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : str</span>
+<span class="sd">            Filename to load.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">cPickle</span> <span class="k">as</span> <span class="nn">pickle</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">pickle</span>
+        <span class="n">in_s</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span>
+        <span class="n">aics_in</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">in_s</span><span class="p">)</span>
+        <span class="n">in_s</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="n">em</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ppe</span><span class="o">.</span><span class="n">error_method</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">aics</span> <span class="o">=</span> <span class="n">aics_in</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">aics_in</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">dg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dgs_idx</span><span class="p">[</span><span class="n">dg</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+
+        <span class="c1"># Reconstruct in terms of AIC instances instead of the raw statistic found in file</span>
+        <span class="k">for</span> <span class="n">dg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">aics</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">stat</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aics</span><span class="p">[</span><span class="n">dg</span><span class="p">]):</span>
+                <span class="n">em_instance</span> <span class="o">=</span> <span class="n">em</span><span class="p">()</span>
+                <span class="n">em_instance</span><span class="o">.</span><span class="n">stat</span> <span class="o">=</span> <span class="n">stat</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">aics</span><span class="p">[</span><span class="n">dg</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">em_instance</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">makeaicweights</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">makeaicprobs</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">makesortedprobs</span><span class="p">()</span>
+
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.makeaicweights">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.makeaicweights">[docs]</a>
+    <span class="k">def</span> <span class="nf">makeaicweights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make weights for the aic Modelevaluators.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aicweights</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">em</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ppe</span><span class="o">.</span><span class="n">error_method</span>
+
+        <span class="k">for</span> <span class="n">dg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">aicweights</span><span class="p">[</span><span class="n">dg</span><span class="p">]</span> <span class="o">=</span> <span class="n">em</span><span class="o">.</span><span class="n">akaikeweights</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aics</span><span class="p">[</span><span class="n">dg</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.makeaicprobs">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.makeaicprobs">[docs]</a>
+    <span class="k">def</span> <span class="nf">makeaicprobs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make probabilities for the sequence of AICs.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">aicprobs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">em</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ppe</span><span class="o">.</span><span class="n">error_method</span>
+
+        <span class="k">for</span> <span class="n">dg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">aicprobs</span><span class="p">[</span><span class="n">dg</span><span class="p">]</span> <span class="o">=</span> <span class="n">em</span><span class="o">.</span><span class="n">akaikeprobs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aics</span><span class="p">[</span><span class="n">dg</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.makesortedprobs">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.makesortedprobs">[docs]</a>
+    <span class="k">def</span> <span class="nf">makesortedprobs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make probabilities for the sequence of AICs in a sorted order.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sortedprobs</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">dg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sortedprobs</span><span class="p">[</span><span class="n">dg</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aicprobs</span><span class="p">[</span><span class="n">dg</span><span class="p">])</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.animate_probs">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.animate_probs">[docs]</a>
+    <span class="k">def</span> <span class="nf">animate_probs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Show animation of extracted peaks from first to last.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        step : bool</span>
+<span class="sd">            Require keypress to show next plot, default is False.</span>
+<span class="sd">        duration : float</span>
+<span class="sd">            Minimum time in seconds to complete animation. Default is 0.</span>
+
+<span class="sd">        Keywords passed to pyplot.plot()&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">duration</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">time</span>
+
+            <span class="n">sleeptime</span> <span class="o">=</span> <span class="n">duration</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">)</span>
+        <span class="n">best_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedprobs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="p">(</span><span class="n">line</span><span class="p">,)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">aicprobs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="n">vline</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="p">(</span><span class="n">dot</span><span class="p">,)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="n">best_idx</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">aicprobs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="n">best_idx</span><span class="p">],</span> <span class="s2">&quot;ro&quot;</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setcurrent</span><span class="p">(</span><span class="n">best_idx</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">ppe</span><span class="o">.</span><span class="n">extracted</span><span class="o">.</span><span class="n">plottable</span><span class="p">())</span>
+        <span class="k">for</span> <span class="n">dg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ioff</span><span class="p">()</span>
+            <span class="n">line</span><span class="o">.</span><span class="n">set_ydata</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aicprobs</span><span class="p">[</span><span class="n">dg</span><span class="p">])</span>
+            <span class="n">vline</span><span class="o">.</span><span class="n">set_xdata</span><span class="p">(</span><span class="n">dg</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedprobs</span><span class="p">[</span><span class="n">dg</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">best_idx</span><span class="p">:</span>
+                <span class="n">best_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedprobs</span><span class="p">[</span><span class="n">dg</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ppe</span><span class="o">.</span><span class="n">extracted</span><span class="o">.</span><span class="n">model</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">ppe</span><span class="o">.</span><span class="n">extracted</span><span class="o">.</span><span class="n">replacepeaks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">best_idx</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">ppe</span><span class="o">.</span><span class="n">extracted</span><span class="o">.</span><span class="n">plottable</span><span class="p">())</span>
+            <span class="n">dot</span><span class="o">.</span><span class="n">set_xdata</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="n">best_idx</span><span class="p">])</span>
+            <span class="n">dot</span><span class="o">.</span><span class="n">set_ydata</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">aicprobs</span><span class="p">[</span><span class="n">dg</span><span class="p">][</span><span class="n">best_idx</span><span class="p">])</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">step</span><span class="p">:</span>
+                <span class="nb">input</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">duration</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">sleeptime</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.animate_classprobs">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.animate_classprobs">[docs]</a>
+    <span class="k">def</span> <span class="nf">animate_classprobs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Show animation of extracted peaks from first to last.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        step : bool</span>
+<span class="sd">            Require keypress to show next plot, default is False.</span>
+<span class="sd">        duration : float</span>
+<span class="sd">            Minimum time in seconds to complete animation. Default is 0.</span>
+
+<span class="sd">        Keywords passed to pyplot.plot()&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">duration</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">time</span>
+
+            <span class="n">sleeptime</span> <span class="o">=</span> <span class="n">duration</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>
+        <span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">)</span>
+        <span class="n">bestclass_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedclassprobs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">best_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedclasses</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="n">bestclass_idx</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">arrow_left</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classes</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">arrow_right</span> <span class="o">=</span> <span class="n">arrow_left</span> <span class="o">+</span> <span class="mf">0.05</span> <span class="o">*</span> <span class="n">arrow_left</span>
+        <span class="p">(</span><span class="n">line</span><span class="p">,)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classes</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">classprobs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="p">(</span><span class="n">dot</span><span class="p">,)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="n">best_idx</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">classprobs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="n">bestclass_idx</span><span class="p">],</span> <span class="s2">&quot;ro&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">arrow_left</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+        <span class="n">ax2</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">twinx</span><span class="p">()</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;dg&quot;</span><span class="p">)</span>
+        <span class="n">ax1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">right</span><span class="o">=</span><span class="n">arrow_right</span><span class="p">)</span>
+        <span class="n">ax2</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">right</span><span class="o">=</span><span class="n">arrow_right</span><span class="p">)</span>
+        <span class="n">dgarrow</span> <span class="o">=</span> <span class="n">ax2</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+            <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">arrow_right</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="p">(</span><span class="n">arrow_left</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+            <span class="n">arrowprops</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">arrowstyle</span><span class="o">=</span><span class="s2">&quot;-|&gt;&quot;</span><span class="p">),</span>
+        <span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setcurrent</span><span class="p">(</span><span class="n">best_idx</span><span class="p">)</span>
+        <span class="n">tempcluster</span> <span class="o">=</span> <span class="n">ModelCluster</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ppe</span><span class="o">.</span><span class="n">extracted</span><span class="p">)</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="n">tempcluster</span><span class="o">.</span><span class="n">plottable</span><span class="p">()</span>
+        <span class="n">minval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">])</span>
+        <span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">res</span><span class="p">]</span> <span class="o">=</span> <span class="n">tempcluster</span><span class="o">.</span><span class="n">plottable_residual</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">minval</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="o">+</span> <span class="n">res</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">dg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ioff</span><span class="p">()</span>
+            <span class="n">line</span><span class="o">.</span><span class="n">set_ydata</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classprobs</span><span class="p">[</span><span class="n">dg</span><span class="p">])</span>
+            <span class="n">dgarrow</span><span class="o">.</span><span class="n">xy</span> <span class="o">=</span> <span class="p">(</span><span class="n">arrow_right</span><span class="p">,</span> <span class="n">dg</span><span class="p">)</span>
+            <span class="n">dgarrow</span><span class="o">.</span><span class="n">xytext</span> <span class="o">=</span> <span class="p">(</span><span class="n">arrow_left</span><span class="p">,</span> <span class="n">dg</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedclassprobs</span><span class="p">[</span><span class="n">dg</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="n">bestclass_idx</span><span class="p">:</span>
+                <span class="n">bestclass_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedclassprobs</span><span class="p">[</span><span class="n">dg</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">best_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedclasses</span><span class="p">[</span><span class="n">dg</span><span class="p">][</span><span class="n">bestclass_idx</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">s</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tempcluster</span><span class="o">.</span><span class="n">model</span><span class="p">))</span>
+                <span class="n">tempcluster</span><span class="o">.</span><span class="n">replacepeaks</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">best_idx</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span> <span class="n">s</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">tempcluster</span><span class="o">.</span><span class="n">plottable</span><span class="p">()</span>
+                <span class="n">minval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">val</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">])</span>
+                <span class="p">[</span><span class="n">r</span><span class="p">,</span> <span class="n">res</span><span class="p">]</span> <span class="o">=</span> <span class="n">tempcluster</span><span class="o">.</span><span class="n">plottable_residual</span><span class="p">()</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="o">*</span><span class="n">val</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">minval</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="o">+</span> <span class="n">res</span><span class="p">)</span>
+            <span class="n">dot</span><span class="o">.</span><span class="n">set_xdata</span><span class="p">(</span><span class="n">bestclass_idx</span><span class="p">)</span>
+            <span class="n">dot</span><span class="o">.</span><span class="n">set_ydata</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classprobs</span><span class="p">[</span><span class="n">dg</span><span class="p">][</span><span class="n">bestclass_idx</span><span class="p">])</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">step</span><span class="p">:</span>
+                <span class="nb">input</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">duration</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">sleeptime</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.classify">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.classify">[docs]</a>
+    <span class="k">def</span> <span class="nf">classify</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.05</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Find classes of models that are essentially the same.</span>
+
+<span class="sd">        Same is defined as having peaks and baselines which all match (to within</span>
+<span class="sd">        the specified tolerance).  This is calculated as the fraction of the</span>
+<span class="sd">        difference between the squared values to the squared values of the peak</span>
+<span class="sd">        (or baseline) itself.  The method is agnostic about free and fixed parameters.</span>
+
+<span class="sd">        This will fail in the following cases:</span>
+<span class="sd">        1) The corresponding peaks are in the wrong order, even if just by a little</span>
+<span class="sd">        2) The exemplar (first model) of each class isn&#39;t the best representative</span>
+<span class="sd">        3) The parameters vary so smoothly there aren&#39;t actually definite classes</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        r : array-like</span>
+<span class="sd">            The r values over which to evaluate the models</span>
+<span class="sd">        tolerance : float</span>
+<span class="sd">            The fraction below which models are considered the same</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes_idx</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">class_tolerance</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">classes</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># each element is a list of the models (result indices) in the class</span>
+        <span class="n">classes_idx</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># given an integer corresponding to a model, return its class</span>
+        <span class="n">epsqval</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># holds the squared value of each class&#39; exemplar peaks</span>
+        <span class="n">ebsqval</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># holds the squared value of each class exemplar baselines</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)):</span>
+            <span class="n">peaks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">baseline</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">bsqval</span> <span class="o">=</span> <span class="n">baseline</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+            <span class="n">psqval</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">peaks</span><span class="p">]</span>
+            <span class="n">added_to_class</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">classes</span><span class="p">)):</span>
+                <span class="n">exemplar_peaks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">classes</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">exemplar_baseline</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">classes</span><span class="p">[</span><span class="n">c</span><span class="p">][</span><span class="mi">0</span><span class="p">]][</span><span class="mi">2</span><span class="p">]</span>
+
+                <span class="c1"># Check baseline type and number of parameters</span>
+                <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">baseline</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">exemplar_baseline</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">baseline</span><span class="o">.</span><span class="n">npars</span><span class="p">()</span> <span class="o">!=</span> <span class="n">exemplar_baseline</span><span class="o">.</span><span class="n">npars</span><span class="p">():</span>
+                    <span class="k">continue</span>
+
+                <span class="c1"># check peak types and number of parameters</span>
+                <span class="n">badpeak</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">peaks</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">exemplar_peaks</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">ep</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">peaks</span><span class="p">,</span> <span class="n">exemplar_peaks</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="nb">type</span><span class="p">(</span><span class="n">ep</span><span class="p">):</span>
+                        <span class="n">badpeak</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="k">break</span>
+                    <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">npars</span><span class="p">()</span> <span class="o">!=</span> <span class="n">ep</span><span class="o">.</span><span class="n">npars</span><span class="p">():</span>
+                        <span class="n">badpeak</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="k">break</span>
+                <span class="k">if</span> <span class="n">badpeak</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="c1"># check peak values</span>
+                <span class="k">for</span> <span class="n">p</span><span class="p">,</span> <span class="n">ep</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">psqval</span><span class="p">,</span> <span class="n">epsqval</span><span class="p">[</span><span class="n">c</span><span class="p">]):</span>
+                    <span class="n">basediff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">p</span> <span class="o">-</span> <span class="n">ep</span><span class="p">))</span>
+                    <span class="c1"># if basediff &gt; tolerance*np.sum(ep):</span>
+                    <span class="k">if</span> <span class="n">basediff</span> <span class="o">&gt;</span> <span class="n">tolerance</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ep</span><span class="p">)</span> <span class="ow">or</span> <span class="n">basediff</span> <span class="o">&gt;</span> <span class="n">tolerance</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+                        <span class="n">badpeak</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="k">break</span>
+                <span class="k">if</span> <span class="n">badpeak</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="c1"># check baseline values</span>
+                <span class="n">basediff</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">bsqval</span> <span class="o">-</span> <span class="n">ebsqval</span><span class="p">[</span><span class="n">c</span><span class="p">]))</span>
+                <span class="c1"># if basediff &gt; tolerance*np.sum(ebsqval[c]):</span>
+                <span class="k">if</span> <span class="n">basediff</span> <span class="o">&gt;</span> <span class="n">tolerance</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">ebsqval</span><span class="p">[</span><span class="n">c</span><span class="p">])</span> <span class="ow">or</span> <span class="n">basediff</span> <span class="o">&gt;</span> <span class="n">tolerance</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">bsqval</span><span class="p">):</span>
+                    <span class="k">continue</span>
+
+                <span class="c1"># that&#39;s all the checks, add to current class</span>
+                <span class="n">added_to_class</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">classes</span><span class="p">[</span><span class="n">c</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                <span class="n">classes_idx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">c</span>
+                <span class="k">break</span>
+
+            <span class="k">if</span> <span class="n">added_to_class</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="c1"># make a new class with the current model as exemplar</span>
+                <span class="n">classes</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">i</span><span class="p">])</span>
+                <span class="n">classnum</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">classes</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+                <span class="n">classes_idx</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">classnum</span>
+                <span class="n">epsqval</span><span class="p">[</span><span class="n">classnum</span><span class="p">]</span> <span class="o">=</span> <span class="n">psqval</span>
+                <span class="n">ebsqval</span><span class="p">[</span><span class="n">classnum</span><span class="p">]</span> <span class="o">=</span> <span class="n">bsqval</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes</span> <span class="o">=</span> <span class="n">classes</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes_idx</span> <span class="o">=</span> <span class="n">classes_idx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">class_tolerance</span> <span class="o">=</span> <span class="n">tolerance</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">makesortedclasses</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">makeclassweights</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">makeclassprobs</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">makesortedclassprobs</span><span class="p">()</span>
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.makesortedclasses">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.makesortedclasses">[docs]</a>
+    <span class="k">def</span> <span class="nf">makesortedclasses</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sortedclasses</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">dg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">:</span>
+            <span class="n">bestinclass</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">classes</span><span class="p">:</span>
+                <span class="n">temp</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">aics</span><span class="p">[</span><span class="n">dg</span><span class="p">][</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">cls</span><span class="p">]</span>
+                <span class="c1"># poor man&#39;s argsort, since numpy is slow on the non-numeric aic objects.</span>
+                <span class="c1"># Could sort on .stat instead, but that&#39;s a trap if I ever use</span>
+                <span class="c1"># other methods that are sorted in a different fashion.</span>
+                <span class="n">best_idx</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">temp</span><span class="p">)),</span> <span class="n">key</span><span class="o">=</span><span class="n">temp</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">)</span>
+                <span class="n">bestinclass</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="bp">cls</span><span class="p">[</span><span class="n">b</span><span class="p">]</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">best_idx</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sortedclasses</span><span class="p">[</span><span class="n">dg</span><span class="p">]</span> <span class="o">=</span> <span class="n">bestinclass</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.makeclassweights">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.makeclassweights">[docs]</a>
+    <span class="k">def</span> <span class="nf">makeclassweights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make weights for all classes.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classweights</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">em</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ppe</span><span class="o">.</span><span class="n">error_method</span>
+
+        <span class="k">for</span> <span class="n">dg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">:</span>
+            <span class="n">bestinclass</span> <span class="o">=</span> <span class="p">[</span><span class="bp">cls</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedclasses</span><span class="p">[</span><span class="n">dg</span><span class="p">]]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">classweights</span><span class="p">[</span><span class="n">dg</span><span class="p">]</span> <span class="o">=</span> <span class="n">em</span><span class="o">.</span><span class="n">akaikeweights</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">aics</span><span class="p">[</span><span class="n">dg</span><span class="p">][</span><span class="n">b</span><span class="p">]</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bestinclass</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.makeclassprobs">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.makeclassprobs">[docs]</a>
+    <span class="k">def</span> <span class="nf">makeclassprobs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make probabilities for all classes.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classprobs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">em</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ppe</span><span class="o">.</span><span class="n">error_method</span>
+
+        <span class="k">for</span> <span class="n">dg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">:</span>
+            <span class="n">bestinclass</span> <span class="o">=</span> <span class="p">[</span><span class="bp">cls</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedclasses</span><span class="p">[</span><span class="n">dg</span><span class="p">]]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">classprobs</span><span class="p">[</span><span class="n">dg</span><span class="p">]</span> <span class="o">=</span> <span class="n">em</span><span class="o">.</span><span class="n">akaikeprobs</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">aics</span><span class="p">[</span><span class="n">dg</span><span class="p">][</span><span class="n">b</span><span class="p">]</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">bestinclass</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.makesortedclassprobs">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.makesortedclassprobs">[docs]</a>
+    <span class="k">def</span> <span class="nf">makesortedclassprobs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Make probabilities for all classes in sorted order.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sortedclassprobs</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">dg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sortedclassprobs</span><span class="p">[</span><span class="n">dg</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classprobs</span><span class="p">[</span><span class="n">dg</span><span class="p">])</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.dg_key">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.dg_key">[docs]</a>
+    <span class="k">def</span> <span class="nf">dg_key</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dg_in</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the dg value usable as a key nearest to dg_in.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dg_in : The uncertainties of the model</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The dg value usable as a key nearest to dg_in.&quot;&quot;&quot;</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dgs</span> <span class="o">-</span> <span class="n">dg_in</span><span class="p">))</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.bestclasses">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.bestclasses">[docs]</a>
+    <span class="k">def</span> <span class="nf">bestclasses</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dgs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the best classes for all models.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dgs : array-like, optional</span>
+<span class="sd">            The uncertainties of the models, by default None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            The best classes for all models.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dgs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dgs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span>
+        <span class="n">best</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">dg</span> <span class="ow">in</span> <span class="n">dgs</span><span class="p">:</span>
+            <span class="n">best</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sortedclassprobs</span><span class="p">[</span><span class="n">dg</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">best</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.bestmodels">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.bestmodels">[docs]</a>
+    <span class="k">def</span> <span class="nf">bestmodels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dgs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the best models for all models.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dgs : array-like, optional</span>
+<span class="sd">            The uncertainties of the models, by default None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            Sequence of best model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dgs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dgs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span>
+        <span class="n">best</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">dg</span> <span class="ow">in</span> <span class="n">dgs</span><span class="p">:</span>
+            <span class="n">bestclass_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedclassprobs</span><span class="p">[</span><span class="n">dg</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">best</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sortedclasses</span><span class="p">[</span><span class="n">dg</span><span class="p">][</span><span class="n">bestclass_idx</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">best</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.classbestdgs">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.classbestdgs">[docs]</a>
+    <span class="k">def</span> <span class="nf">classbestdgs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">,</span> <span class="n">dgs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the best uncertainties for the models.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        cls : ModelEvaluator Class</span>
+<span class="sd">            Override corder with a specific class index, or None to ignore classes entirely.</span>
+<span class="sd">        dgs : array-like, optional</span>
+<span class="sd">            The uncertainties of the models, by default None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            Sequence of best uncertainties for the models.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dgs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dgs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span>
+        <span class="n">bestdgs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">dg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedclassprobs</span><span class="p">[</span><span class="n">dg</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">cls</span><span class="p">:</span>
+                <span class="n">bestdgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bestdgs</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.modelbestdgs">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.modelbestdgs">[docs]</a>
+    <span class="k">def</span> <span class="nf">modelbestdgs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">dgs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return uncertainties where given model has greatest Akaike probability.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model : ModelEvaluator Class</span>
+<span class="sd">            The model evaluator class to use</span>
+<span class="sd">        dgs : array-like, optional</span>
+<span class="sd">            The uncertainties of the models, by default None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            The uncertainties where given model has greatest Akaike probability</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dgs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dgs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span>
+        <span class="n">bestdgs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classes_idx</span><span class="p">[</span><span class="n">model</span><span class="p">]</span>
+        <span class="n">bestclassdgs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classbestdgs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dgs</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">dg</span> <span class="ow">in</span> <span class="n">bestclassdgs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedclasses</span><span class="p">[</span><span class="n">dg</span><span class="p">][</span><span class="bp">cls</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">model</span><span class="p">:</span>
+                <span class="n">bestdgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bestdgs</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.plot3dclassprobs">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.plot3dclassprobs">[docs]</a>
+    <span class="k">def</span> <span class="nf">plot3dclassprobs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return 3D plot of class probabilities.</span>
+
+<span class="sd">        Keywords</span>
+<span class="sd">        --------</span>
+<span class="sd">        dGs - Sequence of dG values to plot. Default is all values.</span>
+<span class="sd">        highlight - Sequence of dG values to highlight on plot.  Default is [].</span>
+<span class="sd">        classes - Sequence of indices of classes to plot. Default is all classes.</span>
+<span class="sd">        probfilter - [float1, float2]. Only show classes with maximum probability in given range.</span>
+<span class="sd">                     Default is [0., 1.]</span>
+<span class="sd">        class_size - Report the size of each class as a &quot;number&quot; or &quot;fraction&quot;.  Default is &quot;number&quot;.</span>
+<span class="sd">        norm - A colors normalization for displaying number/fraction of models in class. Default is &quot;auto&quot;.</span>
+<span class="sd">               If equal to &quot;full&quot; determined by the total number of models.</span>
+<span class="sd">               If equal to &quot;auto&quot; determined by the number of models in displayed classes.</span>
+<span class="sd">        cmap - A colormap or registered colormap name.  Default is cm.jet.</span>
+<span class="sd">            If class_size is &quot;number&quot; and norm is either &quot;auto&quot;</span>
+<span class="sd">            or &quot;full&quot; the map is converted to an indexed colormap.</span>
+<span class="sd">        highlight_cmap - A colormap or registered colormap name for coloring highlights.  Default is cm.gray.</span>
+<span class="sd">        title - True, False, or a string.  Defaults to True, which displays some basic information about the graph.</span>
+<span class="sd">        p_alpha - Probability graph alpha. (Colorbar remains opaque).  Default is 0.7.</span>
+<span class="sd">        figure - A matplotlib.figure.Figure instance.  Default is the current figure.</span>
+<span class="sd">        subplot - Specify a subplot. Default is 111.</span>
+<span class="sd">        cbpos - Explicit position for colorbar given as (l,b,w,h) in axes coordinates.</span>
+<span class="sd">                Does not resize other elements. Note that this overrides all colorbar</span>
+<span class="sd">                keywords except orientation.</span>
+<span class="sd">        scale - Scales the dG shown on the graph.</span>
+
+<span class="sd">        All other keywords are passed to the colorbar.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        a dictionary containing the following figure elements:</span>
+<span class="sd">        &quot;fig&quot; - The figure</span>
+<span class="sd">        &quot;axis&quot; - The image axis</span>
+<span class="sd">        &quot;cbaxis&quot; - The colorbar axis, if it exists.</span>
+<span class="sd">        &quot;cb&quot; - The colorbar, if it exists.&quot;&quot;&quot;</span>
+
+        <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">cm</span><span class="p">,</span> <span class="n">colorbar</span><span class="p">,</span> <span class="n">colors</span>
+        <span class="kn">from</span> <span class="nn">matplotlib.collections</span> <span class="kn">import</span> <span class="n">PolyCollection</span>
+
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;figure&quot;</span><span class="p">,</span> <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">())</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">kwds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;subplot&quot;</span><span class="p">,</span> <span class="mi">111</span><span class="p">),</span> <span class="n">projection</span><span class="o">=</span><span class="s2">&quot;3d&quot;</span><span class="p">)</span>
+
+        <span class="n">kwds</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># Resolve keywords (title resolved later)</span>
+        <span class="n">dGs</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;dGs&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">)</span>
+        <span class="n">highlight</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;highlight&quot;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="n">classes</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;classes&quot;</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classes</span><span class="p">)))</span>
+        <span class="n">probfilter</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;probfilter&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+        <span class="n">class_size</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;class_size&quot;</span><span class="p">,</span> <span class="s2">&quot;number&quot;</span><span class="p">)</span>
+        <span class="n">norm</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;norm&quot;</span><span class="p">,</span> <span class="s2">&quot;auto&quot;</span><span class="p">)</span>
+        <span class="n">cmap</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;cmap&quot;</span><span class="p">,</span> <span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;jet&quot;</span><span class="p">))</span>
+        <span class="n">highlight_cmap</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;highlight_cmap&quot;</span><span class="p">,</span> <span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s2">&quot;gray&quot;</span><span class="p">))</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">p_alpha</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;p_alpha&quot;</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">)</span>
+        <span class="n">scale</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;scale&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+
+        <span class="n">xs</span> <span class="o">=</span> <span class="n">dGs</span> <span class="o">*</span> <span class="n">scale</span>
+        <span class="n">verts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">zs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">zlabels</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">classes</span><span class="p">:</span>
+            <span class="n">ys</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">classprobs</span><span class="p">[</span><span class="n">dG</span><span class="p">][</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">dG</span> <span class="ow">in</span> <span class="n">dGs</span><span class="p">]</span>
+
+            <span class="n">maxys</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">ys</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">maxys</span> <span class="o">&gt;=</span> <span class="n">probfilter</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">maxys</span> <span class="o">&lt;=</span> <span class="n">probfilter</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span> <span class="o">=</span> <span class="p">((</span><span class="n">xs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="n">xs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">))</span>  <span class="c1"># points to close the vertices</span>
+                <span class="n">verts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([[</span><span class="n">p0</span><span class="p">],</span> <span class="nb">zip</span><span class="p">(</span><span class="n">xs</span><span class="p">,</span> <span class="n">ys</span><span class="p">),</span> <span class="p">[</span><span class="n">p1</span><span class="p">],</span> <span class="p">[</span><span class="n">p0</span><span class="p">]]))</span>
+                <span class="n">zlabels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+        <span class="c1">#  Define face colors</span>
+        <span class="n">fc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classes</span><span class="p">[</span><span class="n">z</span><span class="p">])</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">zlabels</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">class_size</span> <span class="o">==</span> <span class="s2">&quot;fraction&quot;</span><span class="p">:</span>
+            <span class="n">fc</span> <span class="o">=</span> <span class="n">fc</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">))</span>
+
+        <span class="c1"># Index the colormap if necessary</span>
+        <span class="k">if</span> <span class="n">class_size</span> <span class="o">==</span> <span class="s2">&quot;number&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">norm</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
+                <span class="n">indexedcolors</span> <span class="o">=</span> <span class="n">cmap</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">fc</span><span class="p">)))</span>
+                <span class="n">cmap</span> <span class="o">=</span> <span class="n">colors</span><span class="o">.</span><span class="n">ListedColormap</span><span class="p">(</span><span class="n">indexedcolors</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span> <span class="s2">&quot;full&quot;</span><span class="p">:</span>
+                <span class="n">indexedcolors</span> <span class="o">=</span> <span class="n">cmap</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)))</span>
+                <span class="n">cmap</span> <span class="o">=</span> <span class="n">colors</span><span class="o">.</span><span class="n">ListedColormap</span><span class="p">(</span><span class="n">indexedcolors</span><span class="p">)</span>
+            <span class="c1"># A user-specified norm cannot be used to index a colormap.</span>
+
+        <span class="c1"># Create proper norms for &quot;auto&quot; and &quot;full&quot; types.</span>
+        <span class="k">if</span> <span class="n">norm</span> <span class="o">==</span> <span class="s2">&quot;auto&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">class_size</span> <span class="o">==</span> <span class="s2">&quot;number&quot;</span><span class="p">:</span>
+                <span class="n">mic</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">fc</span><span class="p">)</span>
+                <span class="n">mac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">fc</span><span class="p">)</span>
+                <span class="n">nc</span> <span class="o">=</span> <span class="n">mac</span> <span class="o">-</span> <span class="n">mic</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="n">norm</span> <span class="o">=</span> <span class="n">colors</span><span class="o">.</span><span class="n">BoundaryNorm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">mic</span><span class="p">,</span> <span class="n">mac</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">nc</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">nc</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">class_size</span> <span class="o">==</span> <span class="s2">&quot;fraction&quot;</span><span class="p">:</span>
+                <span class="n">norm</span> <span class="o">=</span> <span class="n">colors</span><span class="o">.</span><span class="n">Normalize</span><span class="p">()</span>
+                <span class="n">norm</span><span class="o">.</span><span class="n">autoscale</span><span class="p">(</span><span class="n">fc</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">norm</span> <span class="o">==</span> <span class="s2">&quot;full&quot;</span><span class="p">:</span>
+            <span class="n">mcolor</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">class_size</span> <span class="o">==</span> <span class="s2">&quot;number&quot;</span><span class="p">:</span>
+                <span class="n">norm</span> <span class="o">=</span> <span class="n">colors</span><span class="o">.</span><span class="n">BoundaryNorm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">mcolor</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">mcolor</span> <span class="o">+</span> <span class="mi">2</span><span class="p">),</span> <span class="n">mcolor</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">class_size</span> <span class="o">==</span> <span class="s2">&quot;fraction&quot;</span><span class="p">:</span>
+                <span class="n">norm</span> <span class="o">=</span> <span class="n">colors</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+
+        <span class="n">zs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">zlabels</span><span class="p">))</span>
+
+        <span class="n">poly</span> <span class="o">=</span> <span class="n">PolyCollection</span><span class="p">(</span><span class="n">verts</span><span class="p">,</span> <span class="n">facecolors</span><span class="o">=</span><span class="n">cmap</span><span class="p">(</span><span class="n">norm</span><span class="p">(</span><span class="n">fc</span><span class="p">)),</span> <span class="n">closed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">poly</span><span class="o">.</span><span class="n">set_alpha</span><span class="p">(</span><span class="n">p_alpha</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">add_collection3d</span><span class="p">(</span><span class="n">poly</span><span class="p">,</span> <span class="n">zs</span><span class="o">=</span><span class="n">zs</span><span class="p">,</span> <span class="n">zdir</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Highlight values of interest</span>
+        <span class="n">color_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">highlight</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">dG</span><span class="p">,</span> <span class="n">ci</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">highlight</span><span class="p">,</span> <span class="n">color_idx</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">z_logical</span><span class="p">,</span> <span class="n">z_plot</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">zlabels</span><span class="p">,</span> <span class="n">zs</span><span class="p">):</span>
+                <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                    <span class="p">[</span><span class="n">dG</span><span class="p">,</span> <span class="n">dG</span><span class="p">],</span>
+                    <span class="p">[</span><span class="n">z_plot</span><span class="p">,</span> <span class="n">z_plot</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">classprobs</span><span class="p">[</span><span class="n">dG</span><span class="p">][</span><span class="n">z_logical</span><span class="p">]],</span>
+                    <span class="n">color</span><span class="o">=</span><span class="n">highlight_cmap</span><span class="p">(</span><span class="n">ci</span><span class="p">),</span>
+                    <span class="n">alpha</span><span class="o">=</span><span class="n">p_alpha</span><span class="p">,</span>
+                <span class="p">)</span>
+
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;dG&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim3d</span><span class="p">(</span><span class="n">dGs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">scale</span><span class="p">,</span> <span class="n">dGs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">scale</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Class&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim3d</span><span class="p">(</span><span class="n">zs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">zs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_yticks</span><span class="p">(</span><span class="n">zs</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_yticklabels</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">zlabels</span><span class="p">])</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_zlabel</span><span class="p">(</span><span class="s2">&quot;Akaike probability&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">set_zlim3d</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">title</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Class probabilities</span><span class="se">\n\</span>
+<span class="s2">                    Max probabilities in </span><span class="si">%s</span><span class="se">\n\</span>
+<span class="s2">                    </span><span class="si">%i</span><span class="s2">/</span><span class="si">%i</span><span class="s2"> classes with </span><span class="si">%i</span><span class="s2">/</span><span class="si">%i</span><span class="s2"> models displayed&quot;</span>
+                <span class="o">%</span> <span class="p">(</span>
+                    <span class="n">probfilter</span><span class="p">,</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="n">zs</span><span class="p">),</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classes</span><span class="p">),</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">classes</span><span class="p">[</span><span class="n">z</span><span class="p">])</span> <span class="k">for</span> <span class="n">z</span> <span class="ow">in</span> <span class="n">zlabels</span><span class="p">]),</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">),</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">title</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+
+        <span class="c1"># Add colorbar</span>
+        <span class="k">if</span> <span class="s2">&quot;cbpos&quot;</span> <span class="ow">in</span> <span class="n">kwds</span><span class="p">:</span>
+            <span class="n">cbpos</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;cbpos&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>  <span class="c1"># do it before cbaxis, so colorbar is ignored.</span>
+            <span class="n">transAtoF</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">transAxes</span> <span class="o">+</span> <span class="n">fig</span><span class="o">.</span><span class="n">transFigure</span><span class="o">.</span><span class="n">inverted</span><span class="p">()</span>
+            <span class="n">rect</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Bbox</span><span class="o">.</span><span class="n">from_bounds</span><span class="p">(</span><span class="o">*</span><span class="n">cbpos</span><span class="p">)</span><span class="o">.</span><span class="n">transformed</span><span class="p">(</span><span class="n">transAtoF</span><span class="p">)</span><span class="o">.</span><span class="n">bounds</span>
+            <span class="n">cbaxis</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_axes</span><span class="p">(</span><span class="n">rect</span><span class="p">)</span>
+
+            <span class="c1"># Remove all colorbar.make_axes keywords except orientation</span>
+            <span class="n">kwds</span> <span class="o">=</span> <span class="n">eatkwds</span><span class="p">(</span><span class="s2">&quot;fraction&quot;</span><span class="p">,</span> <span class="s2">&quot;pad&quot;</span><span class="p">,</span> <span class="s2">&quot;shrink&quot;</span><span class="p">,</span> <span class="s2">&quot;aspect&quot;</span><span class="p">,</span> <span class="s2">&quot;anchor&quot;</span><span class="p">,</span> <span class="s2">&quot;panchor&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">kwds</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;shrink&quot;</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">)</span>
+
+            <span class="c1"># In matplotlib 1.1.0 make_axes_gridspec ignores anchor and panchor keywords.</span>
+            <span class="c1"># Eat these keywords for now.</span>
+            <span class="n">kwds</span> <span class="o">=</span> <span class="n">eatkwds</span><span class="p">(</span><span class="s2">&quot;anchor&quot;</span><span class="p">,</span> <span class="s2">&quot;panchor&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+            <span class="n">cbaxis</span><span class="p">,</span> <span class="n">kwds</span> <span class="o">=</span> <span class="n">colorbar</span><span class="o">.</span><span class="n">make_axes_gridspec</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>  <span class="c1"># gridspec allows tight_layout</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>  <span class="c1"># do it after cbaxis, so colorbar isn&#39;t ignored</span>
+
+        <span class="n">cb</span> <span class="o">=</span> <span class="n">colorbar</span><span class="o">.</span><span class="n">ColorbarBase</span><span class="p">(</span><span class="n">cbaxis</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">class_size</span> <span class="o">==</span> <span class="s2">&quot;number&quot;</span><span class="p">:</span>
+            <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s2">&quot;Models in class&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">class_size</span> <span class="o">==</span> <span class="s2">&quot;fraction&quot;</span><span class="p">:</span>
+            <span class="n">cb</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s2">&quot;Fraction of models in class&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;fig&quot;</span><span class="p">:</span> <span class="n">fig</span><span class="p">,</span> <span class="s2">&quot;axis&quot;</span><span class="p">:</span> <span class="n">ax</span><span class="p">,</span> <span class="s2">&quot;cb&quot;</span><span class="p">:</span> <span class="n">cb</span><span class="p">,</span> <span class="s2">&quot;cbaxis&quot;</span><span class="p">:</span> <span class="n">cbaxis</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.get_model">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.get_model">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dG</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return index of best model of best class at given dG.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dG : array-like</span>
+<span class="sd">            The uncertainty used to calculate probabilities</span>
+
+<span class="sd">        Keywords</span>
+<span class="sd">        --------</span>
+<span class="sd">        corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).</span>
+<span class="sd">        morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).</span>
+<span class="sd">                 Returns a model from a class, or from the collection of all models if classes are ignored.</span>
+<span class="sd">        cls - Override corder with a specific class index, or None to ignore classes entirely.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            Index of best model of best class at given dG.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">corder</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;corder&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">morder</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;morder&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;cls&quot;</span> <span class="ow">in</span> <span class="n">kwds</span><span class="p">:</span>
+            <span class="bp">cls</span> <span class="o">=</span> <span class="n">kwds</span><span class="p">[</span><span class="s2">&quot;cls&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class</span><span class="p">(</span><span class="n">dG</span><span class="p">,</span> <span class="n">corder</span><span class="o">=</span><span class="n">corder</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">cls</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedprobs</span><span class="p">[</span><span class="n">dG</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span> <span class="o">-</span> <span class="n">morder</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedclasses</span><span class="p">[</span><span class="n">dG</span><span class="p">][</span><span class="bp">cls</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span> <span class="o">-</span> <span class="n">morder</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.get_class">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.get_class">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dG</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return index of best class at given dG.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dG : array-like</span>
+<span class="sd">            The uncertainty used to calculate probabilities</span>
+
+<span class="sd">        Keywords</span>
+<span class="sd">        --------</span>
+<span class="sd">        corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            Index of best model of best class at given dG.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">corder</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;corder&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedclassprobs</span><span class="p">[</span><span class="n">dG</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span> <span class="o">-</span> <span class="n">corder</span><span class="p">]</span>  <span class="c1"># index of corderth best class</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.get_prob">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.get_prob">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_prob</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dG</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Akaike probability of best model of best class at given dG.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dG : array-like</span>
+<span class="sd">            The uncertainty used to calculate probabilities</span>
+
+<span class="sd">        Keywords</span>
+<span class="sd">        --------</span>
+<span class="sd">        corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).</span>
+<span class="sd">        morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).</span>
+<span class="sd">                 Returns a model from a class, or from the collection of all models if classes are ignored.</span>
+<span class="sd">        cls - Override corder with a specific class index, or None to ignore classes entirely.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            The sequence of Akaike probability of best model of best class at given dG.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">dG</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;cls&quot;</span> <span class="ow">in</span> <span class="n">kwds</span> <span class="ow">and</span> <span class="n">kwds</span><span class="p">[</span><span class="s2">&quot;cls&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">aicprobs</span><span class="p">[</span><span class="n">dG</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cls_idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classes_idx</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">classprobs</span><span class="p">[</span><span class="n">dG</span><span class="p">][</span><span class="n">cls_idx</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.get_nfree">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.get_nfree">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_nfree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dG</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return number of free parameters of best model of best class at given dG.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dG : array-like</span>
+<span class="sd">            The uncertainty used to calculate probabilities</span>
+
+<span class="sd">        Keywords</span>
+<span class="sd">        --------</span>
+<span class="sd">        corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).</span>
+<span class="sd">        morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).</span>
+<span class="sd">                 Returns a model from a class, or from the collection of all models if classes are ignored.</span>
+<span class="sd">        cls - Override corder with a specific class index, or None to ignore classes entirely.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            Number of free parameters of best model of best class at given dG.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">dG</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">baseline</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">model</span><span class="o">.</span><span class="n">npars</span><span class="p">(</span><span class="n">count_fixed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">+</span> <span class="n">baseline</span><span class="o">.</span><span class="n">npars</span><span class="p">(</span><span class="n">count_fixed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.get_aic">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.get_aic">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_aic</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dG</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return number of free parameters of best model of best class at given dG.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dG : array-like</span>
+<span class="sd">            The uncertainty used to calculate probabilities</span>
+
+<span class="sd">        Keywords</span>
+<span class="sd">        --------</span>
+<span class="sd">        corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).</span>
+<span class="sd">        morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).</span>
+<span class="sd">                 Returns a model from a class, or from the collection of all models if classes are ignored.</span>
+<span class="sd">        cls - Override corder with a specific class index, or None to ignore classes entirely.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            Number of free parameters of best model of best class at given dG.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">dG</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">aics</span><span class="p">[</span><span class="n">dG</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span><span class="o">.</span><span class="n">stat</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.get">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.get">[docs]</a>
+    <span class="k">def</span> <span class="nf">get</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dG</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return tuple of values corresponding to string arguments for best model of best class at given dG.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dG : array-like</span>
+<span class="sd">            The uncertainty used to calculate probabilities</span>
+
+<span class="sd">        Permissible arguments: &quot;aic&quot;, &quot;class&quot;, &quot;dG&quot;, &quot;model&quot;, &quot;nfree&quot;, &quot;prob&quot;</span>
+<span class="sd">        (&quot;dG&quot; simply returns the provided dG value)</span>
+
+<span class="sd">        Keywords</span>
+<span class="sd">        --------</span>
+<span class="sd">        corder - Which class to get based on AIC. Ordered from best to worst from 0 (the default).</span>
+<span class="sd">        morder - Which model to get based on AIC. Ordered from best to worst from 0 (the default).</span>
+<span class="sd">                 Returns a model from a class, or from the collection of all models if classes are ignored.</span>
+<span class="sd">        cls - Override corder with a specific class index, or None to ignore classes entirely.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            The values corresponding to string arguments for best model of best class at given dG.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fdict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;aic&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_aic</span><span class="p">,</span>
+            <span class="s2">&quot;class&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_class</span><span class="p">,</span>
+            <span class="s2">&quot;dg&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span>
+            <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model</span><span class="p">,</span>
+            <span class="s2">&quot;nfree&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_nfree</span><span class="p">,</span>
+            <span class="s2">&quot;prob&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_prob</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fdict</span><span class="p">[</span><span class="n">a</span><span class="p">]</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="n">dG</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">))</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">values</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.maxprobdG_byclass">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.maxprobdG_byclass">[docs]</a>
+    <span class="k">def</span> <span class="nf">maxprobdG_byclass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the post-hoc dG for which the given model&#39;s Akaike probability is maximized.</span>
+
+<span class="sd">        Each model is mapped to its class&#39; best member.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model : array-like</span>
+<span class="sd">            The model to get the post-hoc dG.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            The post-hoc dG for the given model where the given model&#39;s Akaike probability is maximized.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">classes_idx</span><span class="p">[</span><span class="n">model</span><span class="p">]</span>
+        <span class="n">probs</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">classprobs</span><span class="p">[</span><span class="n">dg</span><span class="p">][</span><span class="bp">cls</span><span class="p">]</span> <span class="k">for</span> <span class="n">dg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">]</span>
+        <span class="n">prob_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">probs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="n">prob_idx</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.maxprobdG_bymodel">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.maxprobdG_bymodel">[docs]</a>
+    <span class="k">def</span> <span class="nf">maxprobdG_bymodel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the post-hoc dG for which the given model&#39;s Akaike probability is maximized.</span>
+<span class="sd">        Classes are not considered.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model : array-like</span>
+<span class="sd">            The model to get the post-hoc dG.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            The post-hoc dG by the given model&#39;s Akaike probability is maximize</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">probs</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">aicprobs</span><span class="p">[</span><span class="n">dg</span><span class="p">][</span><span class="n">model</span><span class="p">]</span> <span class="k">for</span> <span class="n">dg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">]</span>
+        <span class="n">prob_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">probs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">dgs</span><span class="p">[</span><span class="n">prob_idx</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.maxprobmodel_byclass">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.maxprobmodel_byclass">[docs]</a>
+    <span class="k">def</span> <span class="nf">maxprobmodel_byclass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dG</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the model which maximizes probability at given dG.</span>
+
+<span class="sd">        The best class is mapped to its best model.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dG : array-like</span>
+<span class="sd">            The uncertainty used to calculate probabilities</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The model mapped by class which maximizes probability at given dG.&quot;&quot;&quot;</span>
+        <span class="bp">cls</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedclassprobs</span><span class="p">[</span><span class="n">dG</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedclasses</span><span class="p">[</span><span class="n">dG</span><span class="p">][</span><span class="bp">cls</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">m</span></div>
+
+
+<div class="viewcode-block" id="MultimodelSelection.maxprobmodel_bymodel">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.multimodelselection.MultimodelSelection.maxprobmodel_bymodel">[docs]</a>
+    <span class="k">def</span> <span class="nf">maxprobmodel_bymodel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dG</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the model which maximizes probability at given dG.</span>
+<span class="sd">        Classes are not considered.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dG : array-like</span>
+<span class="sd">            The uncertainty used to calculate probabilities</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        model : array-like</span>
+<span class="sd">            The model which maximizes probability at given dG.&quot;&quot;&quot;</span>
+        <span class="c1"># Note that if there are identical models this returns the one of greatest dg.</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">sortedprobs</span><span class="p">[</span><span class="n">dG</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, The Trustees of Columbia University in the City of New York.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>diffpy.srmise.pdfpeakextraction &mdash; diffpy.srmise 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=f539c95a"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            diffpy.srmise
+          </a>
+              <div class="version">
+                0.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../release.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/diffpy.srmise.html">Package API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">diffpy.srmise</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">diffpy.srmise.pdfpeakextraction</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for diffpy.srmise.pdfpeakextraction</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1">##############################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># SrMise            by Luke Granlund</span>
+<span class="c1">#                   (c) 2014 trustees of the Michigan State University</span>
+<span class="c1">#                   (c) 2024 trustees of Columia University in the City of New York</span>
+<span class="c1">#                   All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># File coded by:    Luke Granlund</span>
+<span class="c1">#</span>
+<span class="c1"># See LICENSE.txt for license information.</span>
+<span class="c1">#</span>
+<span class="c1">##############################################################################</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">diffpy.srmise</span> <span class="kn">import</span> <span class="n">srmiselog</span>
+<span class="kn">from</span> <span class="nn">diffpy.srmise.modelcluster</span> <span class="kn">import</span> <span class="n">ModelCluster</span><span class="p">,</span> <span class="n">ModelCovariance</span>
+
+<span class="c1"># from diffpy.pdfgui.control.pdfdataset import PDFDataSet</span>
+<span class="kn">from</span> <span class="nn">diffpy.srmise.pdfdataset</span> <span class="kn">import</span> <span class="n">PDFDataSet</span>
+<span class="kn">from</span> <span class="nn">diffpy.srmise.peakextraction</span> <span class="kn">import</span> <span class="n">PeakExtraction</span>
+<span class="kn">from</span> <span class="nn">diffpy.srmise.srmiseerrors</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">SrMiseDataFormatError</span><span class="p">,</span>
+    <span class="n">SrMiseError</span><span class="p">,</span>
+    <span class="n">SrMiseQmaxError</span><span class="p">,</span>
+    <span class="n">SrMiseStaticOwnerError</span><span class="p">,</span>
+    <span class="n">SrMiseUndefinedCovarianceError</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;diffpy.srmise&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="PDFPeakExtraction">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.pdfpeakextraction.PDFPeakExtraction">[docs]</a>
+<span class="k">class</span> <span class="nc">PDFPeakExtraction</span><span class="p">(</span><span class="n">PeakExtraction</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;PDFPeakExtraction extends the PeakExtraction class to specialize in extracting</span>
+<span class="sd">    peaks from PDF (Probability Density Function) data.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        The source PDF file path.</span>
+<span class="sd">    nyquist : bool, optional</span>
+<span class="sd">        Specifies whether to fit the final model at the Nyquist sampling rate.</span>
+<span class="sd">        Defaults to False.</span>
+<span class="sd">    qmax : float, optional</span>
+<span class="sd">        The maximum q value to use during peak extraction. Use 0 to denote infinity.</span>
+<span class="sd">        Defaults to 0.</span>
+<span class="sd">    qmax_reportedbypdf : float</span>
+<span class="sd">        The qmax value read directly from the PDF file.</span>
+<span class="sd">    qmax_fromdata : float</span>
+<span class="sd">        The qmax value determined directly from the PDF data.</span>
+<span class="sd">    scale : bool, optional</span>
+<span class="sd">        Determines whether to use increased uncertainties during supersampling.</span>
+<span class="sd">        This can expedite extraction by minimizing the detection of minuscule peaks,</span>
+<span class="sd">        albeit risking the overlook of minor features. When `Nyquist` is True,</span>
+<span class="sd">        uncertainties are scaled to maintain a similar chi-square error pre-</span>
+<span class="sd">        and post-resampling. Defaults to False if `Nyquist` is True.</span>
+<span class="sd">    supersample : int, optional</span>
+<span class="sd">        Ensures the data is supersampled by at least this factor above the</span>
+<span class="sd">        Nyquist rate before initiating peak extraction. Defaults to 1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the PDFPeakExtraction class.&quot;&quot;&quot;</span>
+        <span class="n">newvars</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;qmax&quot;</span><span class="p">,</span> <span class="s2">&quot;supersample&quot;</span><span class="p">,</span> <span class="s2">&quot;nyquist&quot;</span><span class="p">,</span> <span class="s2">&quot;scale&quot;</span><span class="p">]</span>
+        <span class="n">PeakExtraction</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">newvars</span><span class="p">)</span>
+        <span class="k">return</span>
+
+<div class="viewcode-block" id="PDFPeakExtraction.loadpdf">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.pdfpeakextraction.PDFPeakExtraction.loadpdf">[docs]</a>
+    <span class="k">def</span> <span class="nf">loadpdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pdf</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Load dataset.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pdf: PDFDataSet instance or str</span>
+<span class="sd">            The PDFDataSet instance or a PDF file name.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pdf</span><span class="p">,</span> <span class="n">PDFDataSet</span><span class="p">):</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">pdf</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">PDFDataSet</span><span class="p">(</span><span class="s2">&quot;ForPeakExtraction&quot;</span><span class="p">)</span>
+            <span class="n">d</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">pdf</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">pdf</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setdata</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">robs</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">Gobs</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">drobs</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">dGobs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qmax_reportedbypdf</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">qmax</span>
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="PDFPeakExtraction.setdata">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.pdfpeakextraction.PDFPeakExtraction.setdata">[docs]</a>
+    <span class="k">def</span> <span class="nf">setdata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">dx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dy</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : array-like</span>
+<span class="sd">            The x-coordinates of the data.</span>
+<span class="sd">        y : array-like</span>
+<span class="sd">            The y-coordinates of the data.&quot;&quot;&quot;</span>
+        <span class="n">PeakExtraction</span><span class="o">.</span><span class="n">setdata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">qmax_fromdata</span> <span class="o">=</span> <span class="n">find_qmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Could not determine qmax from the data.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PDFPeakExtraction.clear">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.pdfpeakextraction.PDFPeakExtraction.clear">[docs]</a>
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Clear all members.</span>
+
+<span class="sd">        The purpose of the method is to ensure the object is in a clean state.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Clear additional members</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nyquist</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qmax_reportedbypdf</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qmax_fromdata</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">supersample</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">PeakExtraction</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PDFPeakExtraction.setvars">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.pdfpeakextraction.PDFPeakExtraction.setvars">[docs]</a>
+    <span class="k">def</span> <span class="nf">setvars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set one or more extraction variables.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        quiet : bool, optional</span>
+<span class="sd">            Log changes quietly. Default is False.</span>
+
+<span class="sd">        **kwds : keyword arguments</span>
+<span class="sd">            Additional variables to set. Possible keywords include:</span>
+
+<span class="sd">        - cres : float</span>
+<span class="sd">            The clustering resolution, must be greater than or equal to 0.</span>
+
+<span class="sd">        - effective_dy : float</span>
+<span class="sd">            The uncertainties actually used during extraction. Aliased as &#39;dg&#39;.</span>
+
+<span class="sd">        - pf : list of PeakFunctionBase subclasses instances</span>
+<span class="sd">            Sequence of peak function base subclass instances.</span>
+
+<span class="sd">        - baseline : Baseline or BaselineFunction instance</span>
+<span class="sd">            Baseline instance or BaselineFunction instance for built-in estimation.</span>
+
+<span class="sd">        - error_method : ErrorEvaluator subclass instance</span>
+<span class="sd">            Error evaluator subclass instance used to compare models. Default is AIC.</span>
+
+<span class="sd">        - initial_peaks : Peaks instance</span>
+<span class="sd">            Peaks instance representing the peaks present at the start of extraction.</span>
+
+<span class="sd">        - rng : tuple of (float, float)</span>
+<span class="sd">            Specifies the least and greatest x-values over which to extract peaks.</span>
+
+<span class="sd">        - qmax : float or &quot;automatic&quot;</span>
+<span class="sd">            The qmax value for the probability density function (pdf).</span>
+<span class="sd">            If set to &quot;automatic&quot;, it will be estimated from the data.</span>
+
+<span class="sd">        - nyquist : bool</span>
+<span class="sd">            Whether to use nyquist sampling or not.</span>
+
+<span class="sd">        - supersample : int</span>
+<span class="sd">            Degree of supersampling above the Nyquist rate to use.</span>
+
+<span class="sd">        - scale : bool</span>
+<span class="sd">            Scale uncertainties on recursion when nyquist is True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Treat &quot;dg&quot; as alias for &quot;effective_dy&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;dg&quot;</span> <span class="ow">in</span> <span class="n">kwds</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s2">&quot;effective_dy&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwds</span><span class="p">:</span>
+                <span class="n">kwds</span><span class="p">[</span><span class="s2">&quot;effective_dy&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;dg&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Keyword &#39;dg&#39; is alias for &#39;effective_dy&#39;, cannot specify both.&quot;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;qmax&quot;</span> <span class="ow">in</span> <span class="n">kwds</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">kwds</span><span class="p">[</span><span class="s2">&quot;qmax&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;automatic&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax_fromdata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">kwds</span><span class="p">[</span><span class="s2">&quot;qmax&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax_fromdata</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Qmax could not be automatically determined.&quot;</span>
+                    <span class="k">raise</span> <span class="n">SrMiseQmaxError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;supersample&quot;</span> <span class="ow">in</span> <span class="n">kwds</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">kwds</span><span class="p">[</span><span class="s2">&quot;supersample&quot;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">1.0</span><span class="p">:</span>
+                <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Supersample must be a value greater than 1.&quot;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="n">PeakExtraction</span><span class="o">.</span><span class="n">setvars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quiet</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PDFPeakExtraction.defaultvars">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.pdfpeakextraction.PDFPeakExtraction.defaultvars">[docs]</a>
+    <span class="k">def</span> <span class="nf">defaultvars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set default values.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        *args : argparse.Namespace</span>
+<span class="sd">            Arguments passed to PeakExtraction.setdata().&quot;&quot;&quot;</span>
+        <span class="n">nargs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+        <span class="c1"># qmax preference: reported, then fromdata, then 0.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="s2">&quot;qmax&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax_reportedbypdf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax_reportedbypdf</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax_fromdata</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax_fromdata</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">if</span> <span class="s2">&quot;qmax&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+                <span class="n">nargs</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;qmax&quot;</span><span class="p">)</span>
+
+        <span class="c1"># nyquist</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nyquist</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="s2">&quot;nyquist&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nyquist</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nyquist</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="s2">&quot;nyquist&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+                <span class="n">nargs</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;nyquist&quot;</span><span class="p">)</span>
+
+        <span class="c1"># scale</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="s2">&quot;scale&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nyquist</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="s2">&quot;scale&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+                <span class="n">nargs</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;scale&quot;</span><span class="p">)</span>
+
+        <span class="c1"># supersample</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">supersample</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="s2">&quot;supersample&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">supersample</span> <span class="o">=</span> <span class="mf">4.0</span>
+            <span class="k">if</span> <span class="s2">&quot;supersample&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+                <span class="n">nargs</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;supersample&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Override defaults from PeakExtraction</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cres</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="s2">&quot;cres&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cres</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span>
+                <span class="k">if</span> <span class="s2">&quot;cres&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+                    <span class="n">nargs</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;cres&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pf</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="s2">&quot;pf&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">diffpy.srmise.peaks.gaussianoverr</span> <span class="kn">import</span> <span class="n">GaussianOverR</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">pf</span> <span class="o">=</span> <span class="p">[</span><span class="n">GaussianOverR</span><span class="p">(</span><span class="mf">0.7</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="s2">&quot;pf&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+                <span class="n">nargs</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;pf&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Enable &quot;dg&quot; as alias for &quot;effective_dy&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;dg&quot;</span> <span class="ow">in</span> <span class="n">args</span> <span class="ow">and</span> <span class="s2">&quot;effective_dy&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="n">nargs</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;effective_dy&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Set other defaults</span>
+        <span class="n">PeakExtraction</span><span class="o">.</span><span class="n">defaultvars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">nargs</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PDFPeakExtraction.resampledata">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.pdfpeakextraction.PDFPeakExtraction.resampledata">[docs]</a>
+    <span class="k">def</span> <span class="nf">resampledata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dr</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return (x, y, error in x, effective error in y) resampled by interval dr.</span>
+
+<span class="sd">        Uses values of self.x, self.y, self.dx, self.effective_dy.  The range is</span>
+<span class="sd">        constrained by self.rng.</span>
+
+<span class="sd">        The effective error may be scaled if class member scale is True.</span>
+
+<span class="sd">        The method for &#39;resampling&#39; the uncertainties is interpolation, since insufficient</span>
+<span class="sd">        information exists in a PDFPeakExtraction object to propogate them correctly on the</span>
+<span class="sd">        new grid.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dr : float</span>
+<span class="sd">            The sampling interval for resampling the data.</span>
+
+<span class="sd">        **kwds : dict, optional</span>
+<span class="sd">            Additional keyword arguments.</span>
+
+<span class="sd">            - eps : float, default=1e-6</span>
+<span class="sd">                Suppresses the information lost warning when the difference between `dr`</span>
+<span class="sd">                and the Nyquist interval `dr_nyquist` is less than `eps`.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple of ndarray</span>
+<span class="sd">            A tuple containing the resampled (x, y, error in x, effective error in y).&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defaultvars</span><span class="p">()</span>  <span class="c1"># Find correct range if necessary.</span>
+        <span class="n">eps</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;eps&quot;</span><span class="p">,</span> <span class="mi">10</span><span class="o">**-</span><span class="mi">6</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Resampling when qmax=0.  Information may be lost!&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dr_nyquist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span>
+
+            <span class="c1"># Not a robust epsilon test, but all physical Nyquist rates in same oom.</span>
+            <span class="k">if</span> <span class="n">dr</span> <span class="o">-</span> <span class="n">dr_nyquist</span> <span class="o">&gt;</span> <span class="n">eps</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;Resampling at </span><span class="si">%s</span><span class="s2">, below Nyquist rate of </span><span class="si">%s</span><span class="s2">.  Information will be lost!&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dr</span><span class="p">,</span> <span class="n">dr_nyquist</span><span class="p">)</span>
+                <span class="p">)</span>
+
+        <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">dr</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">resample</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+
+        <span class="c1"># TODO: Use a justified way to &quot;resample&quot; the uncertainties.</span>
+        <span class="c1"># Even semi-justified would improve this ugly hack.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">r_error</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">r_error</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span><span class="p">)</span>
+        <span class="n">y_error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">errorscale</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">effective_dy</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">r_error</span><span class="p">,</span> <span class="n">y_error</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PDFPeakExtraction.errorscale">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.pdfpeakextraction.PDFPeakExtraction.errorscale">[docs]</a>
+    <span class="k">def</span> <span class="nf">errorscale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return proper scale of uncertainties.</span>
+
+<span class="sd">        Always returns 1 unless qmax &gt; 0, Nyquist sampling</span>
+<span class="sd">        is enabled, and scale is True.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        dr: float</span>
+<span class="sd">            The sampling interval</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The uncertainties scaled.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">nyquist</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">:</span>
+            <span class="n">dr_nyquist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dr_nyquist</span> <span class="o">/</span> <span class="n">dr</span><span class="p">),</span> <span class="mf">1.0</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">1.0</span></div>
+
+
+<div class="viewcode-block" id="PDFPeakExtraction.extract">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.pdfpeakextraction.PDFPeakExtraction.extract">[docs]</a>
+    <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract peaks from the PDF. Returns ModelCovariance instance summarizing results.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **kwds : dict</span>
+<span class="sd">            Additional keyword arguments that might influence the extraction process.</span>
+<span class="sd">            These could include parameters like `qmax`, `supersample`, `nyquist`, etc., which</span>
+<span class="sd">            affect resampling and model refinement strategies.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ModelCovariance</span>
+<span class="sd">            An instance of ModelCovariance summarizing the covariance of the extracted model parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO: The sanest way forward is to create a PeakExtraction object that does</span>
+        <span class="c1"># the calculations for resampled data.  All the relevant extraction variables</span>
+        <span class="c1"># can be carefully controlled this way as well.  Furthermore, it continues to</span>
+        <span class="c1"># expose extract_single without change. (Could also implement a keyword system</span>
+        <span class="c1"># here to control certain values.)</span>
+
+        <span class="c1"># TODO: Add extraction variables for how I control resampling.  Add these to</span>
+        <span class="c1"># newvar, clean, defaultvar, etc.  In most cases the default are just fine.</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">clearcalc</span><span class="p">()</span>
+
+        <span class="n">tracer</span> <span class="o">=</span> <span class="n">srmiselog</span><span class="o">.</span><span class="n">tracer</span>
+        <span class="n">tracer</span><span class="o">.</span><span class="n">pushc</span><span class="p">()</span>
+
+        <span class="c1"># Make sure all required extraction variables have some value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defaultvars</span><span class="p">()</span>
+
+        <span class="c1"># Determine grid spacing</span>
+        <span class="n">dr_raw</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Extract using qmax=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">dr_nyquist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span>
+            <span class="k">if</span> <span class="n">dr_raw</span> <span class="o">&gt;</span> <span class="n">dr_nyquist</span><span class="p">:</span>
+                <span class="c1"># Technically I should yell for dr_raw &gt;= dr_nyquist, since information</span>
+                <span class="c1"># loss may occur at equality.</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;The input PDF appears to be missing information: The &quot;</span>
+                    <span class="s2">&quot;sampling interval of the input PDF (</span><span class="si">%s</span><span class="s2">) is larger than &quot;</span>
+                    <span class="s2">&quot;the Nyquist interval (</span><span class="si">%s</span><span class="s2">) defined by qmax=</span><span class="si">%s</span><span class="s2">.  This information &quot;</span>
+                    <span class="s2">&quot;is irretrievable.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dr_raw</span><span class="p">,</span> <span class="n">dr_nyquist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span><span class="p">)</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Do I actually need this?</span>
+            <span class="n">dr_nyquist</span> <span class="o">=</span> <span class="n">dr_raw</span>  <span class="c1"># not actually Nyquist sampling, natch</span>
+
+        <span class="c1"># Define grids</span>
+        <span class="n">rngslice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getrangeslice</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">r1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">rngslice</span><span class="p">]</span>
+            <span class="n">y1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">rngslice</span><span class="p">]</span>
+            <span class="n">y_error1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">effective_dy</span><span class="p">[</span><span class="n">rngslice</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">dr_nyquist</span> <span class="o">/</span> <span class="n">dr_raw</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">supersample</span><span class="p">:</span>
+                <span class="c1"># supersample PDF for initial extraction</span>
+                <span class="n">dr</span> <span class="o">=</span> <span class="n">dr_nyquist</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">supersample</span>
+                <span class="p">(</span><span class="n">r1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">r_error1</span><span class="p">,</span> <span class="n">y_error1</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resampledata</span><span class="p">(</span><span class="n">dr</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># provided PDF already sufficiently oversampled</span>
+                <span class="n">r1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">rngslice</span><span class="p">]</span>
+                <span class="n">y1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">rngslice</span><span class="p">]</span>
+                <span class="n">y_error1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">errorscale</span><span class="p">(</span><span class="n">dr_raw</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">effective_dy</span><span class="p">[</span><span class="n">rngslice</span><span class="p">]</span>
+
+        <span class="c1"># Set up initial extraction</span>
+        <span class="n">pe</span> <span class="o">=</span> <span class="n">PeakExtraction</span><span class="p">()</span>
+        <span class="n">pe</span><span class="o">.</span><span class="n">setdata</span><span class="p">(</span><span class="n">r1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;Performing initial peak extraction&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;----------------------------------&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
+
+        <span class="n">pe</span><span class="o">.</span><span class="n">setvars</span><span class="p">(</span>
+            <span class="n">cres</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cres</span><span class="p">,</span>
+            <span class="n">pf</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pf</span><span class="p">,</span>
+            <span class="n">effective_dy</span><span class="o">=</span><span class="n">y_error1</span><span class="p">,</span>
+            <span class="n">baseline</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">baseline</span><span class="p">,</span>
+            <span class="n">error_method</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">error_method</span><span class="p">,</span>
+            <span class="n">initial_peaks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_peaks</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Initial extraction</span>
+        <span class="n">pe</span><span class="o">.</span><span class="n">extract_single</span><span class="p">()</span>
+        <span class="n">ext</span> <span class="o">=</span> <span class="n">pe</span><span class="o">.</span><span class="n">extracted</span>
+        <span class="n">bl</span> <span class="o">=</span> <span class="n">pe</span><span class="o">.</span><span class="n">extracted</span><span class="o">.</span><span class="n">baseline</span>
+
+        <span class="c1"># Prune model with termination ripples</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s2">&quot;Model after initial extraction.&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;-----------------------------&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;Adding termination ripples.&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">msg</span><span class="p">),</span> <span class="n">ext</span><span class="p">)</span>
+
+            <span class="kn">from</span> <span class="nn">diffpy.srmise.peaks.terminationripples</span> <span class="kn">import</span> <span class="n">TerminationRipples</span>
+
+            <span class="n">owners</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">owner</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">ext</span><span class="o">.</span><span class="n">model</span><span class="p">]))</span>
+            <span class="n">tfuncs</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">owners</span><span class="p">:</span>
+                <span class="n">tfuncs</span><span class="p">[</span><span class="n">o</span><span class="p">]</span> <span class="o">=</span> <span class="n">TerminationRipples</span><span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">ext</span><span class="o">.</span><span class="n">model</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c1"># TODO: Make this check more robust, or incorporate similar</span>
+                    <span class="c1">#       functionality into the design of peakfunctionbase.</span>
+                    <span class="c1">#       It is easy to imagine wrapping a peak function</span>
+                    <span class="c1">#       several times to achieve different effects, but it</span>
+                    <span class="c1">#       isn&#39;t necessarily clear when any given wrapping</span>
+                    <span class="c1">#       is inadmissible.</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">owner</span><span class="p">(),</span> <span class="n">TerminationRipples</span><span class="p">):</span>
+                        <span class="n">p</span><span class="o">.</span><span class="n">changeowner</span><span class="p">(</span><span class="n">tfuncs</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">owner</span><span class="p">()])</span>
+                <span class="k">except</span> <span class="n">SrMiseStaticOwnerError</span><span class="p">:</span>
+                    <span class="k">pass</span>
+
+            <span class="c1"># Use Nyquist sampled data if desired</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nyquist</span><span class="p">:</span>
+
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Applying Nyquist sampling.&quot;</span><span class="p">)</span>
+
+                <span class="c1"># Models with more free parameters than data points cannot be fit</span>
+                <span class="c1"># with chi-squared methods, so sometimes the existing model cannot</span>
+                <span class="c1"># be pruned if the data are immediately resampled at the Nyquist</span>
+                <span class="c1"># rate.  In that case, keep resampling/pruning until no more parameters</span>
+                <span class="c1"># can be removed or until able to resample at the Nyquist rate.</span>
+                <span class="c1"># This either gives the correct statistics, or uses the least amount</span>
+                <span class="c1"># of supersampling that can be mustered.  The latter case usually</span>
+                <span class="c1"># indicates that effective_dy is too small.</span>
+                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">totalfreepars</span> <span class="o">=</span> <span class="n">ext</span><span class="o">.</span><span class="n">npars</span><span class="p">(</span><span class="n">count_fixed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">totalfreepars</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="n">r1</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">r1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">dr_nyquist</span><span class="p">:</span>
+                        <span class="n">dr_resample</span> <span class="o">=</span> <span class="mf">0.9999</span> <span class="o">*</span> <span class="p">(</span><span class="n">r1</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">r1</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">totalfreepars</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">dr_resample</span> <span class="o">=</span> <span class="n">dr_nyquist</span>
+
+                    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                        <span class="s2">&quot;Data resampled at dr=</span><span class="si">%s</span><span class="s2">. (Nyquist rate=</span><span class="si">%s</span><span class="s2">)&quot;</span><span class="p">,</span>
+                        <span class="n">dr_resample</span><span class="p">,</span>
+                        <span class="n">dr_nyquist</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+                    <span class="p">(</span><span class="n">r2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">r_error2</span><span class="p">,</span> <span class="n">y_error2</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resampledata</span><span class="p">(</span><span class="n">dr_resample</span><span class="p">)</span>
+
+                    <span class="n">ext</span> <span class="o">=</span> <span class="n">ModelCluster</span><span class="p">(</span>
+                        <span class="n">ext</span><span class="o">.</span><span class="n">model</span><span class="p">,</span>
+                        <span class="n">bl</span><span class="p">,</span>
+                        <span class="n">r2</span><span class="p">,</span>
+                        <span class="n">y2</span><span class="p">,</span>
+                        <span class="n">y_error2</span><span class="p">,</span>
+                        <span class="kc">None</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">error_method</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">pf</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="n">ext</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>  <span class="c1"># Clean up parameters after resampling.</span>
+
+                    <span class="n">ext</span><span class="o">.</span><span class="n">prune</span><span class="p">()</span>
+
+                    <span class="k">if</span> <span class="n">dr_resample</span> <span class="o">==</span> <span class="n">dr_nyquist</span><span class="p">:</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Nyquist sampling complete.&quot;</span><span class="p">)</span>
+                        <span class="k">break</span>
+                    <span class="k">elif</span> <span class="n">ext</span><span class="o">.</span><span class="n">npars</span><span class="p">(</span><span class="n">count_fixed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="o">==</span> <span class="n">totalfreepars</span><span class="p">:</span>
+                        <span class="n">msg</span> <span class="o">=</span> <span class="p">[</span>
+                            <span class="s2">&quot;Warning: Nyquist sampling could not be completed, too many free parameters.&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;The data have been oversampled by the least possible amount, but their &quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;uncertainties are correlated and the model is probably overfit.&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;Data sampled at dr=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;Nyquist rate=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;Degree of oversampling: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="p">]</span>
+                        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                            <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">msg</span><span class="p">),</span>
+                            <span class="n">dr_resample</span><span class="p">,</span>
+                            <span class="n">dr_nyquist</span><span class="p">,</span>
+                            <span class="n">dr_nyquist</span> <span class="o">/</span> <span class="n">dr_resample</span><span class="p">,</span>
+                        <span class="p">)</span>
+                        <span class="k">break</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ext</span> <span class="o">=</span> <span class="n">ModelCluster</span><span class="p">(</span><span class="n">ext</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="n">bl</span><span class="p">,</span> <span class="n">r1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">y_error1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_method</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pf</span><span class="p">)</span>
+                <span class="n">ext</span><span class="o">.</span><span class="n">prune</span><span class="p">()</span>
+
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Model after resampling and termination ripples:</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ext</span><span class="p">)</span>
+
+        <span class="c1"># Fit model with baseline, report covariance matrix</span>
+        <span class="n">cov</span> <span class="o">=</span> <span class="n">ModelCovariance</span><span class="p">()</span>
+        <span class="n">ext</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">fitbaseline</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cov</span><span class="o">=</span><span class="n">cov</span><span class="p">,</span> <span class="n">cov_format</span><span class="o">=</span><span class="s2">&quot;default_output&quot;</span><span class="p">)</span>
+        <span class="n">tracer</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Model after fitting with baseline:&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cov</span><span class="p">))</span>
+            <span class="c1"># logger.info(&quot;Correlations &gt; .8:\n%s&quot;, &quot;\n&quot;.join(str(c) for c in cov.correlationwarning(.8)))</span>
+        <span class="k">except</span> <span class="n">SrMiseUndefinedCovarianceError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Covariance not defined for final model.  Fit may not have converged.&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ext</span><span class="p">))</span>
+
+        <span class="c1"># Update calculated instance variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extraction_type</span> <span class="o">=</span> <span class="s2">&quot;extract&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extracted</span> <span class="o">=</span> <span class="n">ext</span>
+
+        <span class="n">tracer</span><span class="o">.</span><span class="n">popc</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">cov</span></div>
+
+
+<div class="viewcode-block" id="PDFPeakExtraction.fit">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.pdfpeakextraction.PDFPeakExtraction.fit">[docs]</a>
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Fit peaks in the PDF. Returns ModelCovariance instance summarizing results.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **kwds : dict</span>
+<span class="sd">            Keyword arguments passed to ModelCovariance instance. Different keywords could have</span>
+<span class="sd">            different strategies to fit. See ModelCovariance class for more information.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ModelCovariance instance</span>
+<span class="sd">            The fitted ModelCovariance instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">clearcalc</span><span class="p">()</span>
+
+        <span class="c1"># Make sure all required extraction variables have some value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">defaultvars</span><span class="p">()</span>
+
+        <span class="c1"># Determine grid spacing</span>
+        <span class="n">dr_raw</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Fit using qmax=</span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">dr_nyquist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span>
+            <span class="k">if</span> <span class="n">dr_raw</span> <span class="o">&gt;</span> <span class="n">dr_nyquist</span><span class="p">:</span>
+                <span class="c1"># Technically I should yell for dr_raw &gt;= dr_nyquist, since information</span>
+                <span class="c1"># loss may occur at equality.</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="s2">&quot;The input PDF appears to be missing information: The &quot;</span>
+                    <span class="s2">&quot;sampling interval of the input PDF (</span><span class="si">%s</span><span class="s2">) is larger than &quot;</span>
+                    <span class="s2">&quot;the Nyquist interval (</span><span class="si">%s</span><span class="s2">) defined by qmax=</span><span class="si">%s</span><span class="s2">.  This information &quot;</span>
+                    <span class="s2">&quot;is irretrievable.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">dr_raw</span><span class="p">,</span> <span class="n">dr_nyquist</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span><span class="p">)</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Do I actually need this?</span>
+            <span class="n">dr_nyquist</span> <span class="o">=</span> <span class="n">dr_raw</span>  <span class="c1"># not actually Nyquist sampling, natch</span>
+
+        <span class="c1"># Define grids</span>
+        <span class="n">rngslice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getrangeslice</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">nyquist</span><span class="p">:</span>
+            <span class="n">r1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">rngslice</span><span class="p">]</span>
+            <span class="n">y1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">rngslice</span><span class="p">]</span>
+            <span class="n">y_error1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">effective_dy</span><span class="p">[</span><span class="n">rngslice</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="p">(</span><span class="n">r1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">r_error1</span><span class="p">,</span> <span class="n">y_error1</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resampledata</span><span class="p">(</span><span class="n">dr_nyquist</span><span class="p">)</span>
+
+        <span class="c1"># Set up for fit_single</span>
+        <span class="n">pe</span> <span class="o">=</span> <span class="n">PeakExtraction</span><span class="p">()</span>
+        <span class="n">pe</span><span class="o">.</span><span class="n">setdata</span><span class="p">(</span><span class="n">r1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Performing peak fitting&quot;</span><span class="p">,</span> <span class="s2">&quot;-----------------------&quot;</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">msg</span><span class="p">))</span>
+
+        <span class="n">pe</span><span class="o">.</span><span class="n">setvars</span><span class="p">(</span>
+            <span class="n">cres</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">cres</span><span class="p">,</span>
+            <span class="n">pf</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pf</span><span class="p">,</span>
+            <span class="n">effective_dy</span><span class="o">=</span><span class="n">y_error1</span><span class="p">,</span>
+            <span class="n">baseline</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">baseline</span><span class="p">,</span>
+            <span class="n">error_method</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">error_method</span><span class="p">,</span>
+            <span class="n">initial_peaks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_peaks</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Perform fit</span>
+        <span class="n">cov</span> <span class="o">=</span> <span class="n">pe</span><span class="o">.</span><span class="n">fit_single</span><span class="p">()</span>
+        <span class="n">ext</span> <span class="o">=</span> <span class="n">pe</span><span class="o">.</span><span class="n">extracted</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Model after fitting with baseline:&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">ext</span><span class="p">))</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">cov</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">SrMiseUndefinedCovarianceError</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Covariance not defined for final model.  Fit may not have converged.&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Update calculated instance variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extraction_type</span> <span class="o">=</span> <span class="s2">&quot;fit&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extracted</span> <span class="o">=</span> <span class="n">ext</span>
+
+        <span class="k">return</span> <span class="n">cov</span></div>
+
+
+<div class="viewcode-block" id="PDFPeakExtraction.writemetadata">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.pdfpeakextraction.PDFPeakExtraction.writemetadata">[docs]</a>
+    <span class="k">def</span> <span class="nf">writemetadata</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return string representation of peak extraction from PDF.&quot;&quot;&quot;</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;filename=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;nyquist=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nyquist</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;qmax=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">qmax</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;qmax_reportedbypdf=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">qmax_reportedbypdf</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;qmax_fromdata=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">qmax_fromdata</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;scale=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;supersample=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">supersample</span><span class="p">))</span>
+
+        <span class="n">datastring</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">datastring</span></div>
+
+
+<div class="viewcode-block" id="PDFPeakExtraction.readmetadata">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.pdfpeakextraction.PDFPeakExtraction.readmetadata">[docs]</a>
+    <span class="k">def</span> <span class="nf">readmetadata</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">metastr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read metadata from string.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        metastr : str</span>
+<span class="sd">            Metadata string to read.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># filename</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^filename=(.*)$&quot;</span><span class="p">,</span> <span class="n">metastr</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">res</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">filename</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;metastr does not match required field &#39;filename&#39;&quot;</span>
+            <span class="k">raise</span> <span class="n">SrMiseDataFormatError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="c1"># nyquist</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^nyquist=(.*)$&quot;</span><span class="p">,</span> <span class="n">metastr</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">res</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nyquist</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;metastr does not match required field &#39;nyquist&#39;&quot;</span>
+            <span class="k">raise</span> <span class="n">SrMiseDataFormatError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="c1"># qmax</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^qmax=(.*)$&quot;</span><span class="p">,</span> <span class="n">metastr</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">res</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;metastr does not match required field &#39;qmax&#39;&quot;</span>
+            <span class="k">raise</span> <span class="n">SrMiseDataFormatError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="c1"># qmax_reportedbypdf</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^qmax_reportedbypdf=(.*)$&quot;</span><span class="p">,</span> <span class="n">metastr</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">res</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">qmax_reportedbypdf</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;metastr does not match required field &#39;qmax_reportedbypdf&#39;&quot;</span>
+            <span class="k">raise</span> <span class="n">SrMiseDataFormatError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="c1"># qmax_fromdata</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^qmax_fromdata=(.*)$&quot;</span><span class="p">,</span> <span class="n">metastr</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">res</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">qmax_fromdata</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;metastr does not match required field &#39;qmax_fromdata&#39;&quot;</span>
+            <span class="k">raise</span> <span class="n">SrMiseDataFormatError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="c1"># scale</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^scale=(.*)$&quot;</span><span class="p">,</span> <span class="n">metastr</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">res</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;metastr does not match required field &#39;scale&#39;&quot;</span>
+            <span class="k">raise</span> <span class="n">SrMiseDataFormatError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="c1"># supersample</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^supersample=(.*)$&quot;</span><span class="p">,</span> <span class="n">metastr</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">res</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">supersample</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">res</span><span class="o">.</span><span class="n">groups</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;metastr does not match required field &#39;supersample&#39;&quot;</span>
+            <span class="k">raise</span> <span class="n">SrMiseDataFormatError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PDFPeakExtraction.writepwa">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.pdfpeakextraction.PDFPeakExtraction.writepwa">[docs]</a>
+    <span class="k">def</span> <span class="nf">writepwa</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">comments</span><span class="o">=</span><span class="s2">&quot;n/a&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write string summarizing extracted peaks to file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        filename : str</span>
+<span class="sd">            The name of the file to write</span>
+
+<span class="sd">        comments : str</span>
+<span class="sd">            The comments to write</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">bytes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">writepwastr</span><span class="p">(</span><span class="n">comments</span><span class="p">)</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">bytes</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="PDFPeakExtraction.writepwastr">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.pdfpeakextraction.PDFPeakExtraction.writepwastr">[docs]</a>
+    <span class="k">def</span> <span class="nf">writepwastr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">comments</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return string of extracted peaks (position, width, area) in PDF.</span>
+
+<span class="sd">        There is not enough information to recreate the extracted peaks from</span>
+<span class="sd">        this file.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        comments : str</span>
+<span class="sd">            The string added to header containing notes about the output.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracted</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Cannot write summary: Peak Extraction has not been performed.&quot;</span>
+            <span class="k">raise</span> <span class="n">SrMiseError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="kn">import</span> <span class="nn">time</span>
+        <span class="kn">from</span> <span class="nn">getpass</span> <span class="kn">import</span> <span class="n">getuser</span>
+
+        <span class="kn">from</span> <span class="nn">diffpy.srmise</span> <span class="kn">import</span> <span class="n">__version__</span>
+        <span class="kn">from</span> <span class="nn">diffpy.srmise.basefunction</span> <span class="kn">import</span> <span class="n">BaseFunction</span>
+
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Header</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="s2">&quot;Summary written: &quot;</span> <span class="o">+</span> <span class="n">time</span><span class="o">.</span><span class="n">ctime</span><span class="p">(),</span>
+                <span class="s2">&quot;produced by &quot;</span> <span class="o">+</span> <span class="n">getuser</span><span class="p">(),</span>
+                <span class="s2">&quot;diffpy.srmise version </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">__version__</span><span class="p">,</span>
+                <span class="s2">&quot;##### User comments&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="n">tcomments</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">comments</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+            <span class="n">tcomments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;# &quot;</span> <span class="o">+</span> <span class="n">c</span><span class="p">)</span>
+
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tcomments</span><span class="p">)</span>
+
+        <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+            <span class="p">[</span>
+                <span class="s2">&quot;##### PDF Peak Extraction Summary&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;# The information below is not sufficient to replicate extraction.&quot;</span><span class="p">,</span>
+            <span class="p">]</span>
+        <span class="p">)</span>
+
+        <span class="c1"># PDF peak extraction metadata</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;## PDF metadata&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;filename=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;nyquist=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nyquist</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;qmax=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">qmax</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;qmax_reportedbypdf=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">qmax_reportedbypdf</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;qmax_fromdata=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">qmax_fromdata</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;scale=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;supersample=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">supersample</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;## Peak extraction metadata&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Extraction range</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;Range=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rng</span><span class="p">))</span>
+
+        <span class="c1"># Clustering resolution</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;cres=</span><span class="si">%g</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">cres</span><span class="p">)</span>
+
+        <span class="c1"># Average effective dy</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;effective_dy=</span><span class="si">%s</span><span class="s2"> (mean)&quot;</span> <span class="o">%</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">effective_dy</span><span class="p">))</span>
+        <span class="c1"># Passing the entire thing is something we&#39;re avoiding in the summary.</span>
+
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Initial peaks</span>
+        <span class="c1"># I&#39;m not sure what I want for this, but probably nothing.</span>
+        <span class="c1"># lines.append(&#39;## Initial Peaks&#39;)</span>
+        <span class="c1"># lines.append(&#39;&#39;)</span>
+
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;## Model Quality&quot;</span><span class="p">)</span>
+        <span class="c1"># Quality of fit</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;# Quality reported by ModelEvaluator: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracted</span><span class="o">.</span><span class="n">quality</span><span class="p">()</span><span class="o">.</span><span class="n">stat</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;# Free parameters in extracted peaks: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracted</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">npars</span><span class="p">(</span><span class="n">count_fixed</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baseline</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fblpars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baseline</span><span class="o">.</span><span class="n">npars</span><span class="p">(</span><span class="n">count_fixed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">fblpars</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;# Free parameters in baseline: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">fblpars</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;# Length of data in final fit: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted</span><span class="o">.</span><span class="n">r_data</span><span class="p">))</span>
+
+        <span class="c1"># Model evaluator</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_method</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;ModelEvaluator=None&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;ModelEvaluator=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_method</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Generate list of PeakFunctions and BaselineFunctions</span>
+        <span class="c1"># so I can refer to them by index.</span>
+        <span class="n">allpf</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">allbf</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pf</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">allpf</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pf</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_peaks</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">allpf</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">i</span><span class="o">.</span><span class="n">owner</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">initial_peaks</span><span class="p">])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">baseline</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">baseline</span><span class="p">,</span> <span class="n">BaseFunction</span><span class="p">):</span>
+                <span class="n">allbf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">baseline</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># should be a ModelPart</span>
+                <span class="n">allbf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">baseline</span><span class="o">.</span><span class="n">owner</span><span class="p">())</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracted</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">allpf</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted</span><span class="o">.</span><span class="n">peak_funcs</span><span class="p">)</span>
+            <span class="n">allpf</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">owner</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracted</span><span class="o">.</span><span class="n">model</span><span class="p">])</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracted</span><span class="o">.</span><span class="n">baseline</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">allbf</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extracted</span><span class="o">.</span><span class="n">baseline</span><span class="o">.</span><span class="n">owner</span><span class="p">())</span>
+        <span class="n">allpf</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">allpf</span><span class="p">))</span>
+        <span class="n">allbf</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">allbf</span><span class="p">))</span>
+        <span class="n">safepf</span> <span class="o">=</span> <span class="n">BaseFunction</span><span class="o">.</span><span class="n">safefunctionlist</span><span class="p">(</span><span class="n">allpf</span><span class="p">)</span>
+        <span class="n">safebf</span> <span class="o">=</span> <span class="n">BaseFunction</span><span class="o">.</span><span class="n">safefunctionlist</span><span class="p">(</span><span class="n">allbf</span><span class="p">)</span>
+
+        <span class="c1"># Baseline Functions</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;## Baseline Functions&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;# Index Type&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">bf</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">safebf</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">bf</span><span class="o">.</span><span class="n">base</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">base</span> <span class="o">=</span> <span class="s2">&quot;(base=</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="n">safebf</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">bf</span><span class="o">.</span><span class="n">base</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">base</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">bf</span><span class="o">.</span><span class="n">getmodule</span><span class="p">(),</span> <span class="n">base</span><span class="p">))</span>
+
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Baseline</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;## Baseline&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;# Parameters of baseline, followed by comment which&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;# gives the index of corresponding Baseline Function.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracted</span><span class="o">.</span><span class="n">baseline</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;None&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Generate parameter labels from the baseline function&#39;s parameterdict</span>
+            <span class="n">blf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracted</span><span class="o">.</span><span class="n">baseline</span><span class="o">.</span><span class="n">owner</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">blf</span><span class="o">.</span><span class="n">npars</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">parlbl</span> <span class="o">=</span> <span class="n">blf</span><span class="o">.</span><span class="n">parameterdict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+                <span class="n">paridx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">blf</span><span class="o">.</span><span class="n">parameterdict</span><span class="o">.</span><span class="n">values</span><span class="p">())</span><span class="o">.</span><span class="n">argsort</span><span class="p">()</span>
+                <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;# &quot;</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">parlbl</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">paridx</span><span class="p">]))</span>
+                <span class="n">blpars</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracted</span><span class="o">.</span><span class="n">baseline</span><span class="o">.</span><span class="n">pars</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">blpars</span> <span class="o">=</span> <span class="s2">&quot;(no parameters)&quot;</span>
+            <span class="n">blidx</span> <span class="o">=</span> <span class="n">safebf</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">blf</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> # </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">blpars</span><span class="p">,</span> <span class="n">blidx</span><span class="p">))</span>
+
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Peak Functions</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;## Peak Functions&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;# Index Type&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">pf</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">safepf</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">pf</span><span class="o">.</span><span class="n">base</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">base</span> <span class="o">=</span> <span class="s2">&quot;(base=</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="n">safepf</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">pf</span><span class="o">.</span><span class="n">base</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">base</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">pf</span><span class="o">.</span><span class="n">getmodule</span><span class="p">(),</span> <span class="n">base</span><span class="p">))</span>
+
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="c1"># PWA</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;## Extracted Peaks&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;# Parameters are given in the natural units of the data,&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;# where width is measured as full-width at half maximum.&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;# Each line is followd by a comment which gives the index&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;# of the corresponding Peak Function.&quot;</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;#L position fwhm area&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">extracted</span><span class="o">.</span><span class="n">model</span><span class="p">:</span>
+            <span class="n">pf</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">owner</span><span class="p">()</span>
+            <span class="n">pwa</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">transform_parameters</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">in_format</span><span class="o">=</span><span class="s2">&quot;internal&quot;</span><span class="p">,</span> <span class="n">out_format</span><span class="o">=</span><span class="s2">&quot;pwa&quot;</span><span class="p">)</span>
+            <span class="n">pidx</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">parameterdict</span><span class="p">[</span><span class="s2">&quot;position&quot;</span><span class="p">]</span>
+            <span class="n">widx</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">parameterdict</span><span class="p">[</span><span class="s2">&quot;width&quot;</span><span class="p">]</span>
+            <span class="n">aidx</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">parameterdict</span><span class="p">[</span><span class="s2">&quot;area&quot;</span><span class="p">]</span>
+            <span class="n">pfidx</span> <span class="o">=</span> <span class="n">safepf</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">pf</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> # </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pwa</span><span class="p">[</span><span class="n">pidx</span><span class="p">],</span> <span class="n">pwa</span><span class="p">[</span><span class="n">widx</span><span class="p">],</span> <span class="n">pwa</span><span class="p">[</span><span class="n">aidx</span><span class="p">],</span> <span class="n">pfidx</span><span class="p">))</span>
+
+        <span class="n">datastring</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">datastring</span></div>
+</div>
+
+
+
+<span class="c1"># end PDFPeakExtraction class</span>
+
+
+<div class="viewcode-block" id="resample">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.pdfpeakextraction.resample">[docs]</a>
+<span class="k">def</span> <span class="nf">resample</span><span class="p">(</span><span class="n">orig_r</span><span class="p">,</span> <span class="n">orig_y</span><span class="p">,</span> <span class="n">new_r</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resample sequence with Whittaker-Shannon interpolation formula.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    orig_r : array-like</span>
+<span class="sd">        The r grid of the original sample.</span>
+<span class="sd">    orig_y : array-like</span>
+<span class="sd">        The data to resample.</span>
+<span class="sd">    new_r : array-like</span>
+<span class="sd">        The resampled r grid.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    new_y : array-like</span>
+<span class="sd">        The sequence of same type as new_r with the resampled values.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">orig_r</span><span class="p">)</span>
+    <span class="n">dr</span> <span class="o">=</span> <span class="p">(</span><span class="n">orig_r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">orig_r</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">new_r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">orig_r</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Resampling outside original grid: </span><span class="si">%s</span><span class="s2"> (requested) &lt; </span><span class="si">%s</span><span class="s2"> (original)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">new_r</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">orig_r</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+    <span class="k">if</span> <span class="n">new_r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">orig_r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+            <span class="s2">&quot;Resampling outside original grid: </span><span class="si">%s</span><span class="s2"> (requested) &gt; </span><span class="si">%s</span><span class="s2"> (original)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">new_r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">orig_r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="p">)</span>
+
+    <span class="n">new_y</span> <span class="o">=</span> <span class="n">new_r</span> <span class="o">*</span> <span class="mf">0.0</span>
+    <span class="n">shift</span> <span class="o">=</span> <span class="n">orig_r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">dr</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">orig_y</span><span class="p">):</span>
+        <span class="n">new_y</span> <span class="o">+=</span> <span class="n">y</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sinc</span><span class="p">(</span><span class="n">new_r</span> <span class="o">/</span> <span class="n">dr</span> <span class="o">-</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">shift</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">new_y</span></div>
+
+
+
+<div class="viewcode-block" id="find_qmax">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.pdfpeakextraction.find_qmax">[docs]</a>
+<span class="k">def</span> <span class="nf">find_qmax</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">showgraphs</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine approximate qmax from PDF.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    r : array-like</span>
+<span class="sd">        The r values of the PDF.</span>
+<span class="sd">    y : array-like</span>
+<span class="sd">        The corresponding y values of the PDF.</span>
+<span class="sd">    showgraphs : bool</span>
+<span class="sd">        If True, the graphs are shown.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    tuple</span>
+<span class="sd">        The qmax of the PDF and its corresponding uncertainties.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+        <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Argument arrays must have the same length.&quot;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+    <span class="n">dr</span> <span class="o">=</span> <span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Nyquist-sampled PDFs already have the minimum number of data points, so</span>
+    <span class="c1"># they must be resampled so sudden changes in reciprocal space amplitudes</span>
+    <span class="c1"># can be observed.</span>
+    <span class="n">new_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">2</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+    <span class="n">new_y</span> <span class="o">=</span> <span class="n">resample</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">new_r</span><span class="p">)</span>
+    <span class="n">new_dr</span> <span class="o">=</span> <span class="p">(</span><span class="n">new_r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">new_r</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">yfft</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">imag</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fft</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">new_y</span><span class="p">))[:</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_y</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]</span>
+
+    <span class="n">d_ratio</span> <span class="o">=</span> <span class="n">stdratio</span><span class="p">(</span><span class="n">yfft</span><span class="p">)</span>
+
+    <span class="c1"># Negative of the 2nd (forward) difference of d_ratio.  There should be</span>
+    <span class="c1"># a noticeable jump in the ratio at qmax.  Before and after qmax the ratio</span>
+    <span class="c1"># smoothly rises (roughly linearly or as a second-order polynomial).  If</span>
+    <span class="c1"># there is a large amount of extra data past qmax the ratio will fall</span>
+    <span class="c1"># smoothly as d_left start to include points past qmax.  Taking the 2nd</span>
+    <span class="c1"># difference removes this smoothly varying part, leaving relatively sharp</span>
+    <span class="c1"># peaks near the jump.  The jump in d_ratio (even if obscured) appears as</span>
+    <span class="c1"># a negative peak in the 2nd derivative, hence multiplication by -1.</span>
+    <span class="n">dder</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">d_ratio</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># The index of yfft which leads to the jump in d_ratio.  (Search dder in</span>
+    <span class="c1"># reverse since we probably want the last maximum in it, in the unlikely case</span>
+    <span class="c1"># it appears more than once, while argmax returns the first.)</span>
+    <span class="n">m_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dder</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dder</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">dq</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">new_y</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">new_dr</span><span class="p">)</span>
+    <span class="n">qmax</span> <span class="o">=</span> <span class="n">dq</span> <span class="o">*</span> <span class="n">m_idx</span>
+
+    <span class="c1"># Calculate dq again for original grid</span>
+    <span class="n">dq</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dr</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">showgraphs</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+        <span class="n">v1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">m_idx</span> <span class="o">-</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">m_idx</span><span class="p">)),</span> <span class="mi">2</span><span class="p">])</span>
+        <span class="n">v2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">m_idx</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">yfft</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">m_idx</span><span class="p">)),</span> <span class="nb">len</span><span class="p">(</span><span class="n">d_ratio</span><span class="p">)])</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>
+
+        <span class="c1"># DFT of the PDF</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">)</span>  <span class="c1"># near obtained qmax</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">dq</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">),</span> <span class="n">yfft</span><span class="p">[</span><span class="n">v1</span><span class="p">:</span><span class="n">v2</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">qmax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s2">&quot;qmax: </span><span class="si">%s</span><span class="s2"> (dq=</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">qmax</span><span class="p">,</span> <span class="n">dq</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">)</span>  <span class="c1"># over whole range</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">dq</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">yfft</span><span class="p">)),</span> <span class="n">yfft</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axvline</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">qmax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;r&quot;</span><span class="p">)</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ioff</span><span class="p">()</span>
+        <span class="nb">input</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">qmax</span><span class="p">,</span> <span class="n">dq</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="stdratio">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.pdfpeakextraction.stdratio">[docs]</a>
+<span class="k">def</span> <span class="nf">stdratio</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate ratio of standard deviation for runs of equal length in data.</span>
+
+<span class="sd">    Uses a numerically-stable online algorithm for calculating the standard</span>
+<span class="sd">    deviation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : array-like</span>
+<span class="sd">        The sequence of data values</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    array-like</span>
+<span class="sd">        an array of length floor(len(data)/2)-1.  The ith element is</span>
+<span class="sd">        equivalent to std(data[:i+2])/std(data[i+2:2i+4]).&quot;&quot;&quot;</span>
+
+    <span class="n">limit</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">std_left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
+    <span class="n">std_right</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">limit</span><span class="p">)</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">m2</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="c1"># Update std_left.  This is the usual online algorithm.</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">limit</span><span class="p">):</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">mean</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">mean</span> <span class="o">+</span> <span class="n">delta</span> <span class="o">/</span> <span class="n">n</span>
+        <span class="n">m2</span> <span class="o">=</span> <span class="n">m2</span> <span class="o">+</span> <span class="n">delta</span> <span class="o">*</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span>
+        <span class="n">std_left</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">m2</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">m2</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">std_right</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">std_right</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">m2</span>
+
+    <span class="c1"># Update std_right.  Remove one from left side, add two on right.</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">limit</span><span class="p">):</span>
+        <span class="c1"># Remove one from left</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">mean</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">mean</span> <span class="o">-</span> <span class="n">delta</span> <span class="o">/</span> <span class="n">n</span>
+        <span class="n">m2</span> <span class="o">=</span> <span class="n">m2</span> <span class="o">-</span> <span class="n">delta</span> <span class="o">*</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span>
+
+        <span class="c1"># Add two to right</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">2</span>
+        <span class="n">mean_add</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">data</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">m2_add</span> <span class="o">=</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">mean_add</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">mean_add</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">mean_add</span> <span class="o">-</span> <span class="n">mean</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">mean</span> <span class="o">+</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">delta</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>
+        <span class="n">m2</span> <span class="o">=</span> <span class="n">m2</span> <span class="o">+</span> <span class="n">m2_add</span> <span class="o">+</span> <span class="p">(</span><span class="n">delta</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">4</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>
+        <span class="n">std_right</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">m2</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">std_left</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">/</span> <span class="n">std_right</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span></div>
+
+
+
+<span class="c1"># Redirect to main extraction script</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">diffpy.srmise.applications</span> <span class="kn">import</span> <span class="n">extract</span>
+
+    <span class="n">extract</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, The Trustees of Columbia University in the City of New York.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>diffpy.srmise.baselines.nanospherical &mdash; diffpy.srmise 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=f539c95a"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            diffpy.srmise
+          </a>
+              <div class="version">
+                0.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../release.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/diffpy.srmise.html">Package API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">diffpy.srmise</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">diffpy.srmise.baselines.nanospherical</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for diffpy.srmise.baselines.nanospherical</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1">##############################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># SrMise            by Luke Granlund</span>
+<span class="c1">#                   (c) 2014 trustees of the Michigan State University</span>
+<span class="c1">#                   (c) 2024 trustees of Columbia University in the City of New York</span>
+<span class="c1">#                   All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># File coded by:    Luke Granlund</span>
+<span class="c1">#</span>
+<span class="c1"># See LICENSE.txt for license information.</span>
+<span class="c1">#</span>
+<span class="c1">##############################################################################</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">diffpy.srmise.baselines.base</span> <span class="kn">import</span> <span class="n">BaselineFunction</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;diffpy.srmise&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="NanoSpherical">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.baselines.html#diffpy.srmise.baselines.nanospherical.NanoSpherical">[docs]</a>
+<span class="k">class</span> <span class="nc">NanoSpherical</span><span class="p">(</span><span class="n">BaselineFunction</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Methods for evaluation of baseline of spherical nanoparticle of uniform density.</span>
+
+<span class="sd">    Allowed formats are</span>
+<span class="sd">    internal: [scale, radius]</span>
+
+<span class="sd">    Given nanoparticle radius R, the baseline is -scale*r*(1-(3r)/(4R)+(r^3)/(16*R^3)) in the</span>
+<span class="sd">    interval (0, abs(R)), and 0 elsewhere.  Internally, both scale and radius are unconstrained,</span>
+<span class="sd">    but negative values are mapped to their physically meaningful positive equivalents.</span>
+
+<span class="sd">    The expression in parentheses is gamma_0(r) for a sphere.  For a well normalized PDF the</span>
+<span class="sd">    scale factor is 4*pi*rho_0, where rho_r is the nanoparticle density.</span>
+
+<span class="sd">    gamma_0(r) Reference:</span>
+<span class="sd">    Guinier et al. (1955). Small-angle Scattering from X-rays. New York: John Wiley &amp; Sons, Inc.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Cache</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize a spherical nanoparticle baseline.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        Cache : class</span>
+<span class="sd">            THe class (not instance) which implements caching of BaseFunction</span>
+<span class="sd">            evaluations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Define parameterdict</span>
+        <span class="n">parameterdict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;scale&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;radius&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+        <span class="n">formats</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;internal&quot;</span><span class="p">]</span>
+        <span class="n">default_formats</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;default_input&quot;</span><span class="p">:</span> <span class="s2">&quot;internal&quot;</span><span class="p">,</span> <span class="s2">&quot;default_output&quot;</span><span class="p">:</span> <span class="s2">&quot;internal&quot;</span><span class="p">}</span>
+        <span class="n">metadict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">BaselineFunction</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameterdict</span><span class="p">,</span> <span class="n">formats</span><span class="p">,</span> <span class="n">default_formats</span><span class="p">,</span> <span class="n">metadict</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Cache</span><span class="p">)</span>
+
+    <span class="c1"># Methods required by BaselineFunction ####</span>
+
+    <span class="c1">#    def estimate_parameters(self, r, y):</span>
+    <span class="c1">#        &quot;&quot;&quot;Estimate parameters for spherical baseline. (Not implemented!)</span>
+    <span class="c1">#</span>
+    <span class="c1">#        Parameters</span>
+    <span class="c1">#        r - array along r from which to estimate</span>
+    <span class="c1">#        y - array along y from which to estimate</span>
+    <span class="c1">#</span>
+    <span class="c1">#        Returns Numpy array of parameters in the default internal format.</span>
+    <span class="c1">#        Raises NotImplementedError if estimation is not implemented for this</span>
+    <span class="c1">#        degree, or SrMiseEstimationError if parameters cannot be estimated for</span>
+    <span class="c1">#        any other reason.</span>
+    <span class="c1">#        &quot;&quot;&quot;</span>
+    <span class="c1">#        if len(r) != len(y):</span>
+    <span class="c1">#            emsg = &quot;Arrays r, y must have equal length.&quot;</span>
+    <span class="c1">#            raise ValueError(emsg)</span>
+
+    <span class="k">def</span> <span class="nf">_jacobianraw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">free</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the Jacobian of the spherical baseline.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : array-like</span>
+<span class="sd">            The Sequence of parameters for a spherical baseline</span>
+<span class="sd">            pars[0] = scale</span>
+<span class="sd">            pars[1] = radius</span>
+<span class="sd">        r : array-like</span>
+<span class="sd">            The sequence or scalar over which pars is evaluated.</span>
+<span class="sd">        free : bool</span>
+<span class="sd">            The sequence of booleans which determines which derivatives are</span>
+<span class="sd">            needed. True for evaluation, False for no evaluation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            The Jacobian of the nanospherical baseline.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pars</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">npars</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Argument pars must have &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npars</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; elements.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">free</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">npars</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Argument free must have &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npars</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; elements.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="n">jacobian</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npars</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">free</span><span class="p">))</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">npars</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">jacobian</span>
+
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">r</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">r</span> <span class="o">&lt;=</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">r</span> <span class="o">&gt;=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">free</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                    <span class="n">jacobian</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+                <span class="k">if</span> <span class="n">free</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="n">jacobian</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">free</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                    <span class="n">jacobian</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jacobianrawscale</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">free</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                    <span class="n">jacobian</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jacobianrawradius</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getdomain</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">free</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">jacobian</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+                <span class="n">jacobian</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jacobianrawscale</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="n">s</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">free</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">jacobian</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+                <span class="n">jacobian</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jacobianrawradius</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="n">s</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">jacobian</span>
+
+    <span class="k">def</span> <span class="nf">_jacobianrawscale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return partial Jacobian wrt scale without bounds checking.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : array-like</span>
+<span class="sd">            The sequence of parameters for a spherical baseline</span>
+<span class="sd">            pars[0] = scale</span>
+<span class="sd">            pars[1] = radius</span>
+<span class="sd">        r : array-like</span>
+<span class="sd">            The sequence or scalar over which pars is evaluated.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            The partial Jacobian of the nanoparticle baseline wrt scale without bounds checking.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">rdivR</span> <span class="o">=</span> <span class="n">r</span> <span class="o">/</span> <span class="n">R</span>
+        <span class="c1"># From abs&#39;(s) in derivative, which is equivalent to sign(s) except at 0 where it</span>
+        <span class="c1"># is undefined. Since s=0 is equivalent to the absence of a nanoparticle, sign will</span>
+        <span class="c1"># be fine.</span>
+        <span class="n">sign</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">sign</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mf">3.0</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">rdivR</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mf">16.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">rdivR</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_jacobianrawradius</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return partial Jacobian wrt radius without bounds checking.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : array-like</span>
+<span class="sd">            The Sequence of parameters for a spherical baseline</span>
+<span class="sd">            pars[0] = scale</span>
+<span class="sd">            pars[1] = radius</span>
+<span class="sd">        r : array-like</span>
+<span class="sd">            The sequence or scalar over which pars is evaluated.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            The partial Jacobian of the nanoparticle baseline wrt radius without bounds checking.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="c1"># From abs&#39;(R) in derivative, which is equivalent to sign(R) except at 0 where it</span>
+        <span class="c1"># is undefined.  Since R=0 is a singularity anyway, sign will be fine.</span>
+        <span class="n">sign</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">sign</span> <span class="o">*</span> <span class="n">s</span> <span class="o">*</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">r</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">r</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">R</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="mi">16</span> <span class="o">*</span> <span class="n">R</span><span class="o">**</span><span class="mi">4</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_transform_parametersraw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">in_format</span><span class="p">,</span> <span class="n">out_format</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert parameter values from in_format to out_format.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : array-like</span>
+<span class="sd">            The sequence of parameters</span>
+<span class="sd">        in_format : str</span>
+<span class="sd">            The format defined for this class</span>
+<span class="sd">        out_format : str</span>
+<span class="sd">            The format defined for this class</span>
+
+<span class="sd">        Defined Formats</span>
+<span class="sd">        ---------------</span>
+<span class="sd">        internal - [scale, radius]</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            The transformed parameter values with out_format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pars</span><span class="p">)</span>
+
+        <span class="c1"># Convert to intermediate format &quot;internal&quot;</span>
+        <span class="k">if</span> <span class="n">in_format</span> <span class="o">==</span> <span class="s2">&quot;internal&quot;</span><span class="p">:</span>
+            <span class="c1"># Map both scale and radius to their positive equivalents</span>
+            <span class="n">temp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">temp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">temp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">temp</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument &#39;in_format&#39; must be one of </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">parformats</span><span class="p">)</span>
+
+        <span class="c1"># Convert to specified output format from &quot;internal&quot; format.</span>
+        <span class="k">if</span> <span class="n">out_format</span> <span class="o">==</span> <span class="s2">&quot;internal&quot;</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument &#39;out_format&#39; must be one of </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">parformats</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">temp</span>
+
+    <span class="k">def</span> <span class="nf">_valueraw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return value of spherical baseline for the given parameters and r values.</span>
+
+<span class="sd">        Outside the interval [0, radius] the baseline is 0.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : array-like</span>
+<span class="sd">            The sequence of parameters for a spherical baseline</span>
+<span class="sd">            pars[0] = scale</span>
+<span class="sd">            pars[1] = radius</span>
+<span class="sd">        r : array-like</span>
+<span class="sd">            The sequence or scalar over which pars is evaluated.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The value of the spherical baseline.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pars</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">npars</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Argument pars must have &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npars</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; elements.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">r</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">r</span> <span class="o">&lt;=</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">r</span> <span class="o">&gt;=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="k">return</span> <span class="mf">0.0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valueraw2</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_getdomain</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+            <span class="n">out</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valueraw2</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="n">s</span><span class="p">])</span>
+            <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">def</span> <span class="nf">_valueraw2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return value of spherical baseline without bounds checking for given parameters and r values.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : array-like</span>
+<span class="sd">            The sequence of parameters for a spherical baseline</span>
+<span class="sd">            pars[0] = scale</span>
+<span class="sd">            pars[1] = radius</span>
+<span class="sd">        r : array-like</span>
+<span class="sd">            The sequence or scalar over which pars is evaluated.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The value of spherical baseline without bounds checking for given parameters and r values</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">rdivR</span> <span class="o">=</span> <span class="n">r</span> <span class="o">/</span> <span class="n">R</span>
+        <span class="k">return</span> <span class="o">-</span><span class="n">s</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="p">(</span><span class="mf">3.0</span> <span class="o">/</span> <span class="mf">4.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">rdivR</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="mf">16.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">rdivR</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_getdomain</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return slice object for which r &gt; 0 and r &lt; twice the radius</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : array-like</span>
+<span class="sd">            The sequence of parameters for a spherical baseline</span>
+<span class="sd">        r : array-like</span>
+<span class="sd">            The sequence or scalar over which pars is evaluated.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        slice object</span>
+<span class="sd">            The slice object for which r &gt; 0 and r &lt; twice the radius</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">low</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s2">&quot;right&quot;</span><span class="p">)</span>
+        <span class="n">high</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">side</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">slice</span><span class="p">(</span><span class="n">low</span><span class="p">,</span> <span class="n">high</span><span class="p">)</span>
+
+<div class="viewcode-block" id="NanoSpherical.getmodule">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.baselines.html#diffpy.srmise.baselines.nanospherical.NanoSpherical.getmodule">[docs]</a>
+    <span class="k">def</span> <span class="nf">getmodule</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="vm">__name__</span></div>
+</div>
+
+
+
+<span class="c1"># end of class NanoSpherical</span>
+
+<span class="c1"># simple test code</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="n">NanoSpherical</span><span class="p">()</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+    <span class="n">pars</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">7.0</span><span class="p">])</span>
+    <span class="n">free</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Testing nanoparticle spherical baseline&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Scale: </span><span class="si">%f</span><span class="s2">,  Radius: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;-----------------------------------------&quot;</span><span class="p">)</span>
+    <span class="n">val</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">_valueraw</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+    <span class="n">jac</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">_jacobianraw</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">free</span><span class="p">)</span>
+    <span class="n">outjac</span> <span class="o">=</span> <span class="p">[</span><span class="n">j</span> <span class="k">if</span> <span class="n">j</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">jac</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span>
+        <span class="s2">&quot;r&quot;</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span>
+        <span class="s2">&quot;value&quot;</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span>
+        <span class="s2">&quot;jac(scale)&quot;</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span>
+        <span class="s2">&quot;jac(radius)&quot;</span><span class="o">.</span><span class="n">center</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span>
+    <span class="p">)</span>
+    <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">val</span><span class="p">,</span> <span class="o">*</span><span class="n">outjac</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tup</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">t</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="kc">None</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">t</span><span class="si">:</span><span class="s2">.3g</span><span class="si">}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">ljust</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, The Trustees of Columbia University in the City of New York.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

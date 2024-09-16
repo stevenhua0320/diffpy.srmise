@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>diffpy.srmise.baselines.arbitrary &mdash; diffpy.srmise 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=f539c95a"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            diffpy.srmise
+          </a>
+              <div class="version">
+                0.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../release.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/diffpy.srmise.html">Package API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">diffpy.srmise</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">diffpy.srmise.baselines.arbitrary</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for diffpy.srmise.baselines.arbitrary</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1">##############################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># SrMise            by Luke Granlund</span>
+<span class="c1">#                   (c) 2014 trustees of the Michigan State University</span>
+<span class="c1">#                   (c) 2024 trustees of Columbia University in the City of New York</span>
+<span class="c1">#                   All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># File coded by:    Luke Granlund</span>
+<span class="c1">#</span>
+<span class="c1"># See LICENSE.txt for license information.</span>
+<span class="c1">#</span>
+<span class="c1">##############################################################################</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">diffpy.srmise.baselines.base</span> <span class="kn">import</span> <span class="n">BaselineFunction</span>
+<span class="kn">from</span> <span class="nn">diffpy.srmise.baselines.polynomial</span> <span class="kn">import</span> <span class="n">Polynomial</span>
+<span class="kn">from</span> <span class="nn">diffpy.srmise.srmiseerrors</span> <span class="kn">import</span> <span class="n">SrMiseEstimationError</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;diffpy.srmise&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Arbitrary">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.baselines.html#diffpy.srmise.baselines.arbitrary.Arbitrary">[docs]</a>
+<span class="k">class</span> <span class="nc">Arbitrary</span><span class="p">(</span><span class="n">BaselineFunction</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Methods for evaluating a baseline from an arbitrary function.</span>
+
+<span class="sd">    Supports baseline calculations with arbitrary functions.  These functions,</span>
+<span class="sd">    if implemented, must have the following signatures and return values:</span>
+<span class="sd">    valuef(pars, x) ==&gt; numpy.array of length x if x is a sequence</span>
+<span class="sd">                  ==&gt; number if x is a number</span>
+<span class="sd">    jacobianf(pars, x, free) ==&gt; list, each element a numpy.array of length x if</span>
+<span class="sd">                                x is a sequence or None if value of free for</span>
+<span class="sd">                                that parameter is False.</span>
+<span class="sd">                            ==&gt; list, each element a number if x is a number</span>
+<span class="sd">                                or None if value of free for that parameter is</span>
+<span class="sd">                                False</span>
+<span class="sd">    estimatef(x, y) ==&gt; numpy.array of length npars</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">npars</span><span class="p">,</span> <span class="n">valuef</span><span class="p">,</span> <span class="n">jacobianf</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">estimatef</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Cache</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize an arbitrary baseline.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        npars : int</span>
+<span class="sd">            The number of parameters which define the function</span>
+<span class="sd">        valuef : array-like or int</span>
+<span class="sd">            The function which calculates the value of the baseline at x.</span>
+<span class="sd">        jacobianf : array-like or None</span>
+<span class="sd">            The function which calculates the Jacobian of the</span>
+<span class="sd">                  baseline function with respect to free pars.</span>
+<span class="sd">        estimatef : array-like or None</span>
+<span class="sd">            The function which estimates function parameters given the data x and y.</span>
+<span class="sd">        Cache :  None or callable</span>
+<span class="sd">            The class (not instance) which implements caching of BaseFunction evaluations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Guarantee valid number of parameters</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">testnpars</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">npars</span><span class="p">))</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Argument degree must be a non-negative integer.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">testnpars</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Argument degree must be a non-negative integer.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="c1"># Define parameterdict</span>
+        <span class="c1"># e.g. {&quot;a_0&quot;:0, &quot;a_1&quot;:1, &quot;a_2&quot;:2, &quot;a_3&quot;:3} if npars is 4.</span>
+        <span class="n">parameterdict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">testnpars</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="n">parameterdict</span><span class="p">[</span><span class="s2">&quot;a_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">d</span><span class="p">)]</span> <span class="o">=</span> <span class="n">d</span>
+        <span class="n">formats</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;internal&quot;</span><span class="p">]</span>
+        <span class="n">default_formats</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;default_input&quot;</span><span class="p">:</span> <span class="s2">&quot;internal&quot;</span><span class="p">,</span> <span class="s2">&quot;default_output&quot;</span><span class="p">:</span> <span class="s2">&quot;internal&quot;</span><span class="p">}</span>
+
+        <span class="c1"># Check that the provided functions are at least callable</span>
+        <span class="k">if</span> <span class="n">valuef</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">callable</span><span class="p">(</span><span class="n">valuef</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">valuef</span> <span class="o">=</span> <span class="n">valuef</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Specified value function is not callable.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">jacobianf</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">callable</span><span class="p">(</span><span class="n">jacobianf</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">jacobianf</span> <span class="o">=</span> <span class="n">jacobianf</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Specified jacobian function is not callable.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">estimatef</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">callable</span><span class="p">(</span><span class="n">estimatef</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">estimatef</span> <span class="o">=</span> <span class="n">estimatef</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Specified estimate function is not callable.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="c1"># TODO: figure out how the metadict can be used to save the functions</span>
+        <span class="c1"># and use them again when a file is loaded...</span>
+        <span class="n">metadict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;npars&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">npars</span><span class="p">,</span> <span class="nb">repr</span><span class="p">),</span>
+            <span class="s2">&quot;valuef&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">valuef</span><span class="p">,</span> <span class="nb">repr</span><span class="p">),</span>
+            <span class="s2">&quot;jacobianf&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">jacobianf</span><span class="p">,</span> <span class="nb">repr</span><span class="p">),</span>
+            <span class="s2">&quot;estimatef&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">estimatef</span><span class="p">,</span> <span class="nb">repr</span><span class="p">),</span>
+        <span class="p">}</span>
+        <span class="n">BaselineFunction</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameterdict</span><span class="p">,</span> <span class="n">formats</span><span class="p">,</span> <span class="n">default_formats</span><span class="p">,</span> <span class="n">metadict</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Cache</span><span class="p">)</span>
+
+    <span class="c1"># Methods required by BaselineFunction ####</span>
+
+<div class="viewcode-block" id="Arbitrary.estimate_parameters">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.baselines.html#diffpy.srmise.baselines.arbitrary.Arbitrary.estimate_parameters">[docs]</a>
+    <span class="k">def</span> <span class="nf">estimate_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Estimate parameters for data baseline.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        r : array-like</span>
+<span class="sd">            The data along r from which to estimate</span>
+<span class="sd">        y : array-like</span>
+<span class="sd">            The data along y from which to estimate</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        The numpy array of parameters in the default internal format.</span>
+
+<span class="sd">        we raise NotImplementedError if no estimation routine is defined, and</span>
+<span class="sd">        SrMiseEstimationError if parameters cannot be estimated for any other.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimatef</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;No estimation routine provided to Arbitrary.&quot;</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="c1"># TODO: check that estimatef returns something proper?</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">estimatef</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Error within estimation routine provided to Arbitrary:</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SrMiseEstimationError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_jacobianraw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">free</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the Jacobian of a polynomial.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : array-like</span>
+<span class="sd">            The sequence of parameters</span>
+<span class="sd">                pars[0] = a_0</span>
+<span class="sd">                pars[1] = a_1</span>
+<span class="sd">                ...</span>
+<span class="sd">        r : array-like or int</span>
+<span class="sd">            The sequence or scalar over which pars is evaluated</span>
+<span class="sd">        free : array-like of bools</span>
+<span class="sd">            The sequence of booleans which determines which derivatives are needed.</span>
+<span class="sd">            True for evaluation, False for no evaluation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The Jacobian of polynomial with respect to free pars.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nfree</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">jacobianf</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">nfree</span> <span class="o">=</span> <span class="p">(</span><span class="n">pars</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">nfree</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;No jacobian routine provided to Arbitrary.&quot;</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pars</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">npars</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Argument pars must have &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npars</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; elements.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">free</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">npars</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Argument free must have &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npars</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; elements.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="c1"># Allow an arbitrary function without a Jacobian provided act as</span>
+        <span class="c1"># though it has one if no actual Jacobian would be calculated</span>
+        <span class="c1"># anyway.  This is a minor convenience for the user, but one with</span>
+        <span class="c1"># large performance implications if all other functions used while</span>
+        <span class="c1"># fitting a function define a Jacobian.</span>
+        <span class="k">if</span> <span class="n">nfree</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="kc">None</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pars</span><span class="p">))]</span>
+
+        <span class="c1"># TODO: check that jacobianf returns something proper?</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">jacobianf</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">free</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_transform_parametersraw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">in_format</span><span class="p">,</span> <span class="n">out_format</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert parameter values from in_format to out_format.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : array-like</span>
+<span class="sd">            The sequence of parameters</span>
+<span class="sd">        in_format : internal</span>
+<span class="sd">            The format defined for this class</span>
+<span class="sd">        out_format: internal</span>
+<span class="sd">            The format defined for this class</span>
+
+<span class="sd">        Defined Format</span>
+<span class="sd">        --------------</span>
+<span class="sd">        internal: [a_0, a_1, ...]</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numpy.ndarray</span>
+<span class="sd">            The standard output of transformed parameters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pars</span><span class="p">)</span>
+
+        <span class="c1"># Convert to intermediate format &quot;internal&quot;</span>
+        <span class="k">if</span> <span class="n">in_format</span> <span class="o">==</span> <span class="s2">&quot;internal&quot;</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument &#39;in_format&#39; must be one of </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">parformats</span><span class="p">)</span>
+
+        <span class="c1"># Convert to specified output format from &quot;internal&quot; format.</span>
+        <span class="k">if</span> <span class="n">out_format</span> <span class="o">==</span> <span class="s2">&quot;internal&quot;</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument &#39;out_format&#39; must be one of </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">parformats</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">temp</span>
+
+    <span class="k">def</span> <span class="nf">_valueraw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the value of the polynomial given a set of parameters and evaluation points.</span>
+
+<span class="sd">        This method ensures that the input parameters conform to the expected count</span>
+<span class="sd">        and then delegates the computation to an internal method `valuef`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : array_like</span>
+<span class="sd">            The sequence of coefficients for the polynomial where each element corresponds to:</span>
+<span class="sd">            - pars[0] = a_0, the constant term</span>
+<span class="sd">            - pars[1] = a_1, the coefficient of the first degree term, and so on.</span>
+<span class="sd">            The length of `pars` must match the expected number of parameters defined in the class.</span>
+
+<span class="sd">        r : array_like or float</span>
+<span class="sd">            The sequence of points or a single point at which the polynomial is to be evaluated.</span>
+<span class="sd">            If a scalar is provided, it will be treated as a single point for evaluation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray or float</span>
+<span class="sd">            The computed values of the polynomial for each point in `r`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pars</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">npars</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Argument pars must have &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npars</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; elements.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="c1"># TODO: check that valuef returns something proper?</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">valuef</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Arbitrary.getmodule">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.baselines.html#diffpy.srmise.baselines.arbitrary.Arbitrary.getmodule">[docs]</a>
+    <span class="k">def</span> <span class="nf">getmodule</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="vm">__name__</span></div>
+</div>
+
+
+
+<span class="c1"># end of class Polynomial</span>
+
+<span class="c1"># simple test code</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="n">Polynomial</span><span class="p">(</span><span class="n">degree</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">pars</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+    <span class="n">free</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="kc">True</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">True</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">_valueraw</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">_jacobianraw</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">free</span><span class="p">))</span>
+
+    <span class="n">f</span> <span class="o">=</span> <span class="n">Polynomial</span><span class="p">(</span><span class="n">degree</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">pars</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+    <span class="n">free</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">_valueraw</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">_jacobianraw</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">free</span><span class="p">))</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, The Trustees of Columbia University in the City of New York.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

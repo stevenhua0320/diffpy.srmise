@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>diffpy.srmise.modelevaluators package &mdash; diffpy.srmise 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=f539c95a"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="diffpy.srmise.applications package" href="diffpy.srmise.applications.html" />
+    <link rel="prev" title="diffpy.srmise.peaks package" href="diffpy.srmise.peaks.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            diffpy.srmise
+          </a>
+              <div class="version">
+                0.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../release.html">Release Notes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="diffpy.srmise.html">Package API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="diffpy.srmise.peaks.html">diffpy.srmise.peaks package</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">diffpy.srmise.modelevaluators package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="diffpy.srmise.applications.html">diffpy.srmise.applications package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="diffpy.srmise.baselines.html">diffpy.srmise.baselines package</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">diffpy.srmise</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="diffpy.srmise.html">diffpy.srmise package</a></li>
+      <li class="breadcrumb-item active">diffpy.srmise.modelevaluators package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/diffpy.srmise.modelevaluators.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-diffpy.srmise.modelevaluators">
+<span id="diffpy-srmise-modelevaluators-package"></span><h1>diffpy.srmise.modelevaluators package<a class="headerlink" href="#module-diffpy.srmise.modelevaluators" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+<section id="module-diffpy.srmise.modelevaluators.aic">
+<span id="diffpy-srmise-modelevaluators-aic-module"></span><h3>diffpy.srmise.modelevaluators.aic module<a class="headerlink" href="#module-diffpy.srmise.modelevaluators.aic" title="Link to this heading"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="diffpy.srmise.modelevaluators.aic.AIC">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">diffpy.srmise.modelevaluators.aic.</span></span><span class="sig-name descname"><span class="pre">AIC</span></span><a class="reference internal" href="../_modules/diffpy/srmise/modelevaluators/aic.html#AIC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#diffpy.srmise.modelevaluators.aic.AIC" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#diffpy.srmise.modelevaluators.base.ModelEvaluator" title="diffpy.srmise.modelevaluators.base.ModelEvaluator"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelEvaluator</span></code></a></p>
+<p>Evaluate and compare models with the AIC statistic.</p>
+<p>Akaike’s Information Criterion (AIC) is a method for comparing statistical
+models which balances raw goodness-of-fit with model parsimony.  Assuming
+the uncertainties are independent normal random variables the AIC has the
+special form implemented by this class:
+AIC = chi^2 + 2*k
+where chi^2 is the chi-squared statistic, and k is the number of free
+parameters in the model.  This is an asymptotic result for number of
+independent samples n -&gt; infinity.  This is a good approximation for
+n/k &lt;~ 40.</p>
+<p>Lower values of the AIC imply a better model, but note that the value of
+the statistic has no absolute interpretation, and only differences between
+two models with the same observed values (and uncertainties) have meaning.</p>
+<p>For further details see:
+Burnham, K. P. and Anderson, D. R. “Model selection and Multimodel
+Inference: A Practical Information Theoretic Approach.” Springer-Verlag,
+2002.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="diffpy.srmise.modelevaluators.aic.AIC.akaikeprobs">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">akaikeprobs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aics</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/diffpy/srmise/modelevaluators/aic.html#AIC.akaikeprobs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#diffpy.srmise.modelevaluators.aic.AIC.akaikeprobs" title="Link to this definition"></a></dt>
+<dd><p>Return sequence of Akaike probabilities for sequence of AICs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>aics</strong> (<em>array-like</em>) – The sequence of AIC instance.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The sequence of Akaike probabilities</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="diffpy.srmise.modelevaluators.aic.AIC.akaikeweights">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">akaikeweights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aics</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/diffpy/srmise/modelevaluators/aic.html#AIC.akaikeweights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#diffpy.srmise.modelevaluators.aic.AIC.akaikeweights" title="Link to this definition"></a></dt>
+<dd><p>Return sequence of Akaike weights for sequence of AICs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>aics</strong> (<em>array-like</em>) – The sequence of AIC instance.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The sequence of Akaike weights</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="diffpy.srmise.modelevaluators.aic.AIC.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count_fixed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kshift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/diffpy/srmise/modelevaluators/aic.html#AIC.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#diffpy.srmise.modelevaluators.aic.AIC.evaluate" title="Link to this definition"></a></dt>
+<dd><p>Return quality of fit for given ModelCluster using AIC (Akaike’s Information Criterion).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fit</strong> (<em>ModelCluster instance</em>) – The ModelCluster instance to evaluate.</p></li>
+<li><p><strong>count_fixed</strong> (<em>bool</em>) – Whether fixed parameters are considered. Default is False.</p></li>
+<li><p><strong>kshift</strong> (<em>int</em>) – Treat the model has having this many additional
+parameters. Negative values also allowed. Default is 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>quality</strong> – The quality of fit for given ModelCluster.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="diffpy.srmise.modelevaluators.aic.AIC.growth_justified">
+<span class="sig-name descname"><span class="pre">growth_justified</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_prime</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/diffpy/srmise/modelevaluators/aic.html#AIC.growth_justified"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#diffpy.srmise.modelevaluators.aic.AIC.growth_justified" title="Link to this definition"></a></dt>
+<dd><p>Returns whether adding k_prime parameters to the given model (ModelCluster) is justified
+given the current quality of the fit.</p>
+<p>The assumption is that adding k_prime parameters will
+result in “effectively 0” chiSquared cost, and so adding it is justified if the cost of adding
+these parameters is less than the current chiSquared cost.
+The validity of this assumption (which depends on an unknown chiSquared value)
+and the impact of the errors used should be examined more thoroughly in the future.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fit</strong> (<em>ModelCluster instance</em>) – The ModelCluster instance to evaluate.</p></li>
+<li><p><strong>k_prime</strong> (<em>int</em>) – The prime number of added parameters in the model.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Whether adding k_prime parameters to the given model is justified.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="diffpy.srmise.modelevaluators.aic.AIC.minpoints">
+<span class="sig-name descname"><span class="pre">minpoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">npars</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/diffpy/srmise/modelevaluators/aic.html#AIC.minpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#diffpy.srmise.modelevaluators.aic.AIC.minpoints" title="Link to this definition"></a></dt>
+<dd><p>Calculates the minimum number of points required to make an estimate of a model’s quality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>npars</strong> (<em>int</em>) – The number of parameters in the model.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The minimum number of points required to make an estimate of a model’s quality.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="diffpy.srmise.modelevaluators.aic.AIC.parpenalty">
+<span class="sig-name descname"><span class="pre">parpenalty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/diffpy/srmise/modelevaluators/aic.html#AIC.parpenalty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#diffpy.srmise.modelevaluators.aic.AIC.parpenalty" title="Link to this definition"></a></dt>
+<dd><p>Returns the cost for adding k parameters to the current model cluster.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>k</strong> (<em>int</em>) – The number of added parameters in the model.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The penalty cost for adding k parameters to the current model cluster.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-diffpy.srmise.modelevaluators.aicc">
+<span id="diffpy-srmise-modelevaluators-aicc-module"></span><h3>diffpy.srmise.modelevaluators.aicc module<a class="headerlink" href="#module-diffpy.srmise.modelevaluators.aicc" title="Link to this heading"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="diffpy.srmise.modelevaluators.aicc.AICc">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">diffpy.srmise.modelevaluators.aicc.</span></span><span class="sig-name descname"><span class="pre">AICc</span></span><a class="reference internal" href="../_modules/diffpy/srmise/modelevaluators/aicc.html#AICc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#diffpy.srmise.modelevaluators.aicc.AICc" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#diffpy.srmise.modelevaluators.base.ModelEvaluator" title="diffpy.srmise.modelevaluators.base.ModelEvaluator"><code class="xref py py-class docutils literal notranslate"><span class="pre">ModelEvaluator</span></code></a></p>
+<p>Evaluate and compare models with the AICc statistic.</p>
+<p>Akaike’s Information Criterion w/ 2nd order correction for small sample
+sizes (AICc) is a method for comparing statistical models which balances
+raw goodness-of-fit with model parsimony.  Assuming the uncertainties are
+independent normal random variables the AICc has the special form
+implemented by this class:
+AICc = chi^2 + 2*k + 2*k*(k+1)/(n-k-1)
+where chi^2 is the chi-squared statistic, k is the number of free
+parameters in the model, and n is the number of data points.</p>
+<p>Lower values of the AICc imply a better model, but note that the value of
+the statistic has no absolute interpretation, and only differences between
+two models with the same observed values (and uncertainties) have meaning.</p>
+<p>For further details see:
+Burnham, K. P. and Anderson, D. R. “Model selection and Multimodel
+Inference: A Practical Information Theoretic Approach.” Springer-Verlag,
+2002.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="diffpy.srmise.modelevaluators.aicc.AICc.akaikeprobs">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">akaikeprobs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aics</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/diffpy/srmise/modelevaluators/aicc.html#AICc.akaikeprobs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#diffpy.srmise.modelevaluators.aicc.AICc.akaikeprobs" title="Link to this definition"></a></dt>
+<dd><p>Return sequence of Akaike probabilities for sequence of AICs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>aics</strong> (<em>array-like</em>) – The squence of AIC instances</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The sequence of Akaike probabilities</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="diffpy.srmise.modelevaluators.aicc.AICc.akaikeweights">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">akaikeweights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aics</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/diffpy/srmise/modelevaluators/aicc.html#AICc.akaikeweights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#diffpy.srmise.modelevaluators.aicc.AICc.akaikeweights" title="Link to this definition"></a></dt>
+<dd><p>Return sequence of Akaike weights for sequence of AICs</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>aics</strong> (<em>array-like</em>) – The squence of AIC instances</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The sequence of Akaike weights</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>array-like</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="diffpy.srmise.modelevaluators.aicc.AICc.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count_fixed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kshift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/diffpy/srmise/modelevaluators/aicc.html#AICc.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#diffpy.srmise.modelevaluators.aicc.AICc.evaluate" title="Link to this definition"></a></dt>
+<dd><p>Return quality of fit for given ModelCluster using AICc (Akaike’s Information Criterion
+with 2nd order correction for small sample size).</p>
+<p>Parameters
+fit: A ModelCluster</p>
+<blockquote>
+<div><p>The ModelCluster to evaluate.</p>
+</div></blockquote>
+<dl class="simple">
+<dt>count_fixed<span class="classifier">bool</span></dt><dd><p>Whether fixed parameters are considered. Default is False.</p>
+</dd>
+<dt>kshift<span class="classifier">int</span></dt><dd><p>Treat the model has having this many additional
+parameters.  Negative values also allowed. Default is 0.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Quality of AICc</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="diffpy.srmise.modelevaluators.aicc.AICc.growth_justified">
+<span class="sig-name descname"><span class="pre">growth_justified</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k_prime</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/diffpy/srmise/modelevaluators/aicc.html#AICc.growth_justified"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#diffpy.srmise.modelevaluators.aicc.AICc.growth_justified" title="Link to this definition"></a></dt>
+<dd><p>Is adding k_prime parameters to ModelCluster justified given the current quality of the fit.</p>
+<p>The assumption is that adding k_prime parameters will result in “effectively 0” chiSquared cost,
+and so adding it is justified if the cost of adding these parameters is less than the current
+chiSquared cost.  The validity of this assumption (which depends on an unknown chiSquared value)
+and the impact of the errors used should be examined more thoroughly in the future.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fit</strong> (<a class="reference internal" href="diffpy.srmise.html#diffpy.srmise.modelcluster.ModelCluster" title="diffpy.srmise.modelcluster.ModelCluster"><em>ModelCluster</em></a>) – The ModelCluster to evaluate.</p></li>
+<li><p><strong>k_prime</strong> (<em>int</em>) – The prime number of parameters to add.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Whether the current model cluster is justified or not.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="diffpy.srmise.modelevaluators.aicc.AICc.minpoints">
+<span class="sig-name descname"><span class="pre">minpoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">npars</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/diffpy/srmise/modelevaluators/aicc.html#AICc.minpoints"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#diffpy.srmise.modelevaluators.aicc.AICc.minpoints" title="Link to this definition"></a></dt>
+<dd><p>Calculates the minimum number of points required to make an estimate of a model’s quality.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>npars</strong> (<em>int</em>) – The number of points required to make an estimate of a model’s quality.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The minimum number of points required to make an estimate of a model’s quality.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="diffpy.srmise.modelevaluators.aicc.AICc.parpenalty">
+<span class="sig-name descname"><span class="pre">parpenalty</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/diffpy/srmise/modelevaluators/aicc.html#AICc.parpenalty"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#diffpy.srmise.modelevaluators.aicc.AICc.parpenalty" title="Link to this definition"></a></dt>
+<dd><p>Returns the cost for adding k parameters to the current model cluster.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>k</strong> (<em>int</em>) – The number of parameters to add.</p></li>
+<li><p><strong>n</strong> (<em>int</em>) – The number of data points.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The cost for adding k parameters to the current model cluster.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-diffpy.srmise.modelevaluators.base">
+<span id="diffpy-srmise-modelevaluators-base-module"></span><h3>diffpy.srmise.modelevaluators.base module<a class="headerlink" href="#module-diffpy.srmise.modelevaluators.base" title="Link to this heading"></a></h3>
+<dl class="py class">
+<dt class="sig sig-object py" id="diffpy.srmise.modelevaluators.base.ModelEvaluator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">diffpy.srmise.modelevaluators.base.</span></span><span class="sig-name descname"><span class="pre">ModelEvaluator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">method</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">higher_is_better</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/diffpy/srmise/modelevaluators/base.html#ModelEvaluator"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#diffpy.srmise.modelevaluators.base.ModelEvaluator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class for evaluating the quality of a fit.  Comparison between different
+models of the same type is defined so that better models are ‘greater than’
+worse models.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="diffpy.srmise.modelevaluators.base.ModelEvaluator.chi_squared">
+<span class="sig-name descname"><span class="pre">chi_squared</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expected</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">error</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/diffpy/srmise/modelevaluators/base.html#ModelEvaluator.chi_squared"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#diffpy.srmise.modelevaluators.base.ModelEvaluator.chi_squared" title="Link to this definition"></a></dt>
+<dd><p>Calculates chi-squared statistic.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>expected</strong> (<em>float</em>) – The expected value.</p></li>
+<li><p><strong>observed</strong> (<em>float</em>) – The observed value.</p></li>
+<li><p><strong>error</strong> (<em>float</em>) – The error statistic.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="diffpy.srmise.peaks.html" class="btn btn-neutral float-left" title="diffpy.srmise.peaks package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="diffpy.srmise.applications.html" class="btn btn-neutral float-right" title="diffpy.srmise.applications package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, The Trustees of Columbia University in the City of New York.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

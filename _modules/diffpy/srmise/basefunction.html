@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>diffpy.srmise.basefunction &mdash; diffpy.srmise 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=f539c95a"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            diffpy.srmise
+          </a>
+              <div class="version">
+                0.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../release.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/diffpy.srmise.html">Package API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">diffpy.srmise</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">diffpy.srmise.basefunction</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for diffpy.srmise.basefunction</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1">##############################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># SrMise            by Luke Granlund</span>
+<span class="c1">#                   (c) 2014 trustees of the Michigan State University</span>
+<span class="c1">#                   (c) 2024 trustees of Columbia University in the City of New York</span>
+<span class="c1">#                   All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># File coded by:    Luke Granlund</span>
+<span class="c1">#</span>
+<span class="c1"># See LICENSE.txt for license information.</span>
+<span class="c1">#</span>
+<span class="c1">##############################################################################</span>
+<span class="sd">&quot;&quot;&quot;Defines BaseFunction, the base class for mathematical functions in srmise.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">diffpy.srmise.srmiseerrors</span> <span class="kn">import</span> <span class="n">SrMiseDataFormatError</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;diffpy.srmise&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="BaseFunction">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.basefunction.BaseFunction">[docs]</a>
+<span class="k">class</span> <span class="nc">BaseFunction</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for mathematical functions which model numeric sequences.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    -------------</span>
+<span class="sd">    parameterdict : dict</span>
+<span class="sd">        The dictionary mapping string keys to their index in the</span>
+<span class="sd">        sequence of parameters.  These keys apply only to the</span>
+<span class="sd">        default &quot;internal&quot; format.</span>
+<span class="sd">    parformats : array-like</span>
+<span class="sd">        The sequence of strings defining what formats are recognized</span>
+<span class="sd">        by a function.</span>
+<span class="sd">    default_formats : dict</span>
+<span class="sd">        The dictionary which maps the strings &quot;default_input&quot; and</span>
+<span class="sd">        &quot;default_output&quot; to strings also appearing in parformats.</span>
+<span class="sd">        &quot;default_input&quot;-&gt; format used internally within the class</span>
+<span class="sd">        &quot;default_output&quot;-&gt; Default format to use when converting</span>
+<span class="sd">         parameters for outside use.</span>
+<span class="sd">    metadict : dict</span>
+<span class="sd">        The Dictionary mapping string keys to tuple (v, m) where v is an</span>
+<span class="sd">        additional argument required by function, and m is a method</span>
+<span class="sd">        whose string output recreates v when passed to eval().</span>
+<span class="sd">    base : BaseFunction subclass</span>
+<span class="sd">        The basefunction subclass instance which this one decorates with</span>
+<span class="sd">        additional functionality.</span>
+
+<span class="sd">    Class methods (implemented by inheriting classes)</span>
+<span class="sd">    -------------------------------------------------</span>
+<span class="sd">    actualize()</span>
+<span class="sd">    estimate_parameters() (optional)</span>
+<span class="sd">    _jacobianraw() (optional, but strongly recommended)</span>
+<span class="sd">    _transform_derivatives() (optional, supports propagation of uncertainty for different paramaterizations)</span>
+<span class="sd">    _transform_parametersraw()</span>
+<span class="sd">    _valueraw()</span>
+
+<span class="sd">    Class methods</span>
+<span class="sd">    -------------</span>
+<span class="sd">    jacobian()</span>
+<span class="sd">    value()</span>
+<span class="sd">    transform_derivatives()</span>
+<span class="sd">    transform_parameters()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">parameterdict</span><span class="p">,</span>
+        <span class="n">parformats</span><span class="p">,</span>
+        <span class="n">default_formats</span><span class="p">,</span>
+        <span class="n">metadict</span><span class="p">,</span>
+        <span class="n">base</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">Cache</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set parameterdict defined by subclass</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parameterdict : dict</span>
+<span class="sd">            The dictionary mapping string keys (e.g. &quot;position&quot;)</span>
+<span class="sd">            to their index in a sequence of parameters for this</span>
+<span class="sd">            PeakFunction subclass.  Every parameter must appear.</span>
+<span class="sd">        parformats : array-like</span>
+<span class="sd">            The sequence of strings containing all allowed input/output</span>
+<span class="sd">            formats defined for the function&#39;s parameters.</span>
+<span class="sd">        default_formats : dict</span>
+<span class="sd">            The dictionary mapping the string keys &quot;internal&quot; and</span>
+<span class="sd">            &quot;default_output&quot; to formats from parformats.</span>
+<span class="sd">        metadict : dict</span>
+<span class="sd">            The dictionary mapping string keys to additional arguments</span>
+<span class="sd">            required by function.</span>
+<span class="sd">        base : basefunction subclass</span>
+<span class="sd">            The basefunction subclass instance which this one decorates with</span>
+<span class="sd">            additional functionality.</span>
+<span class="sd">        Cache : class</span>
+<span class="sd">            The class (not instance) which implements caching of BaseFunction</span>
+<span class="sd">            evaluations.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parameterdict</span> <span class="o">=</span> <span class="n">parameterdict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">npars</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameterdict</span><span class="p">)</span>
+
+        <span class="c1"># Checking all these things at run-time is a bit heavy-handed, but the</span>
+        <span class="c1"># overhead is small and it may prevent considerable confusion when</span>
+        <span class="c1"># developing new functions.</span>
+
+        <span class="c1"># Check validity of parameterdict.  Although dictionaries handle</span>
+        <span class="c1"># arbitrary types, parameters are indexed by these keys as well as</span>
+        <span class="c1"># integer indices.  Restricting keys to strings keeps things sane.</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameterdict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Argument parameterdict&#39;s keys must be strings.&quot;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameterdict</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+        <span class="n">vals</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">vals</span> <span class="o">!=</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npars</span><span class="p">):</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Argument parameterdict&#39;s values must uniquely specify &quot;</span>
+                <span class="o">+</span> <span class="s2">&quot;the index of each parameter defined by its keys.&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">parformats</span> <span class="o">=</span> <span class="n">parformats</span>
+
+        <span class="c1"># Check validity of default_formats</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_formats</span> <span class="o">=</span> <span class="n">default_formats</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="s2">&quot;default_input&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_formats</span> <span class="ow">and</span> <span class="s2">&quot;default_output&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_formats</span><span class="p">):</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Argument default_formats must specify &#39;default_input&#39; &quot;</span> <span class="o">+</span> <span class="s2">&quot;and &#39;default_output&#39; as keys.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_formats</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">f</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parformats</span><span class="p">:</span>
+                <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Keys of argument default_formats must map to a &quot;</span> <span class="o">+</span> <span class="s2">&quot;value within argument parformats.&quot;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">()</span>
+
+        <span class="c1"># Set metadictionary</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadict</span> <span class="o">=</span> <span class="n">metadict</span>
+
+        <span class="c1"># Set base function (for modifying existing functions)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="o">=</span> <span class="n">base</span>
+
+        <span class="c1"># Implement caching here.</span>
+        <span class="c1"># Defined in this way, each cache is associated with a single instance</span>
+        <span class="c1"># of PeakFunction.</span>
+        <span class="c1"># Object to cache: (basefunctioninstance, tuple of parameters)</span>
+        <span class="k">if</span> <span class="n">Cache</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># self.value = Cache(self.value, &quot;value&quot;)</span>
+            <span class="c1"># self.jacobian = Cache(self.jacobian, &quot;jacobian&quot;)</span>
+            <span class="k">pass</span>
+        <span class="k">return</span>
+
+    <span class="c1"># &quot;Virtual&quot; class methods ####</span>
+
+<div class="viewcode-block" id="BaseFunction.actualize">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.basefunction.BaseFunction.actualize">[docs]</a>
+    <span class="k">def</span> <span class="nf">actualize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create ModelPart instance of self with given parameters.  (&quot;Virtual&quot; method)&quot;&quot;&quot;</span>
+        <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;actualize() must be implemented in a BaseFunction subclass.&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseFunction.estimate_parameters">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.basefunction.BaseFunction.estimate_parameters">[docs]</a>
+    <span class="k">def</span> <span class="nf">estimate_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Estimate BaseFunction parameters from supplied data. (&quot;Virtual&quot; method)&quot;&quot;&quot;</span>
+        <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;estimate_parameters() must be implemented in a BaseFunction subclass.&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseFunction._jacobianraw">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.basefunction.BaseFunction._jacobianraw">[docs]</a>
+    <span class="k">def</span> <span class="nf">_jacobianraw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the jacobian. (&quot;Virtual&quot; method)&quot;&quot;&quot;</span>
+        <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;_jacobianraw() must be implemented in a BaseFunction subclass.&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_transform_derivativesraw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert BaseFunction parameters to another form. (&quot;Virtual&quot; method)&quot;&quot;&quot;</span>
+        <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;transform_parameters() must be implemented in a BaseFunction subclass.&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BaseFunction._transform_parametersraw">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.basefunction.BaseFunction._transform_parametersraw">[docs]</a>
+    <span class="k">def</span> <span class="nf">_transform_parametersraw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert BaseFunction parameters to another form. (&quot;Virtual&quot; method)&quot;&quot;&quot;</span>
+        <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;transform_parameters() must be implemented in a BaseFunction subclass.&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseFunction._valueraw">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.basefunction.BaseFunction._valueraw">[docs]</a>
+    <span class="k">def</span> <span class="nf">_valueraw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate value of function. (&quot;Virtual&quot; method)&quot;&quot;&quot;</span>
+        <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;_valueraw must() be implemented in a BaseFunction subclass.&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span></div>
+
+
+    <span class="c1"># Class methods ####</span>
+
+<div class="viewcode-block" id="BaseFunction.jacobian">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.basefunction.BaseFunction.jacobian">[docs]</a>
+    <span class="k">def</span> <span class="nf">jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate jacobian of p, possibly restricted by range.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        p : ModelPart instance</span>
+<span class="sd">            The ModelPart to be evaluated</span>
+<span class="sd">        r ：array-like</span>
+<span class="sd">            sequence or scalar over which function is evaluated</span>
+<span class="sd">        rng : slice object</span>
+<span class="sd">            Optional slice object restricts which r-values are evaluated.</span>
+<span class="sd">            The output has same length as r, but unevaluated objects have</span>
+<span class="sd">            a default value of 0.  If caching is enabled these may be</span>
+<span class="sd">            previously calculated values instead.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">_owner</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Argument &#39;p&#39; must be evaluated by the BaseFunction &quot;</span> <span class="o">+</span> <span class="s2">&quot;subclass which owns it.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="c1"># normally r will be a sequence, but also allow single numeric values</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">rng</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+            <span class="n">rpart</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="n">rng</span><span class="p">]</span>
+            <span class="n">jac</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jacobianraw</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">pars</span><span class="p">,</span> <span class="n">rpart</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">free</span><span class="p">)</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">jac</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">output</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">jac</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">output</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="mf">0.0</span>
+                    <span class="n">output</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="n">rng</span><span class="p">]</span> <span class="o">=</span> <span class="n">jac</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">output</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jacobianraw</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">free</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseFunction.transform_derivatives">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.basefunction.BaseFunction.transform_derivatives">[docs]</a>
+    <span class="k">def</span> <span class="nf">transform_derivatives</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">in_format</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out_format</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return gradient matrix for pars converted from in_format to out_format.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : array-like</span>
+<span class="sd">            The sequence of parameters</span>
+<span class="sd">        in_format : str</span>
+<span class="sd">            The format defined for this class</span>
+<span class="sd">        out_format : str</span>
+<span class="sd">            The format defined for this class</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            The gradient matrix for pars converted from in_format to out_format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Map unspecified formats to specific formats defined in default_formats</span>
+        <span class="k">if</span> <span class="n">in_format</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">in_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_formats</span><span class="p">[</span><span class="s2">&quot;default_input&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">out_format</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_formats</span><span class="p">[</span><span class="s2">&quot;default_output&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Map generic formats to specific formats defined in default_formats</span>
+        <span class="k">if</span> <span class="n">in_format</span> <span class="o">==</span> <span class="s2">&quot;default_input&quot;</span><span class="p">:</span>
+            <span class="n">in_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_formats</span><span class="p">[</span><span class="s2">&quot;default_input&quot;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">in_format</span> <span class="o">==</span> <span class="s2">&quot;default_output&quot;</span><span class="p">:</span>
+            <span class="n">in_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_formats</span><span class="p">[</span><span class="s2">&quot;default_output&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">out_format</span> <span class="o">==</span> <span class="s2">&quot;default_output&quot;</span><span class="p">:</span>
+            <span class="n">out_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_formats</span><span class="p">[</span><span class="s2">&quot;default_output&quot;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">out_format</span> <span class="o">==</span> <span class="s2">&quot;default_input&quot;</span><span class="p">:</span>
+            <span class="n">out_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_formats</span><span class="p">[</span><span class="s2">&quot;default_input&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">in_format</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parformats</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument &#39;in_format&#39; must be one of </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">parformats</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">out_format</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parformats</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument &#39;out_format&#39; must be one of </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">parformats</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">in_format</span> <span class="o">==</span> <span class="n">out_format</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npars</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_derivativesraw</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">in_format</span><span class="o">=</span><span class="n">in_format</span><span class="p">,</span> <span class="n">out_format</span><span class="o">=</span><span class="n">out_format</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseFunction.transform_parameters">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.basefunction.BaseFunction.transform_parameters">[docs]</a>
+    <span class="k">def</span> <span class="nf">transform_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">in_format</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">out_format</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return new sequence with pars converted from in_format to out_format.</span>
+
+<span class="sd">        Also restores parameters to a preferred range if it permits multiple</span>
+<span class="sd">        values that correspond to the same physical result.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : array-like</span>
+<span class="sd">            The sequence of parameters</span>
+<span class="sd">        in_format ： str</span>
+<span class="sd">            The format defined for this class</span>
+<span class="sd">        out_format : str</span>
+<span class="sd">            The format defined for this class</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            The new sequence of parameters with out_format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Map unspecified formats to specific formats defined in default_formats</span>
+        <span class="k">if</span> <span class="n">in_format</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">in_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_formats</span><span class="p">[</span><span class="s2">&quot;default_input&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">out_format</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">out_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_formats</span><span class="p">[</span><span class="s2">&quot;default_output&quot;</span><span class="p">]</span>
+
+        <span class="c1"># Map generic formats to specific formats defined in default_formats</span>
+        <span class="k">if</span> <span class="n">in_format</span> <span class="o">==</span> <span class="s2">&quot;default_input&quot;</span><span class="p">:</span>
+            <span class="n">in_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_formats</span><span class="p">[</span><span class="s2">&quot;default_input&quot;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">in_format</span> <span class="o">==</span> <span class="s2">&quot;default_output&quot;</span><span class="p">:</span>
+            <span class="n">in_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_formats</span><span class="p">[</span><span class="s2">&quot;default_output&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">out_format</span> <span class="o">==</span> <span class="s2">&quot;default_output&quot;</span><span class="p">:</span>
+            <span class="n">out_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_formats</span><span class="p">[</span><span class="s2">&quot;default_output&quot;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">out_format</span> <span class="o">==</span> <span class="s2">&quot;default_input&quot;</span><span class="p">:</span>
+            <span class="n">out_format</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_formats</span><span class="p">[</span><span class="s2">&quot;default_input&quot;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">in_format</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parformats</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument &#39;in_format&#39; must be one of </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">parformats</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">out_format</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parformats</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument &#39;out_format&#39; must be one of </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">parformats</span><span class="p">)</span>
+        <span class="c1"># if in_format == out_format:</span>
+        <span class="c1">#    return pars</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_parametersraw</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">in_format</span><span class="o">=</span><span class="n">in_format</span><span class="p">,</span> <span class="n">out_format</span><span class="o">=</span><span class="n">out_format</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseFunction.value">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.basefunction.BaseFunction.value">[docs]</a>
+    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate value of ModelPart over r, possibly restricted by range.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        p : ModelPart instance</span>
+<span class="sd">            The ModelPart to be evaluated</span>
+<span class="sd">        r : array-like or float</span>
+<span class="sd">            The sequence or scalar over which function is evaluated</span>
+<span class="sd">        rng : slice object</span>
+<span class="sd">            Optional slice object restricts which r-values are evaluated.</span>
+<span class="sd">            The output has same length as r, but unevaluated objects have</span>
+<span class="sd">            a default value of 0.  If caching is enabled these may be</span>
+<span class="sd">            previously calculated values instead.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            The value of ModelPart over r, possibly restricted by range.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">_owner</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Argument &#39;p&#39; must be evaluated by the BaseFunction &quot;</span> <span class="o">+</span> <span class="s2">&quot;subclass which owns it.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="c1"># normally r will be a sequence, but also allow single numeric values</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">rng</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+            <span class="n">rpart</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="n">rng</span><span class="p">]</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="mf">0.0</span>
+            <span class="n">output</span><span class="p">[</span><span class="n">rng</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valueraw</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">pars</span><span class="p">,</span> <span class="n">rpart</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">output</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valueraw</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseFunction.pgradient">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.basefunction.BaseFunction.pgradient">[docs]</a>
+    <span class="k">def</span> <span class="nf">pgradient</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="nb">format</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return gradient matrix of parameterization in specified format wrt &quot;internal&quot; format at p.</span>
+
+<span class="sd">        Consider the &quot;internal&quot; parameterization given by (i0, i1, ..., in).</span>
+<span class="sd">        Each parameter in a different format, say (o0, o1, ..., om), is a</span>
+<span class="sd">        function of the internal parameters.</span>
+
+<span class="sd">        The gradient matrix is</span>
+<span class="sd">        [[do0/di0 do0/di1 ... do0/din]</span>
+<span class="sd">         [do1/di0 do1/di1 ... do1/din]</span>
+<span class="sd">         ...</span>
+<span class="sd">         [dom/di0 dom/di1 ... dom/din]]</span>
+<span class="sd">        In the trivial case where format=&quot;internal&quot;, returns an identity matrix.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        p : ModelPart instance</span>
+<span class="sd">            The ModelPart instance to be evaluated for gradient calculation.</span>
+<span class="sd">        format : str</span>
+<span class="sd">            The format of the parameters</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            A 2D array containing the partial derivatives.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="BaseFunction.getmodule">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.basefunction.BaseFunction.getmodule">[docs]</a>
+    <span class="k">def</span> <span class="nf">getmodule</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return &#39;diffpy.srmise.basefunction&#39;&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;diffpy.srmise.basefunction&quot;</span></div>
+
+
+<div class="viewcode-block" id="BaseFunction.writestr">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.basefunction.BaseFunction.writestr">[docs]</a>
+    <span class="k">def</span> <span class="nf">writestr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">baselist</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return string representation of self.</span>
+
+<span class="sd">        References to other BaseFunction instances are replaced by their index</span>
+<span class="sd">        in baselist.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        baselist : array-like</span>
+<span class="sd">            The list of BaseFunction (or subclass) instances.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">            The string representation of self.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">baselist</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;baselist does not include this BaseFunction&#39;s base function.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Write function type</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;function=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;module=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">getmodule</span><span class="p">()))</span>
+        <span class="c1"># Write base</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;base=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="n">baselist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;base=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="kc">None</span><span class="p">))</span>
+        <span class="c1"># Write all other metadata</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">metadict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">f</span><span class="p">(</span><span class="n">v</span><span class="p">)))</span>
+        <span class="n">datastring</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">datastring</span></div>
+
+
+<div class="viewcode-block" id="BaseFunction.factory">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.basefunction.BaseFunction.factory">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">factory</span><span class="p">(</span><span class="n">functionstr</span><span class="p">,</span> <span class="n">baselist</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Instantiate a BaseFunction (or any subclass) from a string.</span>
+
+<span class="sd">        References to other BaseFunction instances in functionstr use the corresponding</span>
+<span class="sd">        index of that instance in baselist.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        functionstr : str</span>
+<span class="sd">            The string representation of the BaseFunction instance</span>
+<span class="sd">        baselist : array-like</span>
+<span class="sd">            The list of BaseFunction (or subclass) instances.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        Basefunction instance</span>
+<span class="sd">            The BaseFunction instance based on the parameter strings</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">functionstr</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="c1"># populate dictionary with parameter definition</span>
+        <span class="c1"># &quot;key=value&quot;-&gt;{&quot;key&quot;:&quot;value&quot;}</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(?:[\r\n]+|\A)(\S+)=&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="n">ddict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="n">ddict</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">2</span> <span class="o">*</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]</span>
+
+        <span class="c1"># dictionary of parameters</span>
+        <span class="n">pdict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">ddict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">pdict</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Invalid parameter: </span><span class="si">%s</span><span class="s2">=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="n">SrMiseDataFormatError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="n">function_name</span> <span class="o">=</span> <span class="n">pdict</span><span class="p">[</span><span class="s2">&quot;function&quot;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">pdict</span><span class="p">[</span><span class="s2">&quot;function&quot;</span><span class="p">]</span>
+
+        <span class="n">module_name</span> <span class="o">=</span> <span class="n">pdict</span><span class="p">[</span><span class="s2">&quot;module&quot;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">pdict</span><span class="p">[</span><span class="s2">&quot;module&quot;</span><span class="p">]</span>
+
+        <span class="c1">#  __import()__ returns the top-level module (so spam in spam.foo.whatever)</span>
+        <span class="c1"># so I need to perform a secondary look-up</span>
+        <span class="nb">__import__</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+        <span class="n">module</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">module_name</span><span class="p">]</span>
+        <span class="n">functionclass</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">function_name</span><span class="p">)</span>
+
+        <span class="c1"># Correctly initialize the base function, if one exists.</span>
+        <span class="k">if</span> <span class="n">pdict</span><span class="p">[</span><span class="s2">&quot;base&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">pdict</span><span class="p">[</span><span class="s2">&quot;base&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">idx</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">baselist</span><span class="p">):</span>
+                <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Dependent base function not in baselist.&quot;</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+            <span class="n">pdict</span><span class="p">[</span><span class="s2">&quot;base&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">baselist</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">pdict</span><span class="p">[</span><span class="s2">&quot;base&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">functionclass</span><span class="p">(</span><span class="o">**</span><span class="n">pdict</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="BaseFunction.safefunctionlist">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.basefunction.BaseFunction.safefunctionlist">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">safefunctionlist</span><span class="p">(</span><span class="n">fs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return list of BaseFunction instances where any dependencies occur earlier in list.</span>
+
+<span class="sd">        Any functions with hidden dependent functions (i.e. those not in fs)</span>
+<span class="sd">        are included in the returned list.  This list provides an order that</span>
+<span class="sd">        is guaranteed to be safe for saving/reinstantiating peak functions.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        fs: List of BaseFunction instances.&quot;&quot;&quot;</span>
+        <span class="n">fsafe</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fs</span><span class="p">:</span>
+            <span class="n">BaseFunction</span><span class="o">.</span><span class="n">safefunction</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">fsafe</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">fsafe</span></div>
+
+
+<div class="viewcode-block" id="BaseFunction.safefunction">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.basefunction.BaseFunction.safefunction">[docs]</a>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">safefunction</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">fsafe</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Append BaseFunction instance f to fsafe, but adding dependent functions first.</span>
+
+<span class="sd">        Does not handle circular dependencies.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        f : BaseFunction instance</span>
+<span class="sd">            The BaseFunction instance</span>
+<span class="sd">        fsafe : array-like</span>
+<span class="sd">            The list of BaseFunction instances being built.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">f</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fsafe</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">base</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">BaseFunction</span><span class="o">.</span><span class="n">safefunction</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">base</span><span class="p">,</span> <span class="n">fsafe</span><span class="p">)</span>
+            <span class="n">fsafe</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+        <span class="k">return</span></div>
+</div>
+
+
+
+<span class="c1"># end of class BaseFunction</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+
+    <span class="kn">from</span> <span class="nn">diffpy.srmise.peaks.gaussianoverr</span> <span class="kn">import</span> <span class="n">GaussianOverR</span>
+    <span class="kn">from</span> <span class="nn">diffpy.srmise.peaks.terminationripples</span> <span class="kn">import</span> <span class="n">TerminationRipples</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="n">GaussianOverR</span><span class="p">(</span><span class="mf">0.8</span><span class="p">)</span>
+    <span class="n">outstr</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">writestr</span><span class="p">([])</span>
+
+    <span class="n">p2</span> <span class="o">=</span> <span class="n">BaseFunction</span><span class="o">.</span><span class="n">factory</span><span class="p">(</span><span class="n">outstr</span><span class="p">,</span> <span class="p">[])</span>
+
+    <span class="n">pt</span> <span class="o">=</span> <span class="n">TerminationRipples</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+    <span class="n">outstr2</span> <span class="o">=</span> <span class="n">pt</span><span class="o">.</span><span class="n">writestr</span><span class="p">([</span><span class="n">p</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">outstr</span><span class="p">)</span>
+
+    <span class="n">pt2</span> <span class="o">=</span> <span class="n">BaseFunction</span><span class="o">.</span><span class="n">factory</span><span class="p">(</span><span class="n">outstr2</span><span class="p">,</span> <span class="p">[</span><span class="n">p</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">pt2</span><span class="p">))</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, The Trustees of Columbia University in the City of New York.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

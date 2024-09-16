@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>diffpy.srmise.modelparts &mdash; diffpy.srmise 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=f539c95a"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            diffpy.srmise
+          </a>
+              <div class="version">
+                0.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../release.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/diffpy.srmise.html">Package API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">diffpy.srmise</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">diffpy.srmise.modelparts</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for diffpy.srmise.modelparts</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1">##############################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># SrMise            by Luke Granlund</span>
+<span class="c1">#                   (c) 2014 trustees of the Michigan State University</span>
+<span class="c1">#                   (c) 2024 trustees of Columia University in the City of New York</span>
+<span class="c1">#                   All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># File coded by:    Luke Granlund</span>
+<span class="c1">#</span>
+<span class="c1"># See LICENSE.txt for license information.</span>
+<span class="c1">#</span>
+<span class="c1">##############################################################################</span>
+<span class="sd">&quot;&quot;&quot;Module for representing instances of mathematical functions.</span>
+
+<span class="sd">Classes</span>
+<span class="sd">-------</span>
+<span class="sd">ModelPart: Superclass of Peak and Baseline</span>
+<span class="sd">ModelParts: Collection (list) of ModelPart instances.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">importlib.metadata</span> <span class="kn">import</span> <span class="n">version</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># Output of scipy.optimize.leastsq for a single parameter changed in scipy 0.8.0</span>
+<span class="c1"># Before it returned a scalar, later it returned an array of length 1.</span>
+<span class="kn">from</span> <span class="nn">packaging.version</span> <span class="kn">import</span> <span class="n">parse</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">leastsq</span>
+
+<span class="kn">from</span> <span class="nn">diffpy.srmise</span> <span class="kn">import</span> <span class="n">srmiselog</span>
+<span class="kn">from</span> <span class="nn">diffpy.srmise.srmiseerrors</span> <span class="kn">import</span> <span class="n">SrMiseFitError</span><span class="p">,</span> <span class="n">SrMiseStaticOwnerError</span><span class="p">,</span> <span class="n">SrMiseUndefinedCovarianceError</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;diffpy.srmise&quot;</span><span class="p">)</span>
+<span class="n">__spv__</span> <span class="o">=</span> <span class="n">version</span><span class="p">(</span><span class="s2">&quot;scipy&quot;</span><span class="p">)</span>
+<span class="n">__oldleastsqbehavior__</span> <span class="o">=</span> <span class="n">parse</span><span class="p">(</span><span class="n">__spv__</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">parse</span><span class="p">(</span><span class="s2">&quot;0.8.0&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ModelParts">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelParts">[docs]</a>
+<span class="k">class</span> <span class="nc">ModelParts</span><span class="p">(</span><span class="nb">list</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A collection of ModelPart instances.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    copy: Return deep copy</span>
+<span class="sd">    fit: Fit to given data</span>
+<span class="sd">    npars: Return total number of parameters</span>
+<span class="sd">    pack_freepars: Update free parameters with values in given sequence</span>
+<span class="sd">    residual: Return residual of model</span>
+<span class="sd">    residual_jacobian: Return jacobian of residual of model</span>
+<span class="sd">    transform: Change format of parameters.</span>
+<span class="sd">    value: Return value of model</span>
+<span class="sd">    unpack_freepars: Return sequence containing value of all free parameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+        <span class="nb">list</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ModelParts.fit">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelParts.fit">[docs]</a>
+    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">r</span><span class="p">,</span>
+        <span class="n">y</span><span class="p">,</span>
+        <span class="n">y_error</span><span class="p">,</span>
+        <span class="nb">range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">ntrials</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">cov</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">cov_format</span><span class="o">=</span><span class="s2">&quot;default_output&quot;</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Chi-square fit of all free parameters to given data.</span>
+
+<span class="sd">        There must be at least as many free parameters as data points.</span>
+<span class="sd">        Fitting is performed with the MINPACK leastsq() routine exposed by scipy.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        r : array-like</span>
+<span class="sd">            The sequence of r values over which to fit</span>
+<span class="sd">        y : array-like</span>
+<span class="sd">            The sequence of y values over which to fit</span>
+<span class="sd">        y_error : array-like</span>
+<span class="sd">            The sequence of uncertainties in y</span>
+<span class="sd">        range : slice object</span>
+<span class="sd">            The slice object specifying region of r and y over which to fit.</span>
+<span class="sd">            Fits over all the data by default.</span>
+<span class="sd">        ntrials : int</span>
+<span class="sd">            The maximum number of function evaluations while fitting.</span>
+<span class="sd">        cov : ModelCovariance instance</span>
+<span class="sd">            The Optional ModelCovariance object preserves covariance information.</span>
+<span class="sd">        cov_format : str</span>
+<span class="sd">            The parameterization to use in cov.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">freepars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unpack_freepars</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">freepars</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">):</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Cannot fit model with &quot;</span>
+                <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">freepars</span><span class="p">))</span>
+                <span class="o">+</span> <span class="s2">&quot; free parametersbut only &quot;</span>
+                <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+                <span class="o">+</span> <span class="s2">&quot; data points.&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SrMiseFitError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">freepars</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># emsg = &quot;Cannot fit model with no free parameters.&quot;</span>
+            <span class="c1"># raise SrMiseFitError(emsg)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="nb">range</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">range</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">y_error</span><span class="p">,</span> <span class="nb">range</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">srmiselog</span><span class="o">.</span><span class="n">liveplots</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ioff</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Before&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;_nolabel_&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="n">r</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="nb">range</span><span class="p">))</span> <span class="o">-</span> <span class="mf">1.1</span> <span class="o">*</span> <span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">y</span><span class="p">)),</span>
+                <span class="n">label</span><span class="o">=</span><span class="s2">&quot;_nolabel_&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="nb">range</span><span class="p">),</span> <span class="n">label</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">))</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">leastsq</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">residual</span><span class="p">,</span>  <span class="c1"># minimize this function</span>
+                <span class="n">freepars</span><span class="p">,</span>  <span class="c1"># initial parameters</span>
+                <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>  <span class="c1"># arguments to residual, residual_jacobian</span>
+                <span class="n">Dfun</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">residual_jacobian</span><span class="p">,</span>  <span class="c1"># explicit Jacobian</span>
+                <span class="n">col_deriv</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># order of derivatives in Jacobian</span>
+                <span class="n">full_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">maxfev</span><span class="o">=</span><span class="n">ntrials</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">NotImplementedError</span><span class="p">:</span>
+            <span class="c1"># TODO: Figure out if is worth checking for residual_jacobian</span>
+            <span class="c1"># before leastsq().  This exception will either occur almost never</span>
+            <span class="c1"># or extremely frequently, and the extra evaluations will add up.</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;One or more functions do not define residual_jacobian().&quot;</span><span class="p">)</span>
+            <span class="n">f</span> <span class="o">=</span> <span class="n">leastsq</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">residual</span><span class="p">,</span>  <span class="c1"># minimize this function</span>
+                <span class="n">freepars</span><span class="p">,</span>  <span class="c1"># initial parameters</span>
+                <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>  <span class="c1"># arguments to residual</span>
+                <span class="n">col_deriv</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># order of derivatives in Jacobian</span>
+                <span class="n">full_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">maxfev</span><span class="o">=</span><span class="n">ntrials</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="c1"># Sadly, KeyboardInterrupt, etc. is reraised as minpack.error</span>
+            <span class="c1"># Not much I can do about that, though.</span>
+            <span class="kn">import</span> <span class="nn">traceback</span>
+
+            <span class="n">emsg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;Unexpected error in modelparts.fit().  Original exception:</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="o">+</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">()</span>
+                <span class="o">+</span> <span class="s2">&quot;End original exception.&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="n">SrMiseFitError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">__oldleastsqbehavior__</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">freepars</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># leastsq returns a scalar when there is only one parameter</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">result</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pack_freepars</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">srmiselog</span><span class="o">.</span><span class="n">liveplots</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ioff</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;After&quot;</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">ion</span><span class="p">()</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span>
+                <span class="n">r</span><span class="p">,</span>
+                <span class="n">y</span><span class="p">,</span>
+                <span class="n">r</span><span class="p">,</span>
+                <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="nb">range</span><span class="p">))</span> <span class="o">-</span> <span class="mf">1.1</span> <span class="o">*</span> <span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">-</span> <span class="nb">min</span><span class="p">(</span><span class="n">y</span><span class="p">)),</span>
+                <span class="o">*</span><span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">sublist</span> <span class="ow">in</span> <span class="p">[[</span><span class="n">r</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="nb">range</span><span class="p">)]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">sublist</span><span class="p">],</span>
+            <span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="n">srmiselog</span><span class="o">.</span><span class="n">wait</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s2">&quot;Press &#39;Enter&#39; to continue...&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="nb">input</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">f</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Fit did not succeed -- &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+            <span class="k">raise</span> <span class="n">SrMiseFitError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="c1"># clean up parameters</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">pars</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">owner</span><span class="p">()</span><span class="o">.</span><span class="n">transform_parameters</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">pars</span><span class="p">,</span> <span class="n">in_format</span><span class="o">=</span><span class="s2">&quot;internal&quot;</span><span class="p">,</span> <span class="n">out_format</span><span class="o">=</span><span class="s2">&quot;internal&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Supply estimated covariance matrix if requested.</span>
+        <span class="c1"># The precise relationship between f[1] and estimated covariance matrix is a little unclear from</span>
+        <span class="c1"># the documentation of leastsq.  This is the interpretation given by scipy.optimize.curve_fit,</span>
+        <span class="c1"># which is a wrapper around leastsq.</span>
+        <span class="k">if</span> <span class="n">cov</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">pcov</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">fvec</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="s2">&quot;fvec&quot;</span><span class="p">]</span>
+            <span class="n">dof</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">freepars</span><span class="p">)</span>
+            <span class="n">cov</span><span class="o">.</span><span class="n">setcovariance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pcov</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">fvec</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">dof</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">cov</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">in_format</span><span class="o">=</span><span class="s2">&quot;internal&quot;</span><span class="p">,</span> <span class="n">out_format</span><span class="o">=</span><span class="n">cov_format</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">SrMiseUndefinedCovarianceError</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Covariance not defined.  Fit may not have converged.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span></div>
+
+
+    <span class="c1"># # Notes on the fit f</span>
+    <span class="c1"># f[0] = solution</span>
+    <span class="c1"># f[1] = Uses the fjac and ipvt optional outputs to construct an estimate of the jacobian around the solution.</span>
+    <span class="c1">#        None if a singular matrix encountered (indicates very flat curvature in some direction).</span>
+    <span class="c1">#        This matrix must be multiplied by the residual variance to get the covariance of the parameter</span>
+    <span class="c1">#        estimates - see curve fit.</span>
+    <span class="c1"># f[2] = dictionary{nfev: int, fvec: array(), fjac: array(), ipvt: array(), qtf: array()}</span>
+    <span class="c1">#        nfev - The number of function calls made</span>
+    <span class="c1">#        fvec - function (residual) evaluated at solution</span>
+    <span class="c1">#        fjac - &quot;a permutation of the R matrix of a QR factorization of the final Jacobian.&quot;</span>
+    <span class="c1">#        ipvt - integer array defining a permutation matrix P such that fjac*P=QR</span>
+    <span class="c1">#        qtf - transpose(q)*fvec</span>
+    <span class="c1"># f[3] = message about results of fit</span>
+    <span class="c1"># f[4] = integer flag.  Fit was successful on 1,2,3, or 4.  Otherwise unsuccessful.</span>
+
+<div class="viewcode-block" id="ModelParts.npars">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelParts.npars">[docs]</a>
+    <span class="k">def</span> <span class="nf">npars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">count_fixed</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return total number of parameters in all parts.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        count_fixed : bool</span>
+<span class="sd">            The boolean which determines if fixed parameters are</span>
+<span class="sd">            included in the count.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        n : int</span>
+<span class="sd">            The total number of parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">+=</span> <span class="n">p</span><span class="o">.</span><span class="n">npars</span><span class="p">(</span><span class="n">count_fixed</span><span class="o">=</span><span class="n">count_fixed</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">n</span></div>
+
+
+<div class="viewcode-block" id="ModelParts.pack_freepars">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelParts.pack_freepars">[docs]</a>
+    <span class="k">def</span> <span class="nf">pack_freepars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">freepars</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update parameters with values from sequence of freepars.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        freepars : array-like</span>
+<span class="sd">            The sequence of free parameters.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">freepars</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">():</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Non-numeric free parameters.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="n">freeidx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">freeidx</span> <span class="o">+=</span> <span class="n">p</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">freepars</span><span class="p">[</span><span class="n">freeidx</span><span class="p">:])</span></div>
+
+
+<div class="viewcode-block" id="ModelParts.residual">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelParts.residual">[docs]</a>
+    <span class="k">def</span> <span class="nf">residual</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">freepars</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">y_expected</span><span class="p">,</span> <span class="n">y_error</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate residual of all parameters.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        freepars : array-like</span>
+<span class="sd">            The sequence of free parameters</span>
+<span class="sd">        r :  array-like</span>
+<span class="sd">            The input domain</span>
+<span class="sd">        y_expected : array-like</span>
+<span class="sd">            The sequence of expected values</span>
+<span class="sd">        y_error : array-like</span>
+<span class="sd">            The sequence of uncertainties in y-variable</span>
+<span class="sd">        range : slice object</span>
+<span class="sd">            The slice object specifying region of r and y over which to fit.</span>
+<span class="sd">            All the data by default.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            The residual of all parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pack_freepars</span><span class="p">(</span><span class="n">freepars</span><span class="p">)</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="nb">range</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">range</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">range</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">y_expected</span><span class="p">[</span><span class="nb">range</span><span class="p">]</span> <span class="o">-</span> <span class="n">total</span><span class="p">[</span><span class="nb">range</span><span class="p">])</span> <span class="o">/</span> <span class="n">y_error</span><span class="p">[</span><span class="nb">range</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">y_expected</span> <span class="o">-</span> <span class="n">total</span><span class="p">)</span> <span class="o">/</span> <span class="n">y_error</span></div>
+
+
+<div class="viewcode-block" id="ModelParts.residual_jacobian">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelParts.residual_jacobian">[docs]</a>
+    <span class="k">def</span> <span class="nf">residual_jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">freepars</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">y_expected</span><span class="p">,</span> <span class="n">y_error</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the Jacobian of freepars.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        freepars : array-like</span>
+<span class="sd">            The sequence of free parameters</span>
+<span class="sd">        r : array-like</span>
+<span class="sd">            The input domain</span>
+<span class="sd">        y_expected : array-like</span>
+<span class="sd">            The sequence of expected values</span>
+<span class="sd">        y_error : array-like</span>
+<span class="sd">            The sequence of uncertainties in y-variable</span>
+<span class="sd">        range : slice object</span>
+<span class="sd">            The slice object specifying region of r and y over which to fit.</span>
+<span class="sd">            All the data by default.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
+<span class="sd">            The Jacobian of all parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">freepars</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Argument freepars has length 0.  The Jacobian &quot;</span> <span class="s2">&quot;is only defined with &gt;=1 free parameters.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pack_freepars</span><span class="p">(</span><span class="n">freepars</span><span class="p">)</span>
+        <span class="n">tempJac</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">tempJac</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">tempJac</span><span class="p">)</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">jacobian</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="nb">range</span><span class="p">)</span>
+        <span class="c1"># Since the residual is (expected - calculated) the jacobian</span>
+        <span class="c1"># of the residual has a minus sign.</span>
+        <span class="n">jac</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">j</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">tempJac</span> <span class="k">if</span> <span class="n">j</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">range</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">range</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">jac</span><span class="p">[:,</span> <span class="nb">range</span><span class="p">]</span> <span class="o">/</span> <span class="n">y_error</span><span class="p">[</span><span class="nb">range</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">jac</span> <span class="o">/</span> <span class="n">y_error</span></div>
+
+
+<div class="viewcode-block" id="ModelParts.value">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelParts.value">[docs]</a>
+    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate total value of all parts over range.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        r : array-like</span>
+<span class="sd">            The input domain</span>
+<span class="sd">        range : slice object</span>
+<span class="sd">            The slice object specifying region of r and y over which to fit.</span>
+<span class="sd">            All the data by default.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        total : float</span>
+<span class="sd">            The total value of all slice region of r.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="n">total</span> <span class="o">+=</span> <span class="n">p</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="nb">range</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">total</span></div>
+
+
+<div class="viewcode-block" id="ModelParts.unpack_freepars">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelParts.unpack_freepars">[docs]</a>
+    <span class="k">def</span> <span class="nf">unpack_freepars</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return array of all free parameters.&quot;&quot;&quot;</span>
+        <span class="c1"># To check: ravel() sometimes returns a reference and othertimes a copy.</span>
+        <span class="c1">#          Do I need to use flatten() instead?</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">compress</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">])</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="ModelParts.covariance">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelParts.covariance">[docs]</a>
+    <span class="k">def</span> <span class="nf">covariance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s2">&quot;internal&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return estimated covariance matrix of the model.</span>
+
+<span class="sd">        The covariance matrix may be given in terms of any parameterization</span>
+<span class="sd">        defined by the formats for each individual ModelPart.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        format : str</span>
+<span class="sd">            The format (&quot;internal&quot; by default) to use for all ModelParts.</span>
+<span class="sd">            This may be overridden for specific peaks as shown below.</span>
+
+<span class="sd">        Keywords</span>
+<span class="sd">        --------</span>
+<span class="sd">        f0 : str</span>
+<span class="sd">            The format of the 0th ModelPart</span>
+<span class="sd">        f1 : str</span>
+<span class="sd">            The format of the 1st ModelPart</span>
+<span class="sd">        etc.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        cov : ndarray</span>
+<span class="sd">            The estimated covariance matrix.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">formats</span> <span class="o">=</span> <span class="p">[</span><span class="nb">format</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">kwds</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">int</span><span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Invalid format keyword &#39;</span><span class="si">%s</span><span class="s2">&#39;.  They must be specified as &#39;f0&#39;, &#39;f1&#39;, etc.&quot;</span> <span class="o">%</span> <span class="n">k</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+            <span class="n">formats</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">k</span><span class="p">[</span><span class="mi">1</span><span class="p">:])]</span> <span class="o">=</span> <span class="n">v</span>
+
+        <span class="k">return</span></div>
+
+
+<div class="viewcode-block" id="ModelParts.copy">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelParts.copy">[docs]</a>
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return deep copy of this ModelParts.</span>
+
+<span class="sd">        The original and the copy are completely independent, except each</span>
+<span class="sd">        ModelPart and its copy still reference the same owner.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ModelParts</span>
+<span class="sd">            The deep copy of this ModelParts.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__call__</span><span class="p">([</span><span class="n">p</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">])</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return string representation of this ModelParts.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extends list.__getitem__&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">index</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="nb">slice</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ModelParts.transform">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelParts.transform">[docs]</a>
+    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_format</span><span class="o">=</span><span class="s2">&quot;internal&quot;</span><span class="p">,</span> <span class="n">out_format</span><span class="o">=</span><span class="s2">&quot;internal&quot;</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transforms format of parameters in this modelpart.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        in_format : str</span>
+<span class="sd">            The format the parameters are already in.</span>
+<span class="sd">        out_format : str</span>
+<span class="sd">            The format the parameters are transformed to.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">p</span><span class="o">.</span><span class="n">pars</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">owner</span><span class="p">()</span><span class="o">.</span><span class="n">transform_parameters</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">pars</span><span class="p">,</span> <span class="n">in_format</span><span class="p">,</span> <span class="n">out_format</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                    <span class="s2">&quot;Invalid parameter transformation: Ignoring </span><span class="si">%s</span><span class="s2">-&gt;</span><span class="si">%s</span><span class="s2"> for function of type </span><span class="si">%s</span><span class="s2">.&quot;</span>
+                    <span class="o">%</span> <span class="p">(</span><span class="n">in_format</span><span class="p">,</span> <span class="n">out_format</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">owner</span><span class="p">()</span><span class="o">.</span><span class="n">getmodule</span><span class="p">())</span>
+                <span class="p">)</span></div>
+</div>
+
+
+
+<span class="c1"># End of class ModelParts</span>
+
+
+<div class="viewcode-block" id="ModelPart">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelPart">[docs]</a>
+<span class="k">class</span> <span class="nc">ModelPart</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Represents a single part (instance of some function) of a model.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    -------</span>
+<span class="sd">    pars : array-like</span>
+<span class="sd">        The array containing the parameters of this model part</span>
+<span class="sd">    free : array-like</span>
+<span class="sd">        The array containing boolean values defining whether the corresponding parameter</span>
+<span class="sd">        is free or not.</span>
+<span class="sd">    removable : bool</span>
+<span class="sd">        The boolean determining whether or not this model part can be</span>
+<span class="sd">        removed during extraction.</span>
+<span class="sd">    static_owner : bool</span>
+<span class="sd">        The boolean determines if owner can be changed with changeowner()</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    changeowner(new_owner)</span>
+<span class="sd">        Change the owner of the model part instance.</span>
+<span class="sd">    copy()</span>
+<span class="sd">        Return a deep copy of the model part instance.</span>
+<span class="sd">    compress()</span>
+<span class="sd">        Return parameters with non-free parameters removed.</span>
+<span class="sd">    jacobian()</span>
+<span class="sd">        Compute and return the Jacobian matrix for the model part.</span>
+<span class="sd">    getfree(index=None, keyword=None)</span>
+<span class="sd">        Retrieve a free parameter by index or keyword defined by the owner.</span>
+<span class="sd">    npars()</span>
+<span class="sd">        Return the number of parameters in this model part.</span>
+<span class="sd">    owner()</span>
+<span class="sd">        Return the current owner of the model part.</span>
+<span class="sd">    setfree(index=None, value=None, keyword=None, new_value=None)</span>
+<span class="sd">        Set a free parameter by index or keyword defined by the owner.</span>
+<span class="sd">    update(values)</span>
+<span class="sd">        Update free parameters with values from a given sequence.</span>
+<span class="sd">    value()</span>
+<span class="sd">        Compute and return the value of the model part based on its parameters.</span>
+<span class="sd">    writestr()</span>
+<span class="sd">        Generate and return a string representation of the model part.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">free</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">removable</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">static_owner</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor for instance members.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        owner : BaseFunction subclass</span>
+<span class="sd">            The instance of a BaseFunction subclass</span>
+<span class="sd">        pars : array-like</span>
+<span class="sd">            The sequence of parameters which specify the function explicitly</span>
+<span class="sd">        free : array-like</span>
+<span class="sd">            The sequence of Boolean variables.  If False, the corresponding</span>
+<span class="sd">            parameter will not be changed.</span>
+<span class="sd">        removable : bool</span>
+<span class="sd">            The boolean determines whether this part can be removed.</span>
+<span class="sd">        static_owner : bool</span>
+<span class="sd">            Whether or not the part can be changed with</span>
+<span class="sd">            changeowner()</span>
+
+<span class="sd">        Note that free and removable are not mutually exclusive.  If any</span>
+<span class="sd">        pars are not free but removable=True then the part may be removed, but</span>
+<span class="sd">        the held parameters for this part will remain unchanged until then.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span> <span class="o">=</span> <span class="n">owner</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pars</span><span class="p">)</span> <span class="o">!=</span> <span class="n">owner</span><span class="o">.</span><span class="n">npars</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;The length of pars must equal the number of parameters &quot;</span> <span class="o">+</span> <span class="s2">&quot;specified by the model part owner.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pars</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pars</span><span class="p">[:])</span>  <span class="c1"># pars[:] in case pars is a ModelPart</span>
+
+        <span class="k">if</span> <span class="n">free</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">free</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="kc">True</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pars</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">free</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">free</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">free</span><span class="p">)</span> <span class="o">!=</span> <span class="n">owner</span><span class="o">.</span><span class="n">npars</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;The length of free must be equal to the number of &quot;</span>
+                <span class="o">+</span> <span class="s2">&quot;parameters specified by the model part owner.&quot;</span>
+            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">removable</span> <span class="o">=</span> <span class="n">removable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">static_owner</span> <span class="o">=</span> <span class="n">static_owner</span>
+
+<div class="viewcode-block" id="ModelPart.changeowner">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelPart.changeowner">[docs]</a>
+    <span class="k">def</span> <span class="nf">changeowner</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">owner</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Change the owner of this part.</span>
+
+<span class="sd">        Does not change the parameters associated with this model part. Raises</span>
+<span class="sd">        SrMiseStaticOwnerError if this peak has been declared to have a static</span>
+<span class="sd">        owner, or if the number of parameters is incompatible.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        owner : BaseFunction subclass</span>
+<span class="sd">            The instance of a BaseFunction subclass</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_owner</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">owner</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Cannot change owner if static_owner is True.&quot;</span>
+            <span class="k">raise</span> <span class="n">SrMiseStaticOwnerError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="o">.</span><span class="n">npars</span> <span class="o">!=</span> <span class="n">owner</span><span class="o">.</span><span class="n">npars</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;New owner specifies different number of parameters than &quot;</span> <span class="o">+</span> <span class="s2">&quot;original owner.&quot;</span>
+            <span class="k">raise</span> <span class="n">SrMiseStaticOwnerError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span> <span class="o">=</span> <span class="n">owner</span></div>
+
+
+<div class="viewcode-block" id="ModelPart.compress">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelPart.compress">[docs]</a>
+    <span class="k">def</span> <span class="nf">compress</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return part parameters with non-free values removed.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pars : array-like</span>
+<span class="sd">            The compressed parameters of the model part.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">free</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="ModelPart.jacobian">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelPart.jacobian">[docs]</a>
+    <span class="k">def</span> <span class="nf">jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return jacobian of this part over r.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        r : array-like</span>
+<span class="sd">            The input domain</span>
+<span class="sd">        range : slice object</span>
+<span class="sd">            The slice object specifying region of r and y over which to fit.</span>
+<span class="sd">            All the data by default.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        jacobian : array-like</span>
+<span class="sd">            The jacobian of the model part.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="o">.</span><span class="n">jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="nb">range</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ModelPart.owner">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelPart.owner">[docs]</a>
+    <span class="k">def</span> <span class="nf">owner</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the BaseFunction subclass instance which owns this part.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        BaseFunction subclass</span>
+<span class="sd">            The BaseFunction subclass which owns this part.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span></div>
+
+
+<div class="viewcode-block" id="ModelPart.update">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelPart.update">[docs]</a>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">freepars</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sequentially update free parameters from freepars.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        freepars : array-like</span>
+<span class="sd">            The sequence of new parameter values.  May contain more</span>
+<span class="sd">            parameters than can actually be updated.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        numfree</span>
+<span class="sd">            number of parameters updated from freepars.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">numfree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">npars</span><span class="p">(</span><span class="n">count_fixed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">freepars</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">numfree</span><span class="p">:</span>
+            <span class="k">pass</span>  <span class="c1"># raise &quot;freepars does not have enough elements to</span>
+            <span class="c1"># update every unheld parameter.&quot;</span>
+        <span class="c1"># TODO: Check if I need to make copies here, or if references</span>
+        <span class="c1">#       to parameters are safe.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">free</span><span class="p">]</span> <span class="o">=</span> <span class="n">freepars</span><span class="p">[:</span><span class="n">numfree</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">numfree</span></div>
+
+
+<div class="viewcode-block" id="ModelPart.value">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelPart.value">[docs]</a>
+    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return value of peak over r.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        r : array-like</span>
+<span class="sd">            The input domain</span>
+<span class="sd">        range : slice object</span>
+<span class="sd">            The slice object specifying region of r and y over which to fit.</span>
+<span class="sd">            All the data by default.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        value : array-like</span>
+<span class="sd">            The value of peak over r.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="nb">range</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ModelPart.copy">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelPart.copy">[docs]</a>
+    <span class="k">def</span> <span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a deep copy of this ModelPart.</span>
+
+<span class="sd">        The original and the copy are completely independent, except they both</span>
+<span class="sd">        reference the same owner.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ModelPart</span>
+<span class="sd">            A deep copy of this ModelPart.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">free</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">removable</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_owner</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_or_idx</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return parameter of peak corresponding with key_or_idx.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        key_or_idx : Optional[int, slice, key]</span>
+<span class="sd">            The integer index, slice, or key from owner&#39;s parameter</span>
+<span class="sd">            dictionary.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pars : array-like</span>
+<span class="sd">            The value of the peak corresponding to key_or_idx.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key_or_idx</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="o">.</span><span class="n">parameterdict</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="o">.</span><span class="n">parameterdict</span><span class="p">[</span><span class="n">key_or_idx</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">[</span><span class="n">key_or_idx</span><span class="p">]</span>
+
+<div class="viewcode-block" id="ModelPart.getfree">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelPart.getfree">[docs]</a>
+    <span class="k">def</span> <span class="nf">getfree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_or_idx</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return value of free corresponding with key_or_idx.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        key_or_idx : Optional[int, slice object, key]</span>
+<span class="sd">            The integer index, slice, or key from owner&#39;s parameter</span>
+<span class="sd">            dictionary.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        freepars : array-like</span>
+<span class="sd">            The value of the free corresponding to key_or_idx.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key_or_idx</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="o">.</span><span class="n">parameterdict</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">free</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="o">.</span><span class="n">parameterdict</span><span class="p">[</span><span class="n">key_or_idx</span><span class="p">]]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">free</span><span class="p">[</span><span class="n">key_or_idx</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="ModelPart.setfree">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelPart.setfree">[docs]</a>
+    <span class="k">def</span> <span class="nf">setfree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key_or_idx</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set value of free corresponding with key_or_idx.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        key_or_idx : Optional[int, slice object, key]</span>
+<span class="sd">            The integer index, slice, or key from owner&#39;s parameter</span>
+<span class="sd">            dictionary.</span>
+<span class="sd">        value : bool</span>
+<span class="sd">            The boolean to set in free corresponding to key_or_idx.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">key_or_idx</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="o">.</span><span class="n">parameterdict</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">free</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="o">.</span><span class="n">parameterdict</span><span class="p">[</span><span class="n">key_or_idx</span><span class="p">]]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">free</span><span class="p">[</span><span class="n">key_or_idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return number of parameters, including any fixed ones.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="o">.</span><span class="n">npars</span>
+
+<div class="viewcode-block" id="ModelPart.npars">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelPart.npars">[docs]</a>
+    <span class="k">def</span> <span class="nf">npars</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">count_fixed</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return total number of parameters in all parts.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        count_fixed : bool</span>
+<span class="sd">            The boolean which determines if fixed parameters are</span>
+<span class="sd">            included in the count.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        int</span>
+<span class="sd">            The number of parameters in all parts.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">count_fixed</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="o">.</span><span class="n">npars</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">free</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return string representation of ModelPart parameters.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="o">.</span><span class="n">transform_parameters</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">,</span> <span class="n">in_format</span><span class="o">=</span><span class="s2">&quot;internal&quot;</span><span class="p">,</span> <span class="n">out_format</span><span class="o">=</span><span class="s2">&quot;default_output&quot;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="s2">&quot;_owner&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">(</span>
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owner</span> <span class="ow">is</span> <span class="n">other</span><span class="o">.</span><span class="n">_owner</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pars</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">pars</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">free</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">free</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">removable</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">removable</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">other</span>
+
+<div class="viewcode-block" id="ModelPart.writestr">
+<a class="viewcode-back" href="../../../api/diffpy.srmise.html#diffpy.srmise.modelparts.ModelPart.writestr">[docs]</a>
+    <span class="k">def</span> <span class="nf">writestr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ownerlist</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return string representation of ModelPart.</span>
+
+<span class="sd">        The value of owner is determined by its index in ownerlist.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        ownerlist : array-like</span>
+<span class="sd">            The list of owner functions</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        datastring</span>
+<span class="sd">            The string representation of ModelPart.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_owner</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ownerlist</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;ownerlist does not contain this ModelPart&#39;s owner.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;owner=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="n">ownerlist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_owner</span><span class="p">)))</span>
+
+        <span class="c1"># Lists/numpy arrays don&#39;t give full representation of long lists</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;pars=[</span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">repr</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pars</span><span class="p">]))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;free=[</span><span class="si">%s</span><span class="s2">]&quot;</span> <span class="o">%</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">repr</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">free</span><span class="p">]))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;removable=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">removable</span><span class="p">))</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;static_owner=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">static_owner</span><span class="p">))</span>
+        <span class="n">datastring</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">datastring</span></div>
+</div>
+
+
+
+<span class="c1"># End of class ModelPart</span>
+
+<span class="c1"># simple test code</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="k">pass</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, The Trustees of Columbia University in the City of New York.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

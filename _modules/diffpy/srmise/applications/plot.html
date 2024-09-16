@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>diffpy.srmise.applications.plot &mdash; diffpy.srmise 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=f539c95a"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            diffpy.srmise
+          </a>
+              <div class="version">
+                0.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../release.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/diffpy.srmise.html">Package API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">diffpy.srmise</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">diffpy.srmise.applications.plot</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for diffpy.srmise.applications.plot</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1">##############################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># SrMise            by Luke Granlund</span>
+<span class="c1">#                   (c) 2014 trustees of the Michigan State University</span>
+<span class="c1">#                   (c) 2024 trustees of Columia University in the City of New York</span>
+<span class="c1">#                   All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># File coded by:    Luke Granlund</span>
+<span class="c1">#</span>
+<span class="c1"># See LICENSE.txt for license information.</span>
+<span class="c1">#</span>
+<span class="c1">##############################################################################</span>
+<span class="sd">&quot;&quot;&quot;plot extracted peaks and comparison to ideal distances (if given)&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">optparse</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">mpl_toolkits.axisartist</span> <span class="k">as</span> <span class="nn">AA</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">matplotlib.ticker</span> <span class="kn">import</span> <span class="n">MultipleLocator</span>
+<span class="kn">from</span> <span class="nn">mpl_toolkits.axes_grid1.inset_locator</span> <span class="kn">import</span> <span class="n">inset_axes</span>
+
+<span class="kn">from</span> <span class="nn">diffpy.srmise.pdfpeakextraction</span> <span class="kn">import</span> <span class="n">PDFPeakExtraction</span><span class="p">,</span> <span class="n">resample</span>
+<span class="kn">from</span> <span class="nn">diffpy.srmise.peakstability</span> <span class="kn">import</span> <span class="n">PeakStability</span>
+
+<span class="c1"># For a given figure, returns a label of interest</span>
+<span class="n">labeldict</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="n">default_gobs_style</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;linestyle&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;markeredgecolor&quot;</span><span class="p">:</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;marker&quot;</span><span class="p">:</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;markerfacecolor&quot;</span><span class="p">:</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;markersize&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">default_gfit_style</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;g&quot;</span><span class="p">}</span>
+<span class="n">default_gind_style</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;facecolor&quot;</span><span class="p">:</span> <span class="s2">&quot;green&quot;</span><span class="p">,</span> <span class="s2">&quot;alpha&quot;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">}</span>
+<span class="n">default_gres_style</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">default_ep_style</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">default_ip_style</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="n">default_dg_style</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;linestyle&quot;</span><span class="p">:</span> <span class="s2">&quot;none&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;marker&quot;</span><span class="p">:</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;markerfacecolor&quot;</span><span class="p">:</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;markeredgecolor&quot;</span><span class="p">:</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;markersize&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;antialiased&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="setfigformat">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.applications.html#diffpy.srmise.applications.plot.setfigformat">[docs]</a>
+<span class="k">def</span> <span class="nf">setfigformat</span><span class="p">(</span><span class="n">figsize</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">rc</span>
+
+    <span class="n">rc</span><span class="p">(</span><span class="s2">&quot;legend&quot;</span><span class="p">,</span> <span class="n">numpoints</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">rc</span><span class="p">(</span><span class="s2">&quot;figure&quot;</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+    <span class="n">rc</span><span class="p">(</span><span class="s2">&quot;axes&quot;</span><span class="p">,</span> <span class="n">titlesize</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">11</span><span class="p">)</span>
+    <span class="n">rc</span><span class="p">(</span><span class="s2">&quot;xtick&quot;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">rc</span><span class="p">(</span><span class="s2">&quot;ytick&quot;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">rc</span><span class="p">(</span><span class="s2">&quot;lines&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.75</span><span class="p">,</span> <span class="n">markeredgewidth</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="gr_formataxis">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.applications.html#diffpy.srmise.applications.plot.gr_formataxis">[docs]</a>
+<span class="k">def</span> <span class="nf">gr_formataxis</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">ax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_minor_locator</span><span class="p">(</span><span class="n">MultipleLocator</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_label_position</span><span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">tick_left</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks_position</span><span class="p">(</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="comparepositions">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.applications.html#diffpy.srmise.applications.plot.comparepositions">[docs]</a>
+<span class="k">def</span> <span class="nf">comparepositions</span><span class="p">(</span><span class="n">ppe</span><span class="p">,</span> <span class="n">ip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ax&quot;</span><span class="p">,</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">())</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;base&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">yideal</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;yideal&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">yext</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;yext&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+    <span class="n">ep_style</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ep_style&quot;</span><span class="p">,</span> <span class="n">default_ep_style</span><span class="p">)</span>
+    <span class="n">ip_style</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ip_style&quot;</span><span class="p">,</span> <span class="n">default_ip_style</span><span class="p">)</span>
+    <span class="n">yideal_label</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;yideal_label&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;ideal&quot;</span><span class="p">)</span>
+    <span class="n">yext_label</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;yext_label&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;found&quot;</span><span class="p">)</span>
+    <span class="n">pmin</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pmin&quot;</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+    <span class="n">pmax</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pmax&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+
+    <span class="n">ep</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="p">[</span><span class="s2">&quot;position&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">ppe</span><span class="o">.</span><span class="n">model</span><span class="p">]</span>
+    <span class="n">ep</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">ep</span> <span class="k">if</span> <span class="n">p</span> <span class="o">&gt;=</span> <span class="n">pmin</span> <span class="ow">and</span> <span class="n">p</span> <span class="o">&lt;=</span> <span class="n">pmax</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">ip</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">xi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">ip</span><span class="p">))</span>
+        <span class="n">xi</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">ip</span>
+        <span class="n">xi</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">ip</span>
+        <span class="n">yi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">xi</span><span class="p">)</span> <span class="o">+</span> <span class="n">base</span>
+        <span class="n">yi</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">3</span><span class="p">]</span> <span class="o">+=</span> <span class="n">yideal</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="o">**</span><span class="n">ip_style</span><span class="p">)</span>
+
+    <span class="n">xe</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">ep</span><span class="p">))</span>
+    <span class="n">xe</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">ep</span>
+    <span class="n">xe</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">ep</span>
+    <span class="n">ye</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">xe</span><span class="p">)</span> <span class="o">+</span> <span class="n">base</span>
+    <span class="n">ye</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">3</span><span class="p">]</span> <span class="o">+=</span> <span class="n">yext</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xe</span><span class="p">,</span> <span class="n">ye</span><span class="p">,</span> <span class="s2">&quot;g&quot;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="o">**</span><span class="n">ep_style</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">ip</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axhline</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;k&quot;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">([</span><span class="n">base</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">yideal</span><span class="p">,</span> <span class="n">base</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">yext</span><span class="p">])</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticklabels</span><span class="p">([</span><span class="n">yideal_label</span><span class="p">,</span> <span class="n">yext_label</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">([</span><span class="n">base</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">yext</span><span class="p">])</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticklabels</span><span class="p">([</span><span class="n">yext_label</span><span class="p">])</span>
+
+    <span class="c1"># Set ylim explicitly, for case where yext is empty.</span>
+    <span class="k">if</span> <span class="n">ip</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">base</span> <span class="o">+</span> <span class="n">yideal</span><span class="p">,</span> <span class="n">base</span> <span class="o">+</span> <span class="n">yext</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">base</span> <span class="o">+</span> <span class="n">yext</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">tick</span> <span class="ow">in</span> <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">get_major_ticks</span><span class="p">():</span>
+        <span class="n">tick</span><span class="o">.</span><span class="n">tick1line</span><span class="o">.</span><span class="n">set_markersize</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">tick</span><span class="o">.</span><span class="n">tick2line</span><span class="o">.</span><span class="n">set_markersize</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">tick</span><span class="o">.</span><span class="n">label1</span><span class="o">.</span><span class="n">set_verticalalignment</span><span class="p">(</span><span class="s2">&quot;center&quot;</span><span class="p">)</span>
+        <span class="n">tick</span><span class="o">.</span><span class="n">label1</span><span class="o">.</span><span class="n">set_fontsize</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+    <span class="n">ticks</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">get_major_ticks</span><span class="p">()</span>
+    <span class="n">ticks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">label1</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s2">&quot;green&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">ip</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ticks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">label1</span><span class="o">.</span><span class="n">set_color</span><span class="p">(</span><span class="s2">&quot;blue&quot;</span><span class="p">)</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="dgseries">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.applications.html#diffpy.srmise.applications.plot.dgseries">[docs]</a>
+<span class="k">def</span> <span class="nf">dgseries</span><span class="p">(</span><span class="n">stability</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+    <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ax&quot;</span><span class="p">,</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">())</span>
+    <span class="n">dg_style</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dg_style&quot;</span><span class="p">,</span> <span class="n">default_dg_style</span><span class="p">)</span>
+
+    <span class="n">scale</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;scale&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+
+    <span class="n">dgmin</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dgmin&quot;</span><span class="p">,</span> <span class="n">stability</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">scale</span>
+    <span class="n">dgmax</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dgmax&quot;</span><span class="p">,</span> <span class="n">stability</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="n">scale</span>
+
+    <span class="n">pmin</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pmin&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">pmax</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;pmax&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">dg</span><span class="p">,</span> <span class="n">peaks</span><span class="p">,</span> <span class="n">bl</span><span class="p">,</span> <span class="n">dr</span> <span class="ow">in</span> <span class="n">stability</span><span class="o">.</span><span class="n">results</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">dg</span> <span class="o">*</span> <span class="n">scale</span> <span class="o">&lt;</span> <span class="n">dgmin</span> <span class="ow">or</span> <span class="n">dg</span> <span class="o">*</span> <span class="n">scale</span> <span class="o">&gt;</span> <span class="n">dgmax</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">peakpos</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="p">[</span><span class="s2">&quot;position&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">peaks</span><span class="p">]</span>
+        <span class="n">peakpos</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">peakpos</span> <span class="k">if</span> <span class="n">p</span> <span class="o">&gt;=</span> <span class="n">pmin</span> <span class="ow">and</span> <span class="n">p</span> <span class="o">&lt;=</span> <span class="n">pmax</span><span class="p">]</span>
+        <span class="n">x</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">peakpos</span><span class="p">)</span>
+        <span class="n">y</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">peakpos</span><span class="p">)</span> <span class="o">+</span> <span class="n">dg</span> <span class="o">*</span> <span class="n">scale</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">dg_style</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="labelallsubplots">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.applications.html#diffpy.srmise.applications.plot.labelallsubplots">[docs]</a>
+<span class="k">def</span> <span class="nf">labelallsubplots</span><span class="p">():</span>
+    <span class="n">rv</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="s2">&quot;abcd&quot;</span><span class="p">):</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">221</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="s2">&quot;(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="n">c</span>
+        <span class="n">ht</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+            <span class="mf">0.04</span><span class="p">,</span>
+            <span class="mf">0.95</span><span class="p">,</span>
+            <span class="n">s</span><span class="p">,</span>
+            <span class="n">horizontalalignment</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+            <span class="n">verticalalignment</span><span class="o">=</span><span class="s2">&quot;top&quot;</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span>
+            <span class="n">weight</span><span class="o">=</span><span class="s2">&quot;bold&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">rv</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ht</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">rv</span></div>
+
+
+
+<div class="viewcode-block" id="makeplot">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.applications.html#diffpy.srmise.applications.plot.makeplot">[docs]</a>
+<span class="k">def</span> <span class="nf">makeplot</span><span class="p">(</span><span class="n">ppe_or_stability</span><span class="p">,</span> <span class="n">ip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Plot stuff&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ppe_or_stability</span><span class="p">,</span> <span class="n">PeakStability</span><span class="p">):</span>
+        <span class="n">stability</span> <span class="o">=</span> <span class="n">ppe_or_stability</span>
+        <span class="n">ppe</span> <span class="o">=</span> <span class="n">stability</span><span class="o">.</span><span class="n">ppe</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stability</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">ppe</span> <span class="o">=</span> <span class="n">ppe_or_stability</span>
+
+    <span class="k">if</span> <span class="n">ppe</span><span class="o">.</span><span class="n">extracted</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># Makeplot requires a ModelCluster, so whip one up.</span>
+        <span class="kn">from</span> <span class="nn">diffpy.srmise.modelcluster</span> <span class="kn">import</span> <span class="n">ModelCluster</span>
+
+        <span class="n">ppe</span><span class="o">.</span><span class="n">defaultvars</span><span class="p">()</span>  <span class="c1"># Make sure everything has some setting.  This</span>
+        <span class="c1"># shouldn&#39;t have harmful side effects.</span>
+        <span class="n">rangeslice</span> <span class="o">=</span> <span class="n">ppe</span><span class="o">.</span><span class="n">getrangeslice</span><span class="p">()</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">ppe</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">rangeslice</span><span class="p">]</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">ppe</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">rangeslice</span><span class="p">]</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">ppe</span><span class="o">.</span><span class="n">effective_dy</span><span class="p">[</span><span class="n">rangeslice</span><span class="p">]</span>
+        <span class="n">mcluster</span> <span class="o">=</span> <span class="n">ModelCluster</span><span class="p">(</span><span class="n">ppe</span><span class="o">.</span><span class="n">initial_peaks</span><span class="p">,</span> <span class="n">ppe</span><span class="o">.</span><span class="n">baseline</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">dy</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">ppe</span><span class="o">.</span><span class="n">error_method</span><span class="p">,</span> <span class="n">ppe</span><span class="o">.</span><span class="n">pf</span><span class="p">)</span>
+        <span class="n">ext</span> <span class="o">=</span> <span class="n">mcluster</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">ext</span> <span class="o">=</span> <span class="n">ppe</span><span class="o">.</span><span class="n">extracted</span>
+
+    <span class="n">figdict</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Range along x-axis</span>
+    <span class="n">xlo</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;xlo&quot;</span><span class="p">,</span> <span class="n">ext</span><span class="o">.</span><span class="n">r_cluster</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">xhi</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;xhi&quot;</span><span class="p">,</span> <span class="n">ext</span><span class="o">.</span><span class="n">r_cluster</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># Range of PDF to display</span>
+    <span class="c1"># This is deferred until the defaults can be calculated</span>
+    <span class="c1"># min_gr</span>
+    <span class="c1"># max_gr</span>
+
+    <span class="c1"># Define heights and interstitial offsets</span>
+    <span class="c1"># All values in percent of main axis.</span>
+    <span class="n">top_offset</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;top_offset&quot;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">dg_height</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dg_height&quot;</span><span class="p">,</span> <span class="mf">15.0</span> <span class="k">if</span> <span class="n">stability</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">0.0</span><span class="p">)</span>
+    <span class="n">cmp_height</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;cmp_height&quot;</span><span class="p">,</span> <span class="mf">15.0</span> <span class="k">if</span> <span class="n">ip</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="mf">7.5</span><span class="p">)</span>
+    <span class="n">datatop_offset</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;datatop_offset&quot;</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)</span>
+    <span class="c1"># &lt;- Data appears here -&gt;</span>
+    <span class="n">databottom_offset</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;databottom_offset&quot;</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)</span>
+    <span class="c1"># &lt;- Residual appears here -&gt;</span>
+    <span class="n">bottom_offset</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;bottom_offset&quot;</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">)</span>
+
+    <span class="c1"># Style options</span>
+    <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dg_style&quot;</span><span class="p">,</span> <span class="n">default_dg_style</span><span class="p">)</span>
+    <span class="n">gobs_style</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;gobs_style&quot;</span><span class="p">,</span> <span class="n">default_gobs_style</span><span class="p">)</span>
+    <span class="n">gfit_style</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;gfit_style&quot;</span><span class="p">,</span> <span class="n">default_gfit_style</span><span class="p">)</span>
+    <span class="n">gind_style</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;gind_style&quot;</span><span class="p">,</span> <span class="n">default_gind_style</span><span class="p">)</span>
+    <span class="n">gres_style</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;gres_style&quot;</span><span class="p">,</span> <span class="n">default_gres_style</span><span class="p">)</span>
+    <span class="n">ep_style</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ep_style&quot;</span><span class="p">,</span> <span class="n">default_ep_style</span><span class="p">)</span>
+    <span class="n">ip_style</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ip_style&quot;</span><span class="p">,</span> <span class="n">default_ip_style</span><span class="p">)</span>
+
+    <span class="c1"># Label options</span>
+    <span class="n">userxlabel</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;xlabel&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;r ($\mathrm{\AA}$)&quot;</span><span class="p">)</span>
+    <span class="n">userylabel</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ylabel&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;G ($\mathrm{\AA^{-2}}$)&quot;</span><span class="p">)</span>
+    <span class="n">datalabelx</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;datalabelx&quot;</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">)</span>
+    <span class="n">yideal_label</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;yideal_label&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;ideal&quot;</span><span class="p">)</span>
+    <span class="n">yext_label</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;yext_label&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;found&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Other options</span>
+    <span class="n">datalabel</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;datalabel&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">dgformatstr</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dgformatstr&quot;</span><span class="p">,</span> <span class="sa">r</span><span class="s2">&quot;$\delta$g=</span><span class="si">%f</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;dgformatpost&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># -&gt;userfunction(string)</span>
+    <span class="n">show_fit</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;show_fit&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">show_individual</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;show_individual&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">fill_individual</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fill_individual&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">show_observed</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;show_observed&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">show_residual</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;show_residual&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">mask_residual</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;mask_residual&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>  <span class="c1"># -&gt; number</span>
+    <span class="n">show_annotation</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;show_annotation&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;scale&quot;</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>  <span class="c1"># Apply a global scaling factor to the data</span>
+
+    <span class="c1"># Define the various data which will be plotted</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">ext</span><span class="o">.</span><span class="n">r_cluster</span>
+    <span class="n">dr</span> <span class="o">=</span> <span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="n">rexpand</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">dr</span><span class="p">,</span> <span class="n">xlo</span><span class="p">,</span> <span class="o">-</span><span class="n">dr</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">r</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">dr</span><span class="p">,</span> <span class="n">xhi</span> <span class="o">+</span> <span class="n">dr</span><span class="p">,</span> <span class="n">dr</span><span class="p">)))</span>
+    <span class="n">rfine</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">dr</span><span class="p">)</span>
+    <span class="n">gr_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">resample</span><span class="p">(</span><span class="n">ppe</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">ppe</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">rexpand</span><span class="p">))</span> <span class="o">*</span> <span class="n">scale</span>
+    <span class="c1"># gr_fit = resample(r, ext.value(), rfine)</span>
+    <span class="n">gr_fit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ext</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">rfine</span><span class="p">))</span> <span class="o">*</span> <span class="n">scale</span>
+    <span class="n">gr_fit_baseline</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ext</span><span class="o">.</span><span class="n">valuebl</span><span class="p">(</span><span class="n">rfine</span><span class="p">))</span> <span class="o">*</span> <span class="n">scale</span>
+    <span class="n">gr_fit_ind</span> <span class="o">=</span> <span class="p">[</span><span class="n">gr_fit_baseline</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">rfine</span><span class="p">))</span> <span class="o">*</span> <span class="n">scale</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">ext</span><span class="o">.</span><span class="n">model</span><span class="p">]</span>
+    <span class="n">gr_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ext</span><span class="o">.</span><span class="n">residual</span><span class="p">())</span> <span class="o">*</span> <span class="n">scale</span>
+
+    <span class="k">if</span> <span class="n">mask_residual</span><span class="p">:</span>
+        <span class="n">gr_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">masked_outside</span><span class="p">(</span><span class="n">gr_res</span><span class="p">,</span> <span class="o">-</span><span class="n">mask_residual</span><span class="p">,</span> <span class="n">mask_residual</span><span class="p">)</span>
+
+    <span class="n">all_gr</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">show_fit</span><span class="p">:</span>
+        <span class="n">all_gr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gr_fit</span><span class="p">)</span>
+    <span class="c1"># if show_individual: all_gr.extend([gr_fit_baseline, gr_fit_ind])</span>
+    <span class="k">if</span> <span class="n">show_individual</span><span class="p">:</span>
+        <span class="n">all_gr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gr_fit_baseline</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">gr_fit_ind</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">all_gr</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">gr_fit_ind</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show_observed</span><span class="p">:</span>
+        <span class="n">all_gr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gr_obs</span><span class="p">)</span>
+
+    <span class="c1"># gr_fit_ind is a list of lists, so use np.min/max</span>
+    <span class="c1"># The funky bit with scale makes sure that a user-specified value</span>
+    <span class="c1"># has scale applied to it, without messing up the default values,</span>
+    <span class="c1"># which are calculated from already scaled quantities.</span>
+    <span class="n">min_gr</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;min_gr&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">gr</span><span class="p">)</span> <span class="k">for</span> <span class="n">gr</span> <span class="ow">in</span> <span class="n">all_gr</span><span class="p">])</span> <span class="o">/</span> <span class="n">scale</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span>
+    <span class="n">max_gr</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;max_gr&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">gr</span><span class="p">)</span> <span class="k">for</span> <span class="n">gr</span> <span class="ow">in</span> <span class="n">all_gr</span><span class="p">])</span> <span class="o">/</span> <span class="n">scale</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span>
+
+    <span class="k">if</span> <span class="n">show_residual</span><span class="p">:</span>
+        <span class="n">min_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">gr_res</span><span class="p">)</span>
+        <span class="n">max_res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">gr_res</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">min_res</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">max_res</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="c1"># Derive various y limits based on all the offsets</span>
+    <span class="n">rel_height</span> <span class="o">=</span> <span class="mf">100.0</span> <span class="o">-</span> <span class="n">top_offset</span> <span class="o">-</span> <span class="n">dg_height</span> <span class="o">-</span> <span class="n">cmp_height</span> <span class="o">-</span> <span class="n">datatop_offset</span> <span class="o">-</span> <span class="n">databottom_offset</span> <span class="o">-</span> <span class="n">bottom_offset</span>
+    <span class="n">abs_height</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="p">((</span><span class="n">max_gr</span> <span class="o">-</span> <span class="n">min_gr</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">max_res</span> <span class="o">-</span> <span class="n">min_res</span><span class="p">))</span> <span class="o">/</span> <span class="n">rel_height</span>
+
+    <span class="n">yhi</span> <span class="o">=</span> <span class="n">max_gr</span> <span class="o">+</span> <span class="p">(</span><span class="n">top_offset</span> <span class="o">+</span> <span class="n">dg_height</span> <span class="o">+</span> <span class="n">cmp_height</span> <span class="o">+</span> <span class="n">datatop_offset</span><span class="p">)</span> <span class="o">*</span> <span class="n">abs_height</span> <span class="o">/</span> <span class="mi">100</span>
+    <span class="n">ylo</span> <span class="o">=</span> <span class="n">yhi</span> <span class="o">-</span> <span class="n">abs_height</span>
+
+    <span class="n">yhi</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;yhi&quot;</span><span class="p">,</span> <span class="n">yhi</span><span class="p">)</span>
+    <span class="n">ylo</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;ylo&quot;</span><span class="p">,</span> <span class="n">ylo</span><span class="p">)</span>
+
+    <span class="n">datatop</span> <span class="o">=</span> <span class="n">yhi</span> <span class="o">-</span> <span class="p">(</span><span class="n">yhi</span> <span class="o">-</span> <span class="n">ylo</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="p">(</span><span class="n">top_offset</span> <span class="o">+</span> <span class="n">dg_height</span> <span class="o">+</span> <span class="n">cmp_height</span><span class="p">)</span>
+    <span class="n">datalabeltop</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="p">(</span><span class="n">top_offset</span> <span class="o">+</span> <span class="n">dg_height</span> <span class="o">+</span> <span class="n">cmp_height</span> <span class="o">+</span> <span class="n">datatop_offset</span><span class="p">)</span>
+    <span class="n">resbase</span> <span class="o">=</span> <span class="n">ylo</span> <span class="o">+</span> <span class="n">bottom_offset</span> <span class="o">*</span> <span class="n">abs_height</span> <span class="o">/</span> <span class="mi">100</span> <span class="o">-</span> <span class="n">min_res</span>
+
+    <span class="n">resbase</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;resbase&quot;</span><span class="p">,</span> <span class="n">resbase</span><span class="p">)</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">kwds</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;figure&quot;</span><span class="p">,</span> <span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">())</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span>
+    <span class="n">ax_data</span> <span class="o">=</span> <span class="n">AA</span><span class="o">.</span><span class="n">Subplot</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="mi">111</span><span class="p">)</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="n">ax_data</span><span class="p">)</span>
+    <span class="n">figdict</span><span class="p">[</span><span class="s2">&quot;fig&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">fig</span>
+    <span class="n">figdict</span><span class="p">[</span><span class="s2">&quot;data&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ax_data</span>
+
+    <span class="c1"># Plot the data, fit, and residual</span>
+    <span class="k">if</span> <span class="n">show_observed</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rexpand</span><span class="p">,</span> <span class="n">gr_obs</span><span class="p">,</span> <span class="o">**</span><span class="n">gobs_style</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show_fit</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rfine</span><span class="p">,</span> <span class="n">gr_fit</span><span class="p">,</span> <span class="o">**</span><span class="n">gfit_style</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">fill_individual</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">peak</span> <span class="ow">in</span> <span class="n">gr_fit_ind</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">rfine</span><span class="p">,</span> <span class="n">gr_fit_baseline</span><span class="p">,</span> <span class="n">peak</span><span class="p">,</span> <span class="o">**</span><span class="n">gind_style</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">show_residual</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">gr_res</span> <span class="o">+</span> <span class="n">resbase</span><span class="p">,</span> <span class="s2">&quot;r-&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">gres_style</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="n">xlo</span><span class="p">,</span> <span class="n">xhi</span><span class="p">),</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">[</span><span class="n">resbase</span><span class="p">],</span> <span class="s2">&quot;k:&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Format ax_data</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">xlo</span><span class="p">,</span> <span class="n">xhi</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">ylo</span><span class="p">,</span> <span class="n">yhi</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="n">userxlabel</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">userylabel</span><span class="p">)</span>
+    <span class="n">ax_data</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_minor_locator</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">MultipleLocator</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+    <span class="c1"># ax_data.yaxis.set_minor_locator(plt.MultipleLocator(np.max([1,int((yhi-ylo)/20)])))</span>
+    <span class="n">ax_data</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_label_position</span><span class="p">(</span><span class="s2">&quot;left&quot;</span><span class="p">)</span>
+    <span class="n">ax_data</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">tick_left</span><span class="p">()</span>
+    <span class="n">ax_data</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks_position</span><span class="p">(</span><span class="s2">&quot;both&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Remove labels above where insets begin</span>
+    <span class="c1"># ax_data.yaxis.set_ticklabels([str(int(loc)) for loc in ax_data.yaxis.get_majorticklocs() if loc &lt; datatop])</span>
+    <span class="n">ax_data</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_ticks</span><span class="p">([</span><span class="n">loc</span> <span class="k">for</span> <span class="n">loc</span> <span class="ow">in</span> <span class="n">ax_data</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">get_majorticklocs</span><span class="p">()</span> <span class="k">if</span> <span class="p">(</span><span class="n">loc</span> <span class="o">&lt;</span> <span class="n">datatop</span> <span class="ow">and</span> <span class="n">loc</span> <span class="o">&gt;=</span> <span class="n">ylo</span><span class="p">)])</span>
+
+    <span class="c1"># Dataset label</span>
+    <span class="k">if</span> <span class="n">datalabel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">dl</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+            <span class="n">datalabelx</span><span class="p">,</span>
+            <span class="n">datalabeltop</span><span class="p">,</span>
+            <span class="n">datalabel</span><span class="p">,</span>
+            <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;left&quot;</span><span class="p">,</span>
+            <span class="n">va</span><span class="o">=</span><span class="s2">&quot;top&quot;</span><span class="p">,</span>
+            <span class="n">transform</span><span class="o">=</span><span class="n">ax_data</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span>
+            <span class="n">weight</span><span class="o">=</span><span class="s2">&quot;bold&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">dl</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">figdict</span><span class="p">[</span><span class="s2">&quot;datalabel&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dl</span>
+
+    <span class="c1"># Create new x axis at bottom edge of compare inset</span>
+    <span class="n">ax_data</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="s2">&quot;top&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">ax_data</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="s2">&quot;newtop&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ax_data</span><span class="o">.</span><span class="n">new_floating_axis</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">datatop</span><span class="p">,</span> <span class="n">axis_direction</span><span class="o">=</span><span class="s2">&quot;bottom&quot;</span><span class="p">)</span>  <span class="c1"># &quot;top&quot; bugged?</span>
+    <span class="n">ax_data</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="s2">&quot;newtop&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">toggle</span><span class="p">(</span><span class="nb">all</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ticks</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">ax_data</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="s2">&quot;newtop&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">major_ticks</span><span class="o">.</span><span class="n">set_tick_out</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">ax_data</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="s2">&quot;newtop&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">minor_ticks</span><span class="o">.</span><span class="n">set_tick_out</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># New y-axis label, since AxisLabel positions cannot be set manually.</span>
+    <span class="c1"># The original label is invisible, but we use its (dynamic) x position</span>
+    <span class="c1"># to update the new label, which we define have the correct y position.</span>
+    <span class="c1"># A bit of a tradeoff for the nice insets and ability to define new axes.</span>
+    <span class="n">newylabel</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span>
+        <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">datatop</span> <span class="o">-</span> <span class="n">ylo</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">yhi</span> <span class="o">-</span> <span class="n">ylo</span><span class="p">),</span>
+        <span class="n">userylabel</span><span class="p">,</span>
+        <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span>
+        <span class="n">va</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span>
+        <span class="n">rotation</span><span class="o">=</span><span class="s2">&quot;vertical&quot;</span><span class="p">,</span>
+        <span class="n">transform</span><span class="o">=</span><span class="n">ax_data</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">labeldict</span><span class="p">[</span><span class="n">fig</span><span class="p">]</span> <span class="o">=</span> <span class="n">newylabel</span>  <span class="c1"># so we can find the correct text object</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">mpl_connect</span><span class="p">(</span><span class="s2">&quot;draw_event&quot;</span><span class="p">,</span> <span class="n">on_draw</span><span class="p">)</span>  <span class="c1"># original label invisibility and updating</span>
+
+    <span class="c1"># Compare extracted (and ideal, if provided) peak positions clearly.</span>
+    <span class="k">if</span> <span class="n">cmp_height</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">ax_cmp</span> <span class="o">=</span> <span class="n">inset_axes</span><span class="p">(</span>
+            <span class="n">ax_data</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="s2">&quot;100%&quot;</span><span class="p">,</span>
+            <span class="n">height</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%s%%</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">cmp_height</span><span class="p">,</span>
+            <span class="n">loc</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01</span> <span class="o">*</span> <span class="p">(</span><span class="n">top_offset</span> <span class="o">+</span> <span class="n">dg_height</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">bbox_transform</span><span class="o">=</span><span class="n">ax_data</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span>
+            <span class="n">borderpad</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">figdict</span><span class="p">[</span><span class="s2">&quot;cmp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ax_cmp</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">(</span><span class="n">ax_cmp</span><span class="p">)</span>
+        <span class="n">comparepositions</span><span class="p">(</span>
+            <span class="n">ext</span><span class="p">,</span>
+            <span class="n">ip</span><span class="p">,</span>
+            <span class="n">ep_style</span><span class="o">=</span><span class="n">ep_style</span><span class="p">,</span>
+            <span class="n">ip_style</span><span class="o">=</span><span class="n">ip_style</span><span class="p">,</span>
+            <span class="n">yideal_label</span><span class="o">=</span><span class="n">yideal_label</span><span class="p">,</span>
+            <span class="n">yext_label</span><span class="o">=</span><span class="n">yext_label</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">xlo</span><span class="p">,</span> <span class="n">xhi</span><span class="p">)</span>
+        <span class="n">ax_cmp</span><span class="o">.</span><span class="n">set_xticks</span><span class="p">([])</span>
+
+    <span class="c1"># Show how extracted peak positions change as dg is changed</span>
+    <span class="k">if</span> <span class="n">dg_height</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+
+        <span class="n">ax_dg</span> <span class="o">=</span> <span class="n">inset_axes</span><span class="p">(</span>
+            <span class="n">ax_data</span><span class="p">,</span>
+            <span class="n">width</span><span class="o">=</span><span class="s2">&quot;100%&quot;</span><span class="p">,</span>
+            <span class="n">height</span><span class="o">=</span><span class="s2">&quot;</span><span class="si">%s%%</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">dg_height</span><span class="p">,</span>
+            <span class="n">loc</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">bbox_to_anchor</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.01</span> <span class="o">*</span> <span class="n">top_offset</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">bbox_transform</span><span class="o">=</span><span class="n">ax_data</span><span class="o">.</span><span class="n">transAxes</span><span class="p">,</span>
+            <span class="n">borderpad</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">figdict</span><span class="p">[</span><span class="s2">&quot;dg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ax_dg</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">(</span><span class="n">ax_dg</span><span class="p">)</span>
+        <span class="n">dgkwds</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="s2">&quot;scale&quot;</span> <span class="ow">in</span> <span class="n">kwds</span><span class="p">:</span>
+            <span class="n">dgkwds</span><span class="p">[</span><span class="s2">&quot;scale&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwds</span><span class="p">[</span><span class="s2">&quot;scale&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;dgmin&quot;</span> <span class="ow">in</span> <span class="n">kwds</span><span class="p">:</span>
+            <span class="n">dgkwds</span><span class="p">[</span><span class="s2">&quot;dgmin&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwds</span><span class="p">[</span><span class="s2">&quot;dgmin&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s2">&quot;dgmax&quot;</span> <span class="ow">in</span> <span class="n">kwds</span><span class="p">:</span>
+            <span class="n">dgkwds</span><span class="p">[</span><span class="s2">&quot;dgmax&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwds</span><span class="p">[</span><span class="s2">&quot;dgmax&quot;</span><span class="p">]</span>
+        <span class="n">dgseries</span><span class="p">(</span><span class="n">stability</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pmin</span><span class="o">=</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pmax</span><span class="o">=</span><span class="n">r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="o">**</span><span class="n">dgkwds</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="n">xlo</span><span class="p">,</span> <span class="n">xhi</span><span class="p">)</span>
+        <span class="n">ax_dg</span><span class="o">.</span><span class="n">xaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">NullLocator</span><span class="p">())</span>
+        <span class="n">ax_dg</span><span class="o">.</span><span class="n">yaxis</span><span class="o">.</span><span class="n">set_major_locator</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">MaxNLocator</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\delta$g&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Annotate the actual dg shown</span>
+    <span class="k">if</span> <span class="n">show_annotation</span><span class="p">:</span>
+        <span class="n">dg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">ext</span><span class="o">.</span><span class="n">error_cluster</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span>
+        <span class="n">dgstr</span> <span class="o">=</span> <span class="n">dgformatstr</span> <span class="o">%</span> <span class="n">dg</span>
+        <span class="k">if</span> <span class="s2">&quot;dgformatpost&quot;</span> <span class="ow">in</span> <span class="n">kwds</span><span class="p">:</span>  <span class="c1"># post-processing on dg annotation</span>
+            <span class="n">dgstr</span> <span class="o">=</span> <span class="n">kwds</span><span class="p">[</span><span class="s2">&quot;dgformatpost&quot;</span><span class="p">](</span><span class="n">dgstr</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ext</span><span class="o">.</span><span class="n">model</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">xpos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">([</span><span class="n">xlo</span><span class="p">,</span> <span class="n">ext</span><span class="o">.</span><span class="n">model</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;position&quot;</span><span class="p">]])</span>  <span class="c1"># OK for now.</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">xpos</span> <span class="o">=</span> <span class="n">xlo</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="p">(</span><span class="n">xhi</span> <span class="o">-</span> <span class="n">xlo</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dg_height</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">cmp_height</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Arrow, text in compare distances line</span>
+            <span class="n">ylo2</span><span class="p">,</span> <span class="n">yhi2</span> <span class="o">=</span> <span class="n">ax_dg</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">ip</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">ypos</span> <span class="o">=</span> <span class="n">ylo2</span> <span class="o">-</span> <span class="mf">0.25</span> <span class="o">*</span> <span class="n">cmp_height</span> <span class="o">/</span> <span class="n">dg_height</span> <span class="o">*</span> <span class="p">(</span><span class="n">yhi2</span> <span class="o">-</span> <span class="n">ylo2</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ypos</span> <span class="o">=</span> <span class="n">ylo2</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">cmp_height</span> <span class="o">/</span> <span class="n">dg_height</span> <span class="o">*</span> <span class="p">(</span><span class="n">yhi2</span> <span class="o">-</span> <span class="n">ylo2</span><span class="p">)</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span>
+                <span class="n">dgstr</span><span class="p">,</span>
+                <span class="n">xy</span><span class="o">=</span><span class="p">(</span><span class="n">xlo</span><span class="p">,</span> <span class="n">dg</span><span class="p">),</span>
+                <span class="n">xycoords</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">,</span>
+                <span class="n">va</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span>
+                <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span>
+                <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="n">xpos</span><span class="p">,</span> <span class="n">ypos</span><span class="p">),</span>
+                <span class="n">textcoords</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">,</span>
+                <span class="n">size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span>
+                <span class="n">arrowprops</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">arrowstyle</span><span class="o">=</span><span class="s2">&quot;-&gt;&quot;</span><span class="p">,</span>
+                    <span class="n">connectionstyle</span><span class="o">=</span><span class="s2">&quot;angle,angleA=90,angleB=0,rad=10&quot;</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">,</span>
+                <span class="p">),</span>
+            <span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">dg_height</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Arrow, and text located somewhere in main plot region</span>
+            <span class="c1"># Must change axes</span>
+            <span class="k">pass</span>
+        <span class="k">elif</span> <span class="n">cmp_height</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># No arrow, text in compare distances line</span>
+            <span class="c1"># Must change axes</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">axes</span><span class="p">(</span><span class="n">ax_cmp</span><span class="p">)</span>
+            <span class="n">ylo2</span><span class="p">,</span> <span class="n">yhi2</span> <span class="o">=</span> <span class="n">ax_cmp</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">()</span>
+            <span class="n">ypos</span> <span class="o">=</span> <span class="n">yhi2</span> <span class="o">/</span> <span class="mf">2.0</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">xpos</span><span class="p">,</span> <span class="n">ypos</span><span class="p">,</span> <span class="n">dgstr</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s2">&quot;center&quot;</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;green&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Text only in main plot region</span>
+            <span class="c1"># Must change axes</span>
+            <span class="k">pass</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">figdict</span></div>
+
+
+
+<span class="c1"># Bit of a kluge to make sure the label on the y-axis</span>
+<span class="c1"># is placed correctly.  The &quot;invisiblelabel&quot; has correct</span>
+<span class="c1"># x-position, but it&#39;s y-position cannot be manually set.</span>
+<span class="c1"># The visiblelabel has correct y-position, and we update</span>
+<span class="c1"># its x-position based on invisiblelabel.  Of course,</span>
+<span class="c1"># invisiblelabel must be temporarily made visible to update</span>
+<span class="c1"># its values.</span>
+<span class="n">_lastxpos</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<div class="viewcode-block" id="on_draw">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.applications.html#diffpy.srmise.applications.plot.on_draw">[docs]</a>
+<span class="k">def</span> <span class="nf">on_draw</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">_lastxpos</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">event</span><span class="o">.</span><span class="n">canvas</span><span class="o">.</span><span class="n">figure</span>
+    <span class="n">ax_main</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">get_axes</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">invisiblelabel</span> <span class="o">=</span> <span class="n">ax_main</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="s2">&quot;left&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">label</span>
+    <span class="n">invisiblelabel</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">visiblelabel</span> <span class="o">=</span> <span class="n">labeldict</span><span class="p">[</span><span class="n">fig</span><span class="p">]</span>
+    <span class="n">bbox</span> <span class="o">=</span> <span class="n">invisiblelabel</span><span class="o">.</span><span class="n">get_window_extent</span><span class="p">(</span><span class="n">invisiblelabel</span><span class="o">.</span><span class="n">_renderer</span><span class="p">)</span>
+    <span class="n">bbox</span> <span class="o">=</span> <span class="n">bbox</span><span class="o">.</span><span class="n">inverse_transformed</span><span class="p">(</span><span class="n">ax_main</span><span class="o">.</span><span class="n">transAxes</span><span class="p">)</span>
+    <span class="n">bbox</span> <span class="o">=</span> <span class="n">bbox</span><span class="o">.</span><span class="n">get_points</span><span class="p">()</span>
+    <span class="n">xpos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">bbox</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># This, and the whole lastxpos business, is so label is properly</span>
+    <span class="c1"># updated when using the Agg backend to create a .png. (at least in</span>
+    <span class="c1"># matplotlib 1.1.0)  For some reason the invisible label is not set</span>
+    <span class="c1"># correctly when drawn with that backend unless redrawn at least once.</span>
+    <span class="c1"># If it is kept visible the whole time this problem doesn&#39;t occur.</span>
+    <span class="c1"># This problem doesn&#39;t occur onscreen (TkAgg) or printing PDFs, and</span>
+    <span class="c1"># didn&#39;t occur in matplotlib 1.0.0.</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">xpos</span> <span class="o">-</span> <span class="n">_lastxpos</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mf">0.001</span><span class="p">:</span>
+        <span class="n">_lastxpos</span><span class="p">[</span><span class="n">fig</span><span class="p">]</span> <span class="o">=</span> <span class="n">xpos</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">_lastxpos</span><span class="p">[</span><span class="n">fig</span><span class="p">]</span> <span class="o">=</span> <span class="n">xpos</span>
+
+    <span class="n">invisiblelabel</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">xpos_old</span> <span class="o">=</span> <span class="n">visiblelabel</span><span class="o">.</span><span class="n">get_position</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">xpos</span> <span class="o">-</span> <span class="n">xpos_old</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.001</span><span class="p">:</span>
+        <span class="n">labeldict</span><span class="p">[</span><span class="n">fig</span><span class="p">]</span><span class="o">.</span><span class="n">set_x</span><span class="p">(</span><span class="n">xpos</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    <span class="k">return</span></div>
+
+
+
+<div class="viewcode-block" id="readcompare">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.applications.html#diffpy.srmise.applications.plot.readcompare">[docs]</a>
+<span class="k">def</span> <span class="nf">readcompare</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a list of distances read from filename, otherwise None.&quot;&quot;&quot;</span>
+
+    <span class="c1"># TODO: Make this safer</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">datastring</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">err</span>
+
+    <span class="kn">import</span> <span class="nn">re</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^[^#]&quot;</span><span class="p">,</span> <span class="n">datastring</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">M</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">res</span><span class="p">:</span>
+        <span class="n">datastring</span> <span class="o">=</span> <span class="n">datastring</span><span class="p">[</span><span class="n">res</span><span class="o">.</span><span class="n">end</span><span class="p">()</span> <span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+
+    <span class="n">distances</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">datastring</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">):</span>
+            <span class="n">distances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">line</span><span class="p">))</span>
+    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Could not read distances from &#39;</span><span class="si">%s</span><span class="s2">&#39;. Ignoring file.&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">distances</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">distances</span></div>
+
+
+
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.applications.html#diffpy.srmise.applications.plot.main">[docs]</a>
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="c1"># configure options parsing</span>
+    <span class="n">usage</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;%prog srmise_file [options]</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;srmise_file can be an extraction file saved by SrMise, &quot;</span>
+        <span class="s2">&quot;or a data file saved by PeakStability.&quot;</span>
+    <span class="p">)</span>
+    <span class="n">descr</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;A very basic tool for somewhat prettier plotting than provided by &quot;</span>
+        <span class="s2">&quot;the basic SrMise classes.  Can be used to compare peak positions &quot;</span>
+        <span class="s2">&quot;with those from a list.</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="s2">&quot;NOTE: At this time the utility only works with peaks extracted using diffpy.srmise.PDFPeakExtraction.&quot;</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">optparse</span><span class="o">.</span><span class="n">OptionParser</span><span class="p">(</span><span class="n">usage</span><span class="o">=</span><span class="n">usage</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="n">descr</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span>
+        <span class="s2">&quot;--compare&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Compare extracted distances to distances listed (1/line) in this file.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span>
+        <span class="s2">&quot;--model&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;int&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Plot given model from set.  Ignored if srmise_file is not a PeakStability file.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;--show&quot;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;execute pylab.show() blocking call&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="s2">&quot;--output&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;save plot to the specified file&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_option</span><span class="p">(</span><span class="s2">&quot;--format&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s2">&quot;string&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;eps&quot;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;output format for plot saving&quot;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">allow_interspersed_args</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">opts</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Exactly one argument required. </span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">usage</span><span class="p">)</span>
+
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">toplot</span> <span class="o">=</span> <span class="n">PDFPeakExtraction</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">toplot</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">toplot</span> <span class="o">=</span> <span class="n">PeakStability</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">toplot</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;File &#39;</span><span class="si">%s</span><span class="s2">&#39; is not a .srmise or PeakStability data file.&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+                <span class="k">return</span>
+
+    <span class="k">if</span> <span class="n">opts</span><span class="o">.</span><span class="n">model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">toplot</span><span class="o">.</span><span class="n">setcurrent</span><span class="p">(</span><span class="n">opts</span><span class="o">.</span><span class="n">model</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ignoring model, </span><span class="si">%s</span><span class="s2"> is not a PeakStability file.&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+
+    <span class="n">distances</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">opts</span><span class="o">.</span><span class="n">compare</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># use baseline from existing file</span>
+        <span class="n">distances</span> <span class="o">=</span> <span class="n">readcompare</span><span class="p">(</span><span class="n">opts</span><span class="o">.</span><span class="n">compare</span><span class="p">)</span>
+
+    <span class="n">setfigformat</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mf">6.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">))</span>
+    <span class="n">makeplot</span><span class="p">(</span><span class="n">toplot</span><span class="p">,</span> <span class="n">distances</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">opts</span><span class="o">.</span><span class="n">output</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">opts</span><span class="o">.</span><span class="n">output</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="n">opts</span><span class="o">.</span><span class="n">format</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">600</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">opts</span><span class="o">.</span><span class="n">show</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+    <span class="k">return</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, The Trustees of Columbia University in the City of New York.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

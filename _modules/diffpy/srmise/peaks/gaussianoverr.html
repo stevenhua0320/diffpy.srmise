@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>diffpy.srmise.peaks.gaussianoverr &mdash; diffpy.srmise 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=f539c95a"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            diffpy.srmise
+          </a>
+              <div class="version">
+                0.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../release.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/diffpy.srmise.html">Package API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">diffpy.srmise</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">diffpy.srmise.peaks.gaussianoverr</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for diffpy.srmise.peaks.gaussianoverr</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1">##############################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># SrMise            by Luke Granlund</span>
+<span class="c1">#                   (c) 2014 trustees of the Michigan State University</span>
+<span class="c1">#                   (c) 2024 trustees of Columbia University in the City of New York</span>
+<span class="c1">#                   All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># File coded by:    Luke Granlund</span>
+<span class="c1">#</span>
+<span class="c1"># See LICENSE.txt for license information.</span>
+<span class="c1">#</span>
+<span class="c1">##############################################################################</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">diffpy.srmise.peaks.base</span> <span class="kn">import</span> <span class="n">PeakFunction</span>
+<span class="kn">from</span> <span class="nn">diffpy.srmise.srmiseerrors</span> <span class="kn">import</span> <span class="n">SrMiseEstimationError</span><span class="p">,</span> <span class="n">SrMiseScalingError</span><span class="p">,</span> <span class="n">SrMiseTransformationError</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;diffpy.srmise&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="GaussianOverR">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.peaks.html#diffpy.srmise.peaks.gaussianoverr.GaussianOverR">[docs]</a>
+<span class="k">class</span> <span class="nc">GaussianOverR</span><span class="p">(</span><span class="n">PeakFunction</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Methods for evaluation and parameter estimation of width-limited Gaussian/r.</span>
+
+<span class="sd">    Allowed formats are</span>
+<span class="sd">    internal: [position, parameterized width-squared, area]</span>
+<span class="sd">    pwa: [position, full width at half maximum, area]</span>
+<span class="sd">    mu_sigma_area: [mu, sigma, area]</span>
+
+<span class="sd">    The internal parameterization is unconstrained, but are interpreted</span>
+<span class="sd">    so that the width is between 0 and a user-provided maximum full width</span>
+<span class="sd">    at half maximum, and the area is positive.</span>
+
+<span class="sd">    Note that all full width at half maximum values are for the</span>
+<span class="sd">    corresponding Gaussian.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Possibly implement cutoff later, but low priority.</span>
+    <span class="c1"># cutoff=3/np.sqrt(2*np.log(2))</span>
+    <span class="c1"># cutoff defines a distance = maxwidth*cutoff from the maximum beyond</span>
+    <span class="c1"># which the function is considered 0. By default this distance is</span>
+    <span class="c1"># equivalent to 3 standard deviations.</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">maxwidth</span><span class="p">,</span> <span class="n">Cache</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;maxwidth defined as full width at half maximum for the</span>
+<span class="sd">        corresponding Gaussian, which is physically relevant.&quot;&quot;&quot;</span>
+        <span class="n">parameterdict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;area&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}</span>
+        <span class="n">formats</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;internal&quot;</span><span class="p">,</span> <span class="s2">&quot;pwa&quot;</span><span class="p">,</span> <span class="s2">&quot;mu_sigma_area&quot;</span><span class="p">]</span>
+        <span class="n">default_formats</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;default_input&quot;</span><span class="p">:</span> <span class="s2">&quot;internal&quot;</span><span class="p">,</span> <span class="s2">&quot;default_output&quot;</span><span class="p">:</span> <span class="s2">&quot;pwa&quot;</span><span class="p">}</span>
+        <span class="n">metadict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">metadict</span><span class="p">[</span><span class="s2">&quot;maxwidth&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">maxwidth</span><span class="p">,</span> <span class="nb">repr</span><span class="p">)</span>
+        <span class="n">PeakFunction</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameterdict</span><span class="p">,</span> <span class="n">formats</span><span class="p">,</span> <span class="n">default_formats</span><span class="p">,</span> <span class="n">metadict</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">Cache</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">maxwidth</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;&#39;maxwidth&#39; must be greater than 0.&quot;</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxwidth</span> <span class="o">=</span> <span class="n">maxwidth</span>
+
+        <span class="c1"># Useful constants ###</span>
+        <span class="c1"># c1 and c2 help with function values</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxwidth</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="p">(</span><span class="mi">8</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxwidth</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">8</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+
+        <span class="c1"># c3 and c4 help with parameter estimation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c3</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c4</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maxwidth</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># convert sigma to fwhm: fwhm = 2 sqrt(2 log 2) sigma</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma2fwhm</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+
+        <span class="k">return</span>
+
+    <span class="c1"># Methods required by PeakFunction ####</span>
+
+<div class="viewcode-block" id="GaussianOverR.estimate_parameters">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.peaks.html#diffpy.srmise.peaks.gaussianoverr.GaussianOverR.estimate_parameters">[docs]</a>
+    <span class="k">def</span> <span class="nf">estimate_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Estimate parameters for single peak from data provided.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        r : array-like</span>
+<span class="sd">            Data along r from which to estimate</span>
+<span class="sd">        y : array-like</span>
+<span class="sd">            Data along y from which to estimate</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            Numpy array of parameters in the default internal format.</span>
+<span class="sd">            Raises SrMiseEstimationError if parameters cannot be estimated for any</span>
+<span class="sd">            reason.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Arrays r, y must have equal length.&quot;</span>
+            <span class="k">raise</span> <span class="n">SrMiseEstimationError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Estimate peak using </span><span class="si">%s</span><span class="s2"> point(s)&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+
+        <span class="n">minpoints_required</span> <span class="o">=</span> <span class="mi">3</span>
+
+        <span class="c1"># filter out negative points</span>
+        <span class="n">usable_idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span> <span class="k">if</span> <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">use_r</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="n">usable_idx</span><span class="p">]</span>
+        <span class="n">use_y</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">usable_idx</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">usable_idx</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">minpoints_required</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Not enough data for successful estimation.&quot;</span>
+            <span class="k">raise</span> <span class="n">SrMiseEstimationError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="c1"># Estimation ####</span>
+        <span class="n">guesspars</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">min_y</span> <span class="o">=</span> <span class="n">use_y</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+        <span class="n">max_y</span> <span class="o">=</span> <span class="n">use_y</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">min_y</span> <span class="o">!=</span> <span class="n">max_y</span><span class="p">:</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="p">(</span><span class="n">use_y</span> <span class="o">-</span> <span class="n">min_y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+            <span class="n">guesspars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">use_r</span> <span class="o">*</span> <span class="n">weights</span><span class="p">)</span> <span class="o">/</span> <span class="nb">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
+            <span class="c1"># guesspars[0] = center</span>
+            <span class="k">if</span> <span class="n">use_y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">max_y</span><span class="p">:</span>
+                <span class="n">sigma_left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">use_r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">guesspars</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">use_y</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">max_y</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sigma_left</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+                    <span class="o">-</span><span class="mf">0.5</span>
+                    <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">use_r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">guesspars</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">use_r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">guesspars</span><span class="p">[</span><span class="mi">0</span><span class="p">]])))</span> <span class="o">**</span> <span class="mi">2</span>
+                    <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">min_y</span> <span class="o">/</span> <span class="n">max_y</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">use_y</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">max_y</span><span class="p">:</span>
+                <span class="n">sigma_right</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">use_r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">guesspars</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">use_y</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">max_y</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">sigma_right</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+                    <span class="o">-</span><span class="mf">0.5</span>
+                    <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">use_r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">guesspars</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">use_r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">guesspars</span><span class="p">[</span><span class="mi">0</span><span class="p">]])))</span> <span class="o">**</span> <span class="mi">2</span>
+                    <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">min_y</span> <span class="o">/</span> <span class="n">max_y</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="n">guesspars</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">sigma_right</span> <span class="o">+</span> <span class="n">sigma_left</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma2fwhm</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Procede cautiously if min_y == max_y.  Without other information</span>
+            <span class="c1"># we choose the center of the cluster as the peak center, and make</span>
+            <span class="c1"># sure the peak has died down by the time it reaches the edge of</span>
+            <span class="c1"># the data.</span>
+            <span class="n">guesspars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">use_r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">use_r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">2</span>
+            <span class="n">guesspars</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">use_r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">use_r</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>  <span class="c1"># cluster width/2=2*sigma</span>
+
+        <span class="k">if</span> <span class="n">guesspars</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxwidth</span><span class="p">:</span>
+            <span class="c1"># account for width-limit</span>
+            <span class="n">guesspars</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">c3</span> <span class="o">*</span> <span class="n">max_y</span> <span class="o">*</span> <span class="n">guesspars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxwidth</span>
+            <span class="n">guesspars</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span>  <span class="c1"># parameterized in terms of sin</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">guesspars</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">c3</span> <span class="o">*</span> <span class="n">max_y</span> <span class="o">*</span> <span class="n">guesspars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">guesspars</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">guesspars</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span>
+                <span class="mi">2</span> <span class="o">*</span> <span class="n">guesspars</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxwidth</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mf">1.0</span>
+            <span class="p">)</span>  <span class="c1"># parameterized in terms of sin</span>
+
+        <span class="k">return</span> <span class="n">guesspars</span></div>
+
+
+<div class="viewcode-block" id="GaussianOverR.scale_at">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.peaks.html#diffpy.srmise.peaks.gaussianoverr.GaussianOverR.scale_at">[docs]</a>
+    <span class="k">def</span> <span class="nf">scale_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">scale</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Change parameters so value(x)-&gt;scale*value(x).</span>
+
+<span class="sd">        Does not change position or height of peak&#39;s maxima.  Raises</span>
+<span class="sd">        SrMiseScalingError if the parameters cannot be scaled.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : array-like</span>
+<span class="sd">            Parameters corresponding to a single peak</span>
+<span class="sd">        x : float</span>
+<span class="sd">            Position of the border</span>
+<span class="sd">        scale : float</span>
+<span class="sd">            Size of scaling at x. Must be positive.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            The sequence of scaled parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">scale</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;Cannot scale by &quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">scale</span><span class="p">),</span> <span class="s2">&quot;.&quot;</span><span class="p">])</span>
+            <span class="k">raise</span> <span class="n">SrMiseScalingError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">scale</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pars</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ratio</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">scale</span>  <span class="c1"># Ugly: Equations orig. solved in terms of ratio</span>
+
+        <span class="n">tpars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_parameters</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">in_format</span><span class="o">=</span><span class="s2">&quot;internal&quot;</span><span class="p">,</span> <span class="n">out_format</span><span class="o">=</span><span class="s2">&quot;mu_sigma_area&quot;</span><span class="p">)</span>
+
+        <span class="c1"># solves 1. f(rmax;mu1,sigma1,area1)=f(rmax;mu2,sigma2,area2)</span>
+        <span class="c1">#       2. f(x;mu1,sigma1,area1)=ratio*f(x;mu1,sigma2,area2)</span>
+        <span class="c1">#       3. 1/2*(mu1+sqrt(mu1^2+sigma1^2))=1/2*(mu2+sqrt(mu2^2+sigma2^2))=rmax</span>
+        <span class="c1"># for mu2, sigma2, area2 (with appropriate unit conversions to fwhm at the end).</span>
+        <span class="c1"># The expression for rmax is the appropriate solution to df/dr=0</span>
+        <span class="n">mu1</span><span class="p">,</span> <span class="n">sigma1</span><span class="p">,</span> <span class="n">area1</span> <span class="o">=</span> <span class="n">tpars</span>
+
+        <span class="c1"># position of the peak maximum</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rmax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">pars</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SrMiseScalingError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+
+        <span class="c1"># lhs of eqn1/eqn2 multiplied by ratio.  Then take the log.</span>
+        <span class="n">log_ratio_prime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">ratio</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">rmax</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">mu1</span> <span class="o">+</span> <span class="n">rmax</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sigma1</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="c1"># the semi-nasty algebra reduces to something nice</span>
+        <span class="n">sigma2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">rmax</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">rmax</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">rmax</span> <span class="o">+</span> <span class="n">rmax</span> <span class="o">*</span> <span class="n">log_ratio_prime</span><span class="p">))</span>
+        <span class="n">mu2</span> <span class="o">=</span> <span class="p">(</span><span class="n">sigma2</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">rmax</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">rmax</span>
+        <span class="n">area2</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">area1</span>
+            <span class="o">*</span> <span class="p">(</span><span class="n">sigma2</span> <span class="o">/</span> <span class="n">sigma1</span><span class="p">)</span>
+            <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">rmax</span> <span class="o">-</span> <span class="n">mu1</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sigma1</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+            <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">rmax</span> <span class="o">-</span> <span class="n">mu2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">sigma2</span><span class="o">**</span><span class="mi">2</span><span class="p">))</span>
+        <span class="p">)</span>
+
+        <span class="n">tpars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">mu2</span>
+        <span class="n">tpars</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">sigma2</span>
+        <span class="n">tpars</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">area2</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">tpars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_parameters</span><span class="p">(</span><span class="n">tpars</span><span class="p">,</span> <span class="n">in_format</span><span class="o">=</span><span class="s2">&quot;mu_sigma_area&quot;</span><span class="p">,</span> <span class="n">out_format</span><span class="o">=</span><span class="s2">&quot;internal&quot;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">SrMiseTransformationError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">SrMiseScalingError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">tpars</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_jacobianraw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">free</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the Jacobian of a width-limited Gaussian/r function.</span>
+
+<span class="sd">        This method calculates the partial derivatives of a Gaussian/r function</span>
+<span class="sd">        with respect to its parameters, considering a limiting width. The Gaussian/r&#39;s</span>
+<span class="sd">        width approaches its maximum FWHM (maxwidth) as the effective width parameter</span>
+<span class="sd">        (`pars[1]`) tends to infinity.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : array-like</span>
+<span class="sd">            Sequence of parameters defining a single width-limited Gaussian:</span>
+<span class="sd">            - pars[0]: Peak position.</span>
+<span class="sd">            - pars[1]: Effective width, which scales up to the full width at half maximum (fwhm=maxwidth) as</span>
+<span class="sd">            `pars[1]` approaches infinity. It is mathematically represented as `tan(pi/2 * fwhm / maxwidth)`.</span>
+<span class="sd">            - pars[2]: Multiplicative constant &#39;a&#39;, equivalent to the peak area.</span>
+<span class="sd">        r : array-like or scalar</span>
+<span class="sd">            The sequence or scalar over which the Gaussian parameters `pars` are evaluated.</span>
+<span class="sd">        free : array-like of bools</span>
+<span class="sd">            Determines which derivatives need to be computed. A `True` value indicates that the derivative</span>
+<span class="sd">            with respect to the corresponding parameter in `pars` should be calculated;</span>
+<span class="sd">            `False` indicates no evaluation is needed.</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        jacobian : ndarray</span>
+<span class="sd">            The Jacobian matrix, where each column corresponds to the derivative of the Gaussian/r function</span>
+<span class="sd">            with respect to one of the input parameters `pars`, evaluated at points `r`.</span>
+<span class="sd">            Only columns corresponding to `True` values in `free` are computed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">jacobian</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">free</span><span class="p">))</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">npars</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">jacobian</span>
+
+        <span class="c1"># Optimization</span>
+        <span class="n">sin_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mf">1.0</span>
+        <span class="n">p0minusr</span> <span class="o">=</span> <span class="n">pars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">r</span>
+        <span class="n">exp_p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">p0minusr</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c2</span> <span class="o">*</span> <span class="n">sin_p</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">c1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">sin_p</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">free</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="c1"># derivative with respect to peak position</span>
+            <span class="n">jacobian</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">exp_p</span> <span class="o">*</span> <span class="n">p0minusr</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c2</span> <span class="o">*</span> <span class="n">sin_p</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">free</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="c1"># derivative with respect to reparameterized peak width</span>
+            <span class="n">jacobian</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="o">-</span><span class="n">exp_p</span>
+                <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+                <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c2</span> <span class="o">*</span> <span class="n">sin_p</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">p0minusr</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+                <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">c2</span> <span class="o">*</span> <span class="n">sin_p</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="n">free</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
+            <span class="c1"># derivative with respect to peak area</span>
+            <span class="c1"># abs&#39;(x)=sign(x) for real x except at 0 where it is undetermined.  Since any real peak necessarily has</span>
+            <span class="c1"># non-zero area and the function is paramaterized such that values of either sign represent equivalent</span>
+            <span class="c1"># curves I arbitrarily choose positive sign for pars[2]==0 in order to</span>
+            <span class="c1"># push the system back into a realistic parameter space should this improbable scenario occur.</span>
+            <span class="c1">#   jacobian[2] = sign(pars[2])*exp_p</span>
+            <span class="k">if</span> <span class="n">pars</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">jacobian</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">exp_p</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">jacobian</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">exp_p</span>
+        <span class="k">return</span> <span class="n">jacobian</span>
+
+    <span class="k">def</span> <span class="nf">_transform_derivativesraw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">in_format</span><span class="p">,</span> <span class="n">out_format</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return gradient matrix for the pars converted from in_format to out_format.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        pars: Sequence of parameters</span>
+<span class="sd">        in_format: A format defined for this class</span>
+<span class="sd">        out_format: A format defined for this class</span>
+
+<span class="sd">        Defined Formats</span>
+<span class="sd">        internal: [position, parameterized width-squared, area]</span>
+<span class="sd">        pwa: [position, full width at half maximum, area]</span>
+<span class="sd">        mu_sigma_area: [mu, sigma, area]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># With these three formats only the width-related parameter changes.</span>
+        <span class="c1"># Therefore the gradient matrix is the identity matrix with the possible</span>
+        <span class="c1"># exception of the element at [1,1].</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npars</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">in_format</span> <span class="o">==</span> <span class="n">out_format</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">in_format</span> <span class="o">==</span> <span class="s2">&quot;internal&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">out_format</span> <span class="o">==</span> <span class="s2">&quot;pwa&quot;</span><span class="p">:</span>
+                <span class="n">g</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxwidth</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="k">elif</span> <span class="n">out_format</span> <span class="o">==</span> <span class="s2">&quot;mu_sigma_area&quot;</span><span class="p">:</span>
+                <span class="n">g</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">maxwidth</span>
+                    <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma2fwhm</span><span class="p">)</span>
+                    <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument &#39;out_format&#39; must be one of </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">parformats</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">in_format</span> <span class="o">==</span> <span class="s2">&quot;pwa&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">out_format</span> <span class="o">==</span> <span class="s2">&quot;internal&quot;</span><span class="p">:</span>
+                <span class="n">g</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maxwidth</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">out_format</span> <span class="o">==</span> <span class="s2">&quot;mu_sigma_area&quot;</span><span class="p">:</span>
+                <span class="n">g</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma2fwhm</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument &#39;out_format&#39; must be one of </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">parformats</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">in_format</span> <span class="o">==</span> <span class="s2">&quot;mu_sigma_area&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">out_format</span> <span class="o">==</span> <span class="s2">&quot;internal&quot;</span><span class="p">:</span>
+                <span class="n">g</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma2fwhm</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">maxwidth</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma2fwhm</span> <span class="o">*</span> <span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">out_format</span> <span class="o">==</span> <span class="s2">&quot;pwa&quot;</span><span class="p">:</span>
+                <span class="n">g</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma2fwhm</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument &#39;out_format&#39; must be one of </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">parformats</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument &#39;in_format&#39; must be one of </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">parformats</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">g</span>
+
+    <span class="k">def</span> <span class="nf">_transform_parametersraw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">in_format</span><span class="p">,</span> <span class="n">out_format</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert parameter values from in_format to out_format.</span>
+
+<span class="sd">        This method convert parameter values from one format to another and optionally restore</span>
+<span class="sd">        them to a preferred range if the target format supports multiple values</span>
+<span class="sd">        representing the same physical result.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : array_like</span>
+<span class="sd">            Sequence of parameters in the `in_format`.</span>
+<span class="sd">        in_format : str, optional</span>
+<span class="sd">            The input format of the parameters. Supported formats are:</span>
+<span class="sd">            - &#39;internal&#39;: [position, parameterized width-squared, area]</span>
+<span class="sd">            - &#39;pwa&#39;: [position, full width at half maximum, area]</span>
+<span class="sd">            - &#39;mu_sigma_area&#39;: [mu, sigma, area]</span>
+<span class="sd">            Default is &#39;internal&#39;.</span>
+<span class="sd">        out_format : str, optional</span>
+<span class="sd">            The desired output format of the parameters. Same options as `in_format`.</span>
+<span class="sd">            Default is &#39;pwa&#39;.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array_like</span>
+<span class="sd">            The transformed parameters in the `out_format`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">temp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pars</span><span class="p">)</span>
+
+        <span class="c1"># Do I need to change anything?  The internal parameters may need to be</span>
+        <span class="c1"># placed into the preferred range, even though their interpretation does</span>
+        <span class="c1"># not change.</span>
+        <span class="k">if</span> <span class="n">in_format</span> <span class="o">==</span> <span class="n">out_format</span> <span class="ow">and</span> <span class="n">in_format</span> <span class="o">!=</span> <span class="s2">&quot;internal&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">pars</span>
+
+        <span class="c1"># Convert to intermediate format &quot;internal&quot;</span>
+        <span class="k">if</span> <span class="n">in_format</span> <span class="o">==</span> <span class="s2">&quot;internal&quot;</span><span class="p">:</span>
+            <span class="c1"># put the parameter for width in the &quot;physical&quot; quadrant [-pi/2,pi/2],</span>
+            <span class="c1"># where .5*(sin(p)+1) covers fwhm = [0, maxwidth]</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">temp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">temp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">n</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">temp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">n</span> <span class="o">-</span> <span class="n">temp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">temp</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">temp</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>  <span class="c1"># map negative area to equivalent positive one</span>
+        <span class="k">elif</span> <span class="n">in_format</span> <span class="o">==</span> <span class="s2">&quot;pwa&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">temp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxwidth</span><span class="p">:</span>
+                <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Width </span><span class="si">%s</span><span class="s2"> (FWHM) greater than maximum allowed width </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                    <span class="n">temp</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">maxwidth</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">raise</span> <span class="n">SrMiseTransformationError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+            <span class="n">temp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">temp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxwidth</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">in_format</span> <span class="o">==</span> <span class="s2">&quot;mu_sigma_area&quot;</span><span class="p">:</span>
+            <span class="n">fwhm</span> <span class="o">=</span> <span class="n">temp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma2fwhm</span>
+            <span class="k">if</span> <span class="n">fwhm</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxwidth</span><span class="p">:</span>
+                <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;Width </span><span class="si">%s</span><span class="s2"> (FWHM) greater than maximum allowed width </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+                    <span class="n">fwhm</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">maxwidth</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="k">raise</span> <span class="n">SrMiseTransformationError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+            <span class="n">temp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">fwhm</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxwidth</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument &#39;in_format&#39; must be one of </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">parformats</span><span class="p">)</span>
+
+        <span class="c1"># Convert to specified output format from &quot;internal&quot; format.</span>
+        <span class="k">if</span> <span class="n">out_format</span> <span class="o">==</span> <span class="s2">&quot;internal&quot;</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">elif</span> <span class="n">out_format</span> <span class="o">==</span> <span class="s2">&quot;pwa&quot;</span><span class="p">:</span>
+            <span class="n">temp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">temp</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxwidth</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">out_format</span> <span class="o">==</span> <span class="s2">&quot;mu_sigma_area&quot;</span><span class="p">:</span>
+            <span class="n">temp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">temp</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxwidth</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">sigma2fwhm</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Argument &#39;out_format&#39; must be one of </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">parformats</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">temp</span>
+
+    <span class="k">def</span> <span class="nf">_valueraw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute the value of a width-limited Gaussian/r for the specified parameters at given radial distances.</span>
+
+<span class="sd">        This function calculates the value of a Gaussian/r distribution,</span>
+<span class="sd">        where its effective width is constrained and related to the maxwidth. As `pars[1]` approaches infinity,</span>
+<span class="sd">        the effective width reaches `FWHM` (maxwidth). The returned values represent the Gaussian&#39;s intensity</span>
+<span class="sd">        across the provided radial coordinates `r`.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : array_like</span>
+<span class="sd">            A sequence of parameters defining the Gaussian shape:</span>
+<span class="sd">            - pars[0]: Peak position of the Gaussian.</span>
+<span class="sd">            - pars[1]: Effective width factor, approaching infinity implies the FWHM equals `maxwidth`.</span>
+<span class="sd">            It is related to the FWHM by `tan(pi/2*FWHM/maxwidth)`.</span>
+<span class="sd">            - pars[2]: Multiplicative constant &#39;a&#39;, equivalent to the peak area of the Gaussian when integrated.</span>
+<span class="sd">        r : array_like or float</span>
+<span class="sd">            Radial distances or a single value at which the Gaussian is to be evaluated.</span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The value of a width-limited Gaussian for the specified parameters at given radial distances.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+            <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">c1</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">))</span>
+            <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">((</span><span class="n">r</span> <span class="o">-</span> <span class="n">pars</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">c2</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)))</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="GaussianOverR.getmodule">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.peaks.html#diffpy.srmise.peaks.gaussianoverr.GaussianOverR.getmodule">[docs]</a>
+    <span class="k">def</span> <span class="nf">getmodule</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="vm">__name__</span></div>
+
+
+    <span class="c1"># Other methods ####</span>
+
+<div class="viewcode-block" id="GaussianOverR.max">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.peaks.html#diffpy.srmise.peaks.gaussianoverr.GaussianOverR.max">[docs]</a>
+    <span class="k">def</span> <span class="nf">max</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return position and height of the peak maximum.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : array_like</span>
+<span class="sd">            The sequence of parameters defining the Gaussian shape.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            The sequence of position and height of the peak maximum.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO: Reconsider this behavior</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">pars</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="c1"># Transform parameters for convenience.</span>
+        <span class="n">tpars</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_parameters</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">in_format</span><span class="o">=</span><span class="s2">&quot;internal&quot;</span><span class="p">,</span> <span class="n">out_format</span><span class="o">=</span><span class="s2">&quot;mu_sigma_area&quot;</span><span class="p">)</span>
+
+        <span class="c1"># The Gaussian/r only has a local maximum under this condition.</span>
+        <span class="c1"># Physically realistic peaks will always meet this condition, but</span>
+        <span class="c1"># trying to fit a signal down to r=0 could conceivably lead to issues.</span>
+        <span class="k">if</span> <span class="n">tpars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">&lt;=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">tpars</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">emsg</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;No local maximum with parameters</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">pars</span><span class="p">)])</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">emsg</span><span class="p">)</span>
+
+        <span class="n">rmax</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">tpars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">tpars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">tpars</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="n">ymax</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valueraw</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">rmax</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">rmax</span><span class="p">,</span> <span class="n">ymax</span><span class="p">])</span></div>
+</div>
+
+
+
+<span class="c1"># end of class GaussianOverR</span>
+
+<span class="c1"># simple test code</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+    <span class="kn">from</span> <span class="nn">numpy.random</span> <span class="kn">import</span> <span class="n">randn</span>
+
+    <span class="kn">from</span> <span class="nn">diffpy.srmise.modelcluster</span> <span class="kn">import</span> <span class="n">ModelCluster</span>
+    <span class="kn">from</span> <span class="nn">diffpy.srmise.modelevaluators.aicc</span> <span class="kn">import</span> <span class="n">AICc</span>
+    <span class="kn">from</span> <span class="nn">diffpy.srmise.peaks.base</span> <span class="kn">import</span> <span class="n">Peaks</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="mf">0.01</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
+    <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>  <span class="c1"># default unknown errors</span>
+    <span class="n">pf</span> <span class="o">=</span> <span class="n">GaussianOverR</span><span class="p">(</span><span class="mf">0.7</span><span class="p">)</span>
+    <span class="n">evaluator</span> <span class="o">=</span> <span class="n">AICc</span><span class="p">()</span>
+
+    <span class="n">pars</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">3</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.5</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mi">10</span><span class="p">]]</span>
+    <span class="n">ideal_peaks</span> <span class="o">=</span> <span class="n">Peaks</span><span class="p">([</span><span class="n">pf</span><span class="o">.</span><span class="n">actualize</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">&quot;pwa&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pars</span><span class="p">])</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">ideal_peaks</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">randn</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+
+    <span class="n">guesspars</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">2.7</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mi">5</span><span class="p">]]</span>
+    <span class="n">guess_peaks</span> <span class="o">=</span> <span class="n">Peaks</span><span class="p">([</span><span class="n">pf</span><span class="o">.</span><span class="n">actualize</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">&quot;pwa&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">guesspars</span><span class="p">])</span>
+    <span class="n">cluster</span> <span class="o">=</span> <span class="n">ModelCluster</span><span class="p">(</span><span class="n">guess_peaks</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">AICc</span><span class="p">,</span> <span class="p">[</span><span class="n">pf</span><span class="p">])</span>
+
+    <span class="n">qual1</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">quality</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">qual1</span><span class="o">.</span><span class="n">stat</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+    <span class="n">yfit</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">calc</span><span class="p">()</span>
+    <span class="n">qual2</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">quality</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">qual2</span><span class="o">.</span><span class="n">stat</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">yfit</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, The Trustees of Columbia University in the City of New York.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>diffpy.srmise.peaks.terminationripples &mdash; diffpy.srmise 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../../_static/documentation_options.js?v=f539c95a"></script>
+        <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            diffpy.srmise
+          </a>
+              <div class="version">
+                0.0.1
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../release.html">Release Notes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../api/diffpy.srmise.html">Package API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">diffpy.srmise</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">diffpy.srmise.peaks.terminationripples</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for diffpy.srmise.peaks.terminationripples</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python</span>
+<span class="c1">##############################################################################</span>
+<span class="c1">#</span>
+<span class="c1"># SrMise            by Luke Granlund</span>
+<span class="c1">#                   (c) 2014 trustees of the Michigan State University</span>
+<span class="c1">#                   (c) 2024 trustees of Columbia University in the City of New York</span>
+<span class="c1">#                   All rights reserved.</span>
+<span class="c1">#</span>
+<span class="c1"># File coded by:    Luke Granlund</span>
+<span class="c1">#</span>
+<span class="c1"># See LICENSE.txt for license information.</span>
+<span class="c1">#</span>
+<span class="c1">##############################################################################</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.fftpack</span> <span class="k">as</span> <span class="nn">fp</span>
+
+<span class="kn">from</span> <span class="nn">diffpy.srmise.peaks.base</span> <span class="kn">import</span> <span class="n">PeakFunction</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;diffpy.srmise&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="TerminationRipples">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.peaks.html#diffpy.srmise.peaks.terminationripples.TerminationRipples">[docs]</a>
+<span class="k">class</span> <span class="nc">TerminationRipples</span><span class="p">(</span><span class="n">PeakFunction</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Methods for evaluation and parameter estimation of a peak function with termination ripples.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span> <span class="n">qmax</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">supersample</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">Cache</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Peak function constructor which adds termination ripples to existing function.</span>
+
+<span class="sd">        Unlike other peak functions, TerminationRipples can only be evaluated</span>
+<span class="sd">        over a uniform grid, or at a single value using an ad hoc uniform grid</span>
+<span class="sd">        defined by qmax, extension, and supersample.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        base : PeakFunction instance</span>
+<span class="sd">            The PeakFunction instance subclass.</span>
+<span class="sd">        qmax : float</span>
+<span class="sd">            The cut-off frequency in reciprocal space.</span>
+<span class="sd">        extension : float</span>
+<span class="sd">            How many multiples of 2pi/qmax to extend calculations in</span>
+<span class="sd">            order to avoid edge effects. Default is 4.0.</span>
+<span class="sd">        supersample : float</span>
+<span class="sd">            Number intervals over 2pi/qmax when a natural interval</span>
+<span class="sd">            cannot be determined while extending calculations. Default is 5.0.</span>
+<span class="sd">        Cache : class</span>
+<span class="sd">            The class (not instance) which implements caching of PeakFunction</span>
+<span class="sd">               evaluations.&quot;&quot;&quot;</span>
+        <span class="n">parameterdict</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">parameterdict</span>
+        <span class="n">formats</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">parformats</span>
+        <span class="n">default_formats</span> <span class="o">=</span> <span class="n">base</span><span class="o">.</span><span class="n">default_formats</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="o">=</span> <span class="n">base</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span> <span class="o">=</span> <span class="n">qmax</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">extension</span> <span class="o">=</span> <span class="n">extension</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">supersample</span> <span class="o">=</span> <span class="n">supersample</span>
+        <span class="n">metadict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">metadict</span><span class="p">[</span><span class="s2">&quot;qmax&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">qmax</span><span class="p">,</span> <span class="nb">repr</span><span class="p">)</span>
+        <span class="n">metadict</span><span class="p">[</span><span class="s2">&quot;extension&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">extension</span><span class="p">,</span> <span class="nb">repr</span><span class="p">)</span>
+        <span class="n">metadict</span><span class="p">[</span><span class="s2">&quot;supersample&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">supersample</span><span class="p">,</span> <span class="nb">repr</span><span class="p">)</span>
+        <span class="n">PeakFunction</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameterdict</span><span class="p">,</span> <span class="n">formats</span><span class="p">,</span> <span class="n">default_formats</span><span class="p">,</span> <span class="n">metadict</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span> <span class="n">Cache</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="c1"># Methods required by PeakFunction ####</span>
+
+    <span class="c1"># TODO: A smart way to convert from the basefunctions estimate to an</span>
+    <span class="c1"># appropriate one when ripples are considered.  This may not be necessary,</span>
+    <span class="c1"># though.</span>
+<div class="viewcode-block" id="TerminationRipples.estimate_parameters">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.peaks.html#diffpy.srmise.peaks.terminationripples.TerminationRipples.estimate_parameters">[docs]</a>
+    <span class="k">def</span> <span class="nf">estimate_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Estimate parameters for single peak from data provided.</span>
+
+<span class="sd">        Uses estimation routine provided by base peak function.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        r : array-like</span>
+<span class="sd">            Data along r from which to estimate</span>
+<span class="sd">        y : array-like</span>
+<span class="sd">            Data along y from which to estimate</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            Numpy array of parameters in the default internal format.</span>
+<span class="sd">            Raises SrMiseEstimationError if parameters cannot be estimated for any</span>
+<span class="sd">            reason.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">estimate_parameters</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></div>
+
+
+    <span class="c1"># TODO: Can this be implemented sanely for termination ripples?</span>
+<div class="viewcode-block" id="TerminationRipples.scale_at">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.peaks.html#diffpy.srmise.peaks.terminationripples.TerminationRipples.scale_at">[docs]</a>
+    <span class="k">def</span> <span class="nf">scale_at</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">scale</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Change parameters so value(x)-&gt;scale*value(x) for the base function.</span>
+
+<span class="sd">        Does not change position or height of peak&#39;s maxima.  Raises</span>
+<span class="sd">        SrMiseScalingError if the parameters cannot be scaled.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">         pars : array-like</span>
+<span class="sd">            The parameters corresponding to a single peak</span>
+<span class="sd">        x : float</span>
+<span class="sd">            The position of the border</span>
+<span class="sd">        scale : float</span>
+<span class="sd">            The size of scaling at x. Must be positive.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            The numpy array of scaled parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">scale_at</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">scale</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_jacobianraw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">free</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Jacobian of base function with termination ripples.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : array-like</span>
+<span class="sd">            The sequence of parameters for a single peak</span>
+<span class="sd">        r : array-like</span>
+<span class="sd">            The sequence or scalar over which pars is evaluated</span>
+<span class="sd">        free : array-like</span>
+<span class="sd">            The sequence of booleans which determines which derivatives are</span>
+<span class="sd">            needed.  True for evaluation, False for no evaluation.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            The Jacobian matrix of base function with termination ripples.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">_jacobianraw</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">free</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_transform_derivativesraw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">in_format</span><span class="p">,</span> <span class="n">out_format</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return gradient matrix for the pars converted from in_format to out_format.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : array-like</span>
+<span class="sd">            The sequence of parameters</span>
+<span class="sd">        in_format : str</span>
+<span class="sd">            The format defined for base peak function</span>
+<span class="sd">        out_format : str</span>
+<span class="sd">            The format defined for base peak function</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray</span>
+<span class="sd">            The Jacobian matrix of base function with termination ripples with out_format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">_transform_derivativesraw</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">in_format</span><span class="p">,</span> <span class="n">out_format</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_transform_parametersraw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">in_format</span><span class="p">,</span> <span class="n">out_format</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert parameter values from in_format to out_format.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        pars : array-like</span>
+<span class="sd">            The sequence of parameters</span>
+<span class="sd">        in_format : str</span>
+<span class="sd">            The format defined for base peak function</span>
+<span class="sd">        out_format : str</span>
+<span class="sd">            The format defined for base peak function</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            The sequence of parameter values with out_format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">_transform_parametersraw</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">in_format</span><span class="p">,</span> <span class="n">out_format</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_valueraw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return value of base peak function for the given parameters and r values.</span>
+
+<span class="sd">        pars : array-like</span>
+<span class="sd">            The sequence of parameters for a single peak</span>
+<span class="sd">        r : array-like or float</span>
+<span class="sd">            The sequence or scalar over which pars is evaluated</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The value of base peak function for the given parameters and r.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">_valueraw</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">r</span><span class="p">)</span>
+
+    <span class="c1"># Overridden PeakFunction functions ####</span>
+    <span class="c1"># jacobian() and value() are not normally overridden by PeakFunction</span>
+    <span class="c1"># subclasses, but are here to minimize the effect of edge-effects while</span>
+    <span class="c1"># introducing termination ripples.</span>
+
+<div class="viewcode-block" id="TerminationRipples.jacobian">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.peaks.html#diffpy.srmise.peaks.terminationripples.TerminationRipples.jacobian">[docs]</a>
+    <span class="k">def</span> <span class="nf">jacobian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peak</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate (rippled) jacobian, possibly restricted by range.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        peak : PeakFunction instance</span>
+<span class="sd">            The Peak to be evaluated</span>
+<span class="sd">        r : array-like</span>
+<span class="sd">            The sequence or scalar over which peak is evaluated</span>
+<span class="sd">        rng : slice object</span>
+<span class="sd">            Optional slice object restricts which r-values are evaluated.</span>
+<span class="sd">            The output has same length as r, but unevaluated objects have</span>
+<span class="sd">            a default value of 0.  If caching is enabled these may be</span>
+<span class="sd">            previously calculated values instead. Default is None</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        jac : array-like</span>
+<span class="sd">            The Jacobian of base function with termination ripples.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">peak</span><span class="o">.</span><span class="n">_owner</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Argument &#39;peak&#39; must be evaluated by the &quot;</span>
+                <span class="s2">&quot;PeakFunction subclass instance with which &quot;</span>
+                <span class="s2">&quot;it is associated.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># normally r will be a sequence, but also allow single numeric values</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">dr</span> <span class="o">=</span> <span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># dr is ad hoc if r is a single point</span>
+                <span class="n">dr</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">supersample</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">rng</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+            <span class="n">rpart</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="n">rng</span><span class="p">]</span>
+            <span class="p">(</span><span class="n">ext_r</span><span class="p">,</span> <span class="n">ext_slice</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extend_grid</span><span class="p">(</span><span class="n">rpart</span><span class="p">,</span> <span class="n">dr</span><span class="p">)</span>
+            <span class="n">jac</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jacobianraw</span><span class="p">(</span><span class="n">peak</span><span class="o">.</span><span class="n">pars</span><span class="p">,</span> <span class="n">ext_r</span><span class="p">,</span> <span class="n">peak</span><span class="o">.</span><span class="n">free</span><span class="p">)</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">jac</span><span class="p">]</span>
+            <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">output</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">jac</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">jac</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cut_freq</span><span class="p">(</span><span class="n">jac</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">dr</span><span class="p">)</span>
+                    <span class="n">output</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="mf">0.0</span>
+                    <span class="n">output</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="n">rng</span><span class="p">]</span> <span class="o">=</span> <span class="n">jac</span><span class="p">[</span><span class="n">idx</span><span class="p">][</span><span class="n">ext_slice</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">output</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="c1"># dr is ad hoc if r is a single point.</span>
+            <span class="n">dr</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">supersample</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span><span class="p">)</span>
+            <span class="p">(</span><span class="n">ext_r</span><span class="p">,</span> <span class="n">ext_slice</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extend_grid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">r</span><span class="p">]),</span> <span class="n">dr</span><span class="p">)</span>
+            <span class="n">jac</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_jacobianraw</span><span class="p">(</span><span class="n">peak</span><span class="o">.</span><span class="n">pars</span><span class="p">,</span> <span class="n">ext_r</span><span class="p">,</span> <span class="n">peak</span><span class="o">.</span><span class="n">free</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">output</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="n">jac</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">jac</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cut_freq</span><span class="p">(</span><span class="n">jac</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">dr</span><span class="p">)[</span><span class="n">ext_slice</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">jac</span></div>
+
+
+<div class="viewcode-block" id="TerminationRipples.value">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.peaks.html#diffpy.srmise.peaks.terminationripples.TerminationRipples.value">[docs]</a>
+    <span class="k">def</span> <span class="nf">value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peak</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate (rippled) value of peak, possibly restricted by range.</span>
+
+<span class="sd">        This function overrides its counterpart in PeakFunction in order</span>
+<span class="sd">        to minimize the impact of edge-effects from introducing termination</span>
+<span class="sd">        ripples into an existing peak function.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        peak : Peak instance</span>
+<span class="sd">            The Peak to be evaluated</span>
+<span class="sd">        r : array-like</span>
+<span class="sd">            The sequence or scalar over which peak is evaluated</span>
+<span class="sd">        rng : slice object</span>
+<span class="sd">            Optional slice object restricts which r-values are evaluated.</span>
+<span class="sd">            The output has same length as r, but unevaluated objects have</span>
+<span class="sd">            a default value of 0.  If caching is enabled these may be</span>
+<span class="sd">            previously calculated values instead. Default is None.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        output : array-like</span>
+<span class="sd">            The (rippled) value of peak, possibly restricted by range.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">peak</span><span class="o">.</span><span class="n">_owner</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Argument &#39;peak&#39; must be evaluated by the &quot;</span>
+                <span class="s2">&quot;PeakFunction subclass instance with which &quot;</span>
+                <span class="s2">&quot;it is associated.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="c1"># normally r will be a sequence, but also allow single numeric values</span>
+
+        <span class="n">dr_super</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">supersample</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">r</span><span class="p">):</span>
+            <span class="c1"># dr is ad hoc if r is a single point.</span>
+            <span class="p">(</span><span class="n">ext_r</span><span class="p">,</span> <span class="n">ext_slice</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extend_grid</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">r</span><span class="p">]),</span> <span class="n">dr_super</span><span class="p">)</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valueraw</span><span class="p">(</span><span class="n">peak</span><span class="o">.</span><span class="n">pars</span><span class="p">,</span> <span class="n">ext_r</span><span class="p">)</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cut_freq</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">dr_super</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">value</span><span class="p">[</span><span class="n">ext_slice</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rng</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">rng</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+
+            <span class="n">output</span> <span class="o">=</span> <span class="n">r</span> <span class="o">*</span> <span class="mf">0.0</span>
+
+            <span class="c1"># Make sure the actual dr used for finding termination ripples</span>
+            <span class="c1"># is at least as fine as dr_super, while still calculating the</span>
+            <span class="c1"># function at precisely the requested points.</span>
+            <span class="c1"># When the underlying function is sampled too coarsely it can</span>
+            <span class="c1"># miss critical high frequency components and return a very</span>
+            <span class="c1"># poor approximation to the continuous case.  The actual fineness</span>
+            <span class="c1"># of sampling needed to avoid the worst of these discretization</span>
+            <span class="c1"># issues is difficult to determine without detailed knowledge</span>
+            <span class="c1"># of the underlying function.</span>
+            <span class="n">dr</span> <span class="o">=</span> <span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">segments</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">dr</span> <span class="o">/</span> <span class="n">dr_super</span><span class="p">)</span>
+            <span class="n">dr_segmented</span> <span class="o">=</span> <span class="n">dr</span> <span class="o">/</span> <span class="n">segments</span>
+
+            <span class="n">rpart</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="n">rng</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">segments</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">rpart</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">rpart</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">rpart</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">dr_segmented</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dr_segmented</span><span class="p">)</span>
+
+            <span class="p">(</span><span class="n">ext_r</span><span class="p">,</span> <span class="n">ext_slice</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extend_grid</span><span class="p">(</span><span class="n">rpart</span><span class="p">,</span> <span class="n">dr_segmented</span><span class="p">)</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_valueraw</span><span class="p">(</span><span class="n">peak</span><span class="o">.</span><span class="n">pars</span><span class="p">,</span> <span class="n">ext_r</span><span class="p">)</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cut_freq</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">dr_segmented</span><span class="p">)</span>
+            <span class="n">output</span><span class="p">[</span><span class="n">rng</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="n">ext_slice</span><span class="p">][::</span><span class="n">segments</span><span class="p">]</span>
+
+            <span class="k">return</span> <span class="n">output</span></div>
+
+
+<div class="viewcode-block" id="TerminationRipples.getmodule">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.peaks.html#diffpy.srmise.peaks.terminationripples.TerminationRipples.getmodule">[docs]</a>
+    <span class="k">def</span> <span class="nf">getmodule</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="vm">__name__</span></div>
+
+
+    <span class="c1"># Other methods ####</span>
+
+<div class="viewcode-block" id="TerminationRipples.cut_freq">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.peaks.html#diffpy.srmise.peaks.terminationripples.TerminationRipples.cut_freq">[docs]</a>
+    <span class="k">def</span> <span class="nf">cut_freq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sequence</span><span class="p">,</span> <span class="n">delta</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remove high-frequency components from sequence.</span>
+
+<span class="sd">        This is equivalent to the discrete convolution of a signal with a sinc</span>
+<span class="sd">        function sin(2*pi*r/qmax)/r.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sequence : array-like</span>
+<span class="sd">            The sequence to alter.</span>
+<span class="sd">        delta : int</span>
+<span class="sd">            The spacing between elements in sequence.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        array-like</span>
+<span class="sd">            The sequence with high-frequency components removed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">padlen</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">sequence</span><span class="p">))))</span>
+        <span class="n">padseq</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">fft</span><span class="p">(</span><span class="n">sequence</span><span class="p">,</span> <span class="n">padlen</span><span class="p">)</span>
+        <span class="n">dq</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="p">((</span><span class="n">padlen</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">delta</span><span class="p">)</span>
+        <span class="n">lowidx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">qmax</span> <span class="o">/</span> <span class="n">dq</span><span class="p">))</span>
+        <span class="n">hiidx</span> <span class="o">=</span> <span class="n">padlen</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">lowidx</span>
+
+        <span class="c1"># Remove hi-frequency components</span>
+        <span class="n">padseq</span><span class="p">[</span><span class="n">lowidx</span><span class="p">:</span><span class="n">hiidx</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">padseq</span> <span class="o">=</span> <span class="n">fp</span><span class="o">.</span><span class="n">ifft</span><span class="p">(</span><span class="n">padseq</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">real</span><span class="p">(</span><span class="n">padseq</span><span class="p">[</span><span class="mi">0</span> <span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">sequence</span><span class="p">)])</span></div>
+
+
+<div class="viewcode-block" id="TerminationRipples.extend_grid">
+<a class="viewcode-back" href="../../../../api/diffpy.srmise.peaks.html#diffpy.srmise.peaks.terminationripples.TerminationRipples.extend_grid">[docs]</a>
+    <span class="k">def</span> <span class="nf">extend_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">dr</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return (extended r, slice giving original range).</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        r : array-like or float</span>
+<span class="sd">            The sequence or scalar over which peak is evaluated</span>
+<span class="sd">        dr : array-like or float</span>
+<span class="sd">            The uncertainties over which peak is evaluated</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        tuple</span>
+<span class="sd">            The extended r, slice giving original range.&quot;&quot;&quot;</span>
+        <span class="n">ext</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">extension</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">qmax</span>
+        <span class="n">left_ext</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">dr</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">ext</span> <span class="o">-</span> <span class="n">dr</span><span class="p">),</span> <span class="o">-</span><span class="n">dr</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">right_ext</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">dr</span><span class="p">,</span> <span class="n">r</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">ext</span> <span class="o">+</span> <span class="n">dr</span><span class="p">,</span> <span class="n">dr</span><span class="p">)</span>
+        <span class="n">ext_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">left_ext</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">right_ext</span><span class="p">))</span>
+        <span class="n">ext_slice</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">left_ext</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">ext_r</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">right_ext</span><span class="p">))</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">ext_r</span><span class="p">,</span> <span class="n">ext_slice</span><span class="p">)</span></div>
+</div>
+
+
+
+<span class="c1"># end of class TerminationRipples</span>
+
+<span class="c1"># simple test code</span>
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+    <span class="kn">from</span> <span class="nn">numpy.random</span> <span class="kn">import</span> <span class="n">randn</span>
+
+    <span class="kn">from</span> <span class="nn">diffpy.srmise.modelcluster</span> <span class="kn">import</span> <span class="n">ModelCluster</span>
+    <span class="kn">from</span> <span class="nn">diffpy.srmise.modelevaluators.aicc</span> <span class="kn">import</span> <span class="n">AICc</span>
+    <span class="kn">from</span> <span class="nn">diffpy.srmise.peaks.base</span> <span class="kn">import</span> <span class="n">Peaks</span>
+    <span class="kn">from</span> <span class="nn">diffpy.srmise.peaks.gaussianoverr</span> <span class="kn">import</span> <span class="n">GaussianOverR</span>
+
+    <span class="n">res</span> <span class="o">=</span> <span class="mf">0.01</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
+    <span class="n">err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>  <span class="c1"># default unknown errors</span>
+    <span class="n">pf1</span> <span class="o">=</span> <span class="n">GaussianOverR</span><span class="p">(</span><span class="mf">0.7</span><span class="p">)</span>
+    <span class="n">pf2</span> <span class="o">=</span> <span class="n">TerminationRipples</span><span class="p">(</span><span class="n">pf1</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">)</span>
+    <span class="n">evaluator</span> <span class="o">=</span> <span class="n">AICc</span><span class="p">()</span>
+
+    <span class="n">pars</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">3</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mi">10</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.5</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mi">10</span><span class="p">]]</span>
+    <span class="n">ideal_peaks</span> <span class="o">=</span> <span class="n">Peaks</span><span class="p">([</span><span class="n">pf1</span><span class="o">.</span><span class="n">actualize</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">&quot;pwa&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pars</span><span class="p">])</span>
+    <span class="n">ripple_peaks</span> <span class="o">=</span> <span class="n">Peaks</span><span class="p">([</span><span class="n">pf2</span><span class="o">.</span><span class="n">actualize</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">&quot;pwa&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pars</span><span class="p">])</span>
+    <span class="n">y_ideal</span> <span class="o">=</span> <span class="n">ideal_peaks</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="n">y_ripple</span> <span class="o">=</span> <span class="n">ripple_peaks</span><span class="o">.</span><span class="n">value</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">randn</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">))</span>
+
+    <span class="n">guesspars</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">2.7</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.7</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mi">5</span><span class="p">]]</span>
+    <span class="n">guess_peaks</span> <span class="o">=</span> <span class="n">Peaks</span><span class="p">([</span><span class="n">pf2</span><span class="o">.</span><span class="n">actualize</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="s2">&quot;pwa&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">guesspars</span><span class="p">])</span>
+    <span class="n">cluster</span> <span class="o">=</span> <span class="n">ModelCluster</span><span class="p">(</span><span class="n">guess_peaks</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">y_ripple</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">AICc</span><span class="p">,</span> <span class="p">[</span><span class="n">pf2</span><span class="p">])</span>
+
+    <span class="n">qual1</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">quality</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">qual1</span><span class="o">.</span><span class="n">stat</span><span class="p">)</span>
+    <span class="n">cluster</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+    <span class="n">yfit</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">calc</span><span class="p">()</span>
+    <span class="n">qual2</span> <span class="o">=</span> <span class="n">cluster</span><span class="o">.</span><span class="n">quality</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">qual2</span><span class="o">.</span><span class="n">stat</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">y_ideal</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">y_ripple</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">yfit</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, The Trustees of Columbia University in the City of New York.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
