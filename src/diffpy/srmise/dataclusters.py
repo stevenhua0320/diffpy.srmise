@@ -40,15 +40,15 @@ class DataClusters:
       The array of r values.
     y : sequence of y values
       The array of PDF values, G(r)
-    res : int
-      The clustering resolution, i.e., the number of points another point has to
+    res : float
+      The clustering resolution, i.e., the number of distance another point has to
       be away from the center of an existing cluster to before a new cluster is
-      formed.  A value of zero allows every point to be cluster.
+      formed.  A value of zero allows every point to be a cluster.
     data_order : array
       The array of x, y indices ordered by decreasing y
-    clusters :
+    clusters : ndarray
       The array of cluster ranges
-    current_idx - int
+    current_idx : int
       The index of data_order currently considered
     """
 
@@ -61,8 +61,8 @@ class DataClusters:
           The array of r values.
         y : sequence of y values
           The array of PDF values, G(r)
-        res : int
-          The clustering resolution, i.e., the number of points another point has to
+        res : float
+          The clustering resolution, i.e., the distance another point has to
           be away from the center of an existing cluster to before a new cluster is
           formed.  A value of zero allows every point to be cluster.
         """
@@ -143,8 +143,8 @@ class DataClusters:
           The array of r values.
         y : sequence of y values
           The array of PDF values, G(r)
-        res : int
-          The clustering resolution, i.e., the number of points another point has to
+        res : float
+          The clustering resolution, i.e., the distance another point has to
           be away from the center of an existing cluster to before a new cluster is
           formed.  A value of zero allows every point to be cluster.
         """
@@ -230,13 +230,18 @@ class DataClusters:
         """Return [cluster index, distance] for cluster nearest to x.
 
         Parameters
-        x - Coordinate of point of interest
+        ----------
+        x : ndarray
+            Coordinate of point of interest
 
         The distance is positive/negative if the point is right/left of the
         nearest cluster.  If the point is within an existing cluster then
         distance = 0.
 
-        Return None if no clusters exists.
+        Returns
+        -------
+        array-like
+            The index of the nearest cluster, and the distance for cluster nearest to x. None if no cluster
         """
         if self.status == self.INIT:
             raise Exception("Cannot cluster next point while status is INIT.")
@@ -259,9 +264,14 @@ class DataClusters:
         distance = 0.
 
         Parameters
-        idx - index of point in self.x of interest.
+        ----------
+        idx : array-like
+            index of point in self.x of interest.
 
-        Return None if no clusters exist.
+        Returns
+        -------
+        array-like
+            The array of cluster index and the distacne to the nearest cluster. None if no clusters exist.
         """
         if self.status == self.INIT:
             raise Exception("Cannot cluster next point while status is INIT.")
@@ -302,7 +312,14 @@ class DataClusters:
         boundaries.
 
         Parameters
-        cluster_idx - The index of the cluster to test
+        ----------
+        cluster_idx : array-like
+            The index of the cluster to test
+
+        Returns
+        -------
+        bools
+            True if the cluster is full, False otherwise
         """
         if cluster_idx > 0:
             low = self.clusters[cluster_idx - 1, 1] + 1
@@ -321,7 +338,13 @@ class DataClusters:
         unclustered points between them.
 
         Parameters
-        combine - [[leftmost_idx1, ..., rightmost_idx1], ...]
+        ----------
+        combine : ndarray
+            [[leftmost_idx1, ..., rightmost_idx1], ...]
+
+        Returns
+        -------
+        None
         """
         # Ensure that the same clusters aren't combined multiple times.
         combine_flat = np.array(combine).ravel()
