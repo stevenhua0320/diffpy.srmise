@@ -105,7 +105,7 @@ class Polynomial(BaselineFunction):
                 import numpy.linalg as la
 
                 a = np.array([r[cut_idx]]).T
-                slope = la.lstsq(a, y[cut_idx])[0][0]
+                slope = la.lstsq(a, y[cut_idx], rcond=-1)[0][0]
                 return np.array([slope, 0.0])
             except Exception as e:
                 emsg = "Error during estimation -- " + str(e)
@@ -256,4 +256,5 @@ if __name__ == "__main__":
     y = -r + 10 * np.exp(-((r - 5) ** 2)) + np.random.rand(len(r))
     est = f.estimate_parameters(r, y)
     print("Actual baseline: ", np.array([-1, 0.0]))
+    # TODO: Make test est baseline in ways of tolerance function
     print("Estimated baseline: ", est)
