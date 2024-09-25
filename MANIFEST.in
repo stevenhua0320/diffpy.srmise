@@ -1,11 +1,12 @@
-recursive-include diffpy *.py
-include AUTHORS.txt LICENSE*.txt README.rst
-exclude MANIFEST.in
-include diffpy/srmise/version.cfg
+graft src
+graft tests
+graft requirements
 
-recursive-include doc/examples *.py *.gr *.srmise *.pwa *.dat *.png
-include doc/examples/README
+include AUTHORS.rst LICENSE*.rst README.rst
 
-recursive-include doc/manual/source *.rst *.txt
-include doc/manual/source/conf.py
-include doc/manual/Makefile
+# Exclude all bytecode files and __pycache__ directories
+global-exclude *.py[cod]  # Exclude all .pyc, .pyo, and .pyd files.
+global-exclude .DS_Store  # Exclude Mac filesystem artifacts.
+global-exclude __pycache__  # Exclude Python cache directories.
+global-exclude .git*  # Exclude git files and directories.
+global-exclude .idea  # Exclude PyCharm project settings.
