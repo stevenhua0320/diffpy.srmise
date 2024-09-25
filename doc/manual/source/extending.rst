@@ -27,14 +27,14 @@ subpackges, as shown below.
 * .. py:class:: BaseFunction
 
     + .. py:class:: BaselineFunction
-    
+
         - .. py:class:: FromSequence
         - .. py:class:: NanoSpherical
         - .. py:class:: Polynomial
         - *etc.*
-        
+
     + .. py:class:: PeakFunction
-    
+
         - .. py:class:: Gaussian
         - .. py:class:: GaussianOverR
         - *etc.*
@@ -57,7 +57,7 @@ for examples.
 .. py:method:: estimate_parameters(r, y)
 
     Return a Numpy array of parameters estimated from the data.
-    
+
     :param r: Grid on which the data are defined.
     :param y: The data.
     :type r: `Sequence`
@@ -69,9 +69,9 @@ for examples.
 
 
 .. py:method:: _jacobian_raw(pars, r, free)
-   
+
     Return Jacobian for parameters evaluated over `r`.
-    
+
     :param pars: The parameters of the baseline.
     :param r: Scalar or grid on which to calculate the Jacobian.
     :param free: Boolean values indicating if corresponding parameter is free (True) or fixed (False).
@@ -84,7 +84,7 @@ for examples.
 .. py:method:: _transform_derivativesraw(pars, in_format, out_format)
 
     Return the gradient matrix of `pars` represented in format 'out_format'.
-    
+
     :param pars: The parameters of the baseline.
     :param in_format: The format of `pars`.
     :param out_format: The desired format of `pars`.
@@ -97,7 +97,7 @@ for examples.
 .. py:method:: _transform_parametersraw(pars, in_format, out_format)
 
     Return parameters transformed into format 'out_format'.
-    
+
     :param pars: The parameters of the baseline.
     :param in_format: The format of `pars`.
     :param out_format: The desired format of `pars`.
@@ -106,11 +106,11 @@ for examples.
     :type out_format: `str`
     :returns: The transformed parameters.
     :rtype: `numpy.ndarray`
-    
+
 .. py:method:: _valueraw(pars, r)
 
     Return value of baseline with given parameters at r.
-    
+
     :param pars: The parameters of the baseline.
     :param r: Scalar or grid on which to calculate the baseline.
     :type pars: `Sequence(float)`
@@ -130,12 +130,12 @@ following differences:
 1) The ``estimate_parameters`` method is required.
 2) The "position" key must be defined in the ``parameterdict`` class member.
 3) Peak functions must implement the additional method ``scale_at``.
-   
+
 .. py:method:: scale_at(pars, r, scale)
 
     Return peak parameters such that the value at ``r`` is scaled by ``scale``
     while the position of the peak's maxima remains unchanged.
-    
+
     :param pars: The parameters of the peak.
     :param r: Position where the peak will be rescaled.
     :param scale: A scale factor > 0.
