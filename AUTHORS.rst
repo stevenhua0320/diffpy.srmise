@@ -1,8 +1,7 @@
 Authors
 =======
 
-Luke Granlund
-Billinge Group and community contibutors.
+Billinge Group and community contributors.
 
 Contributors
 ------------

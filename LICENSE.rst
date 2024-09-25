@@ -1,17 +1,24 @@
 BSD 3-Clause License
 
-Copyright 2014-2015, Board of Trustees of Michigan State University
-          2016-2024, The Trustees of Columbia University in the City of New York.
+Copyright (c) 2006-2007, Board of Trustees of Michigan State University
+              2008-2024, The Trustees of Columbia University in the City of New York.
 All rights reserved.
+
+SrMise incorporates source code from diffpy.pdfgui in the file
+pdfdataset.py. The PDFgui license is reproduced in full below.
+
+This program is part of the DiffPy and DANSE open-source projects
+and is available subject to the conditions and terms laid out
+below.
 
 If you use this program to do productive scientific research that
 leads to publication, we ask that you acknowledge use of the
 program by citing the following paper in your publication:
 
-    L. Granlund, S.J.L. Billinge, P.M. Duxbury, Algorithm for
-    systematic peak extraction from atomic pair distribution
-    functions, Acta Crystallographica A 71(4), 392-409 (2015).
-    doi:10.1107/S2053273315005276
+    C. L. Farrow, P. Juhas, J. W. Liu, D. Bryndin, E. S. Bozin,
+    J. Bloch, Th. Proffen and S. J. L. Billinge, PDFfit2 and
+    PDFgui: computer programs for studying nanostructure in
+    crystals, J. Phys.: Condens.  Matter 19, 335219 (2007)
 
 For more information please visit the diffpy web-page at
     http://www.diffpy.org
