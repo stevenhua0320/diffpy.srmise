@@ -1,9 +1,41 @@
-#########################
-SrMise
-#########################
+|Icon| |title|_
+===============
 
-`DiffPy project <http://www.diffpy.org>`_ tool for unbiased peak extraction from
-atomic pair distribution functions.
+.. |title| replace:: diffpy.srmise
+.. _title: https://diffpy.github.io/diffpy.srmise
+
+.. |Icon| image:: https://avatars.githubusercontent.com/diffpy
+        :target: https://diffpy.github.io/diffpy.srmise
+        :height: 100px
+
+|PyPi| |Forge| |PythonVersion| |PR|
+
+|CI| |Codecov| |Black| |Tracking|
+
+.. |Black| image:: https://img.shields.io/badge/code_style-black-black
+        :target: https://github.com/psf/black
+
+.. |CI| image:: https://github.com/diffpy/diffpy.srmise/actions/workflows/main.yml/badge.svg
+        :target: https://github.com/diffpy/diffpy.srmise/actions/workflows/main.yml
+
+.. |Codecov| image:: https://codecov.io/gh/diffpy/diffpy.srmise/branch/main/graph/badge.svg
+        :target: https://codecov.io/gh/diffpy/diffpy.srmise
+
+.. |Forge| image:: https://img.shields.io/conda/vn/conda-forge/diffpy.srmise
+        :target: https://anaconda.org/conda-forge/diffpy.srmise
+
+.. |PR| image:: https://img.shields.io/badge/PR-Welcome-29ab47ff
+
+.. |PyPi| image:: https://img.shields.io/pypi/v/diffpy.srmise
+        :target: https://pypi.org/project/diffpy.srmise/
+
+.. |PythonVersion| image:: https://img.shields.io/pypi/pyversions/diffpy.srmise
+        :target: https://pypi.org/project/diffpy.srmise/
+
+.. |Tracking| image:: https://img.shields.io/badge/issue_tracking-github-blue
+        :target: https://github.com/diffpy/diffpy.srmise/issues
+
+implementation of the ParSCAPE algorithm for peak extraction from atomic pair distribution functions (PDFs)
 
 SrMise is an implementation of the `ParSCAPE algorithm
 <https://dx.doi.org/10.1107/S2053273315005276>`_ for peak extraction from
@@ -38,166 +70,85 @@ necessary to provide the most reliable results, but historically such PDFs
 are rare.  In the absence of accurate uncertainties an *ad hoc* uncertainty
 must be specified.
 
-For more information about SrMise, see the users manual at
-http://diffpy.github.io/diffpy.srmise.
+For more information about the diffpy.srmise library, please consult our `online documentation <https://diffpy.github.io/diffpy.srmise>`_.
 
-Getting Started
-=================
-
-The diffpy.srmise package requires Python 2.6 or 2.7 and the following software:
-
-* ``setuptools`` - software distribution tools for Python
-* ``NumPy`` - numerical mathematics and fast array operations for Python
-* ``SciPy`` - scientific libraries for Python
-* ``matplotlib`` - python plotting library
-
-See the `SrMise license <LICENSE.txt>`__ for terms and conditions of use.
-Detailed installation instructions for the `Windows`_, `Mac OS X`_, and
-`Linux`_ platforms follow.
-
-Windows
--------
-
-Several prebuilt Python distributions for Windows include all the
-prerequisite software required to run SrMise, and installing one of these is the
-simplest way to get started.  These distributions are usually free for
-individual and/or academic use, but some also have commercial version.  Links to
-executables, installation instructions, and licensing information
-for some popular options are listed below.
-
-* `Anaconda <https://www.anaconda.com/download>`_
-* `Enthought Canopy <https://www.enthought.com/products/canopy/>`_
-* `Python(x,y) <https://code.google.com/p/pythonxy/>`_
-* `WinPython <http://winpython.github.io>`_
-
-Alternately, individual Windows executables for Python and the required
-components can be downloaded and installed.  The official Windows releases of
-Numpy and SciPy do not currently support 64-bit Python installations, so be
-sure to download the 32-bit versions of these packages.
-
-* `Python 2.6/2.7 <https://www.python.org/downloads/windows/>`_
-* `NumPy <http://sourceforge.net/projects/numpy/files/NumPy/>`_
-* `SciPy <http://sourceforge.net/projects/scipy/files/scipy/>`_
-* `matplotlib <http://matplotlib.org/downloads.html>`_
-
-After installing Python and the required packages, the simplest way to obtain
-SrMise is using ``pip`` to download and install the latest release from the
-`Python Package Index <https://pypi.python.org>`_ (PyPI).  Open a command window
-by running ``cmd`` from the Start Menu's application search box (Windows 7/8/10)
-or Run command (Windows Vista and earlier).  Verify that the
-``pip`` program is installed by running ::
-
-    pip --version
-
-If this command is not found, download and run
-`get-pip.py <https://bootstrap.pypa.io/get-pip.py>`_, which will install both it
-and setuptools.  For example, if the file were downloaded to the desktop, a
-Windows user named ``MyName`` should run the following from the command
-line: ::
-
-    cd C:\Users\MyName\Desktop
-    python get-pip.py
-
-Finally, install the latest version of SrMise by running ::
-
-    pip install diffpy.srmise
-
-
-Mac OS X
+Citation
 --------
 
-For Mac OS X systems with the MacPorts package manager, the required
-software can be installed with ::
+If you use diffpy.srmise in a scientific publication, we would like you to cite this package as
 
-   sudo port install \
-      python27 py27-setuptools py27-numpy py27-scipy py27-matplotlib
+        L. Granlund, Billinge, S. J. L., and P. M. Duxbury. “Algorithm for systematic peak extraction from atomic
+        pair distribution functions”. In: Acta Crystallogr. A 71.4 (2015), pp. 392–409. DOI:
+        10.1107/S2053273315005276
 
-When installing for MacPorts, make sure the MacPorts bin directory is the first
-in the system PATH and that python27 is selected as the default Python version
-in MacPorts::
+Installation
+------------
 
-   sudo port select --set python python27
+The preferred method is to use `Miniconda Python
+<https://docs.conda.io/projects/miniconda/en/latest/miniconda-install.html>`_
+and install from the "conda-forge" channel of Conda packages.
 
-The simplest way to obtain diffpy.srmise on Mac OS X systems
-is using ``pip`` to download and install the latest release from
-`PyPI <https://pypi.python.org>`_. ::
+To add "conda-forge" to the conda channels, run the following in a terminal. ::
 
-   sudo pip install diffpy.srmise
+        conda config --add channels conda-forge
 
-Those who prefer to install from sources may download them from the
-`GitHub <https://github.com/diffpy/diffpy.srmise/releases>`__ or
-`PyPI <https://pypi.python.org/pypi/diffpy.srmise>`__ pages for SrMise.
-Uncompress them to a directory, and from that directory run ::
+We want to install our packages in a suitable conda environment.
+The following creates and activates a new environment named ``diffpy.srmise_env`` ::
 
-   sudo python setup.py install
+        conda create -n diffpy.srmise_env python=3
+        conda activate diffpy.srmise_env
 
-This installs diffpy.srmise for all users in the default system location. If
-administrator (root) access is not available, see the usage info from
-``python setup.py install --help`` for options to install to user-writable
-directories.
+Then, to fully install ``diffpy.srmise`` in our active environment, run ::
 
+        conda install diffpy.srmise
 
-Linux
------
+Another option is to use ``pip`` to download and install the latest release from
+`Python Package Index <https://pypi.python.org>`_.
+To install using ``pip`` into your ``diffpy.srmise_env`` environment, we will also have to install dependencies ::
 
-On Ubuntu and Debian Linux, the required software can easily be installed using
-the system package manager::
+        pip install -r https://raw.githubusercontent.com/diffpy/diffpy.srmise/main/requirements/run.txt
 
-   sudo apt-get install \
-      python-setuptools python-numpy python-scipy python-matplotlib
+and then install the package ::
 
-Similarly, on Fedora::
+        pip install diffpy.srmise
 
-    sudo yum install python-setuptools numpy scipy python-matplotlib
+If you prefer to install from sources, after installing the dependencies, obtain the source archive from
+`GitHub <https://github.com/diffpy/diffpy.srmise/>`_. Once installed, ``cd`` into your ``diffpy.srmise`` directory
+and run the following ::
 
-For other Linux distributions consult the appropriate package manager.
+        pip install .
 
-The simplest way to obtain diffpy.srmise on Linux systems
-is using ``pip`` to download and install the latest release from the
-`PyPI <https://pypi.python.org>`_. ::
+Support and Contribute
+----------------------
 
-   sudo pip install diffpy.srmise
+`Diffpy user group <https://groups.google.com/g/diffpy-users>`_ is the discussion forum for general questions and discussions about the use of diffpy.srmise. Please join the diffpy.srmise users community by joining the Google group. The diffpy.srmise project welcomes your expertise and enthusiasm!
 
-Those who prefer to install from sources may download them from the
-`GitHub <https://github.com/diffpy/diffpy.srmise/releases>`__ or
-`PyPI <https://pypi.python.org/pypi/diffpy.srmise>`__ pages for SrMise.
-Uncompress them to a directory, and from that directory run ::
+If you see a bug or want to request a feature, please `report it as an issue <https://github.com/diffpy/diffpy.srmise/issues>`_ and/or `submit a fix as a PR <https://github.com/diffpy/diffpy.srmise/pulls>`_. You can also post it to the `Diffpy user group <https://groups.google.com/g/diffpy-users>`_.
 
-   sudo python setup.py install
+Feel free to fork the project and contribute. To install diffpy.srmise
+in a development mode, with its sources being directly used by Python
+rather than copied to a package directory, use the following in the root
+directory ::
 
-This installs diffpy.srmise for all users in the default system location. If
-administrator (root) access is not available, see the usage info from
-``python setup.py install --help`` for options to install to user-writable
-directories.
+        pip install -e .
 
+To ensure code quality and to prevent accidental commits into the default branch, please set up the use of our pre-commit
+hooks.
 
-DEVELOPMENT
-===========
+1. Install pre-commit in your working environment by running ``conda install pre-commit``.
 
-diffpy.srmise is open-source software developed with support of the Center of
-Research Excellence in Complex Materials at Michigan State University, in
-cooperation with the DiffPy-CMI complex modeling initiative at the Brookhaven
-National Laboratory.  The diffpy.srmise sources are hosted at
-https://github.com/diffpy/diffpy.srmise.
+2. Initialize pre-commit (one time only) ``pre-commit install``.
 
-Feel free to fork the project and contribute.  To install diffpy.srmise in a
-development mode, with its sources being directly used by Python rather than
-copied to a package directory, use ::
+Thereafter your code will be linted by black and isort and checked against flake8 before you can commit.
+If it fails by black or isort, just rerun and it should pass (black and isort will modify the files so should
+pass after they are modified). If the flake8 test fails please see the error messages and fix them manually before
+trying to commit again.
 
-   python setup.py develop --user
+Improvements and fixes are always appreciated.
 
+Before contribuing, please read our `Code of Conduct <https://github.com/diffpy/diffpy.srmise/blob/main/CODE_OF_CONDUCT.rst>`_.
 
-ACKNOWLEDGEMENT
-===============
+Contact
+-------
 
-The source code of *pdfdataset.py* was derived from diffpy.pdfgui.
-
-
-CONTACTS
-========
-
-For more information on SrMise please visit the DiffPy project web-page
-
-http://www.diffpy.org/
-
-or email Prof. Simon Billinge at sb2896@columbia.edu.
+For more information on diffpy.srmise please visit the project `web-page <https://diffpy.github.io/>`_ or email Prof. Simon Billinge at sb2896@columbia.edu.
