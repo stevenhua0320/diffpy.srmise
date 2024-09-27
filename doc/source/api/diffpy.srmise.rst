@@ -109,4 +109,3 @@ diffpy.srmise.pdfdataset module
     :members:
     :undoc-members:
     :show-inheritance:
-
