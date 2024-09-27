@@ -82,6 +82,10 @@ If you use diffpy.srmise in a scientific publication, we would like you to cite 
 
         diffpy.srmise Package, https://github.com/diffpy/diffpy.srmise
 
+        L. Granlund, Billinge, S. J. L., and P. M. Duxbury. “Algorithm for systematic peak extraction from atomic
+        pair distribution functions”. In: Acta Crystallogr. A 71.4 (2015), pp. 392–409. DOI:
+        10.1107/S2053273315005276
+
 Installation
 ------------
 
@@ -144,6 +148,11 @@ trying to commit again.
 Improvements and fixes are always appreciated.
 
 Before contribuing, please read our `Code of Conduct <https://github.com/diffpy/diffpy.srmise/blob/main/CODE_OF_CONDUCT.rst>`_.
+
+Acknowledgement
+---------------
+
+The source code of *pdfdataset.py* was derived from diffpy.pdfgui.
 
 Contact
 -------
