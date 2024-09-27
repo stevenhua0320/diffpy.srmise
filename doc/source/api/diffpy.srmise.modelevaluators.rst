@@ -34,4 +34,3 @@ diffpy.srmise.modelevaluators.base module
     :members:
     :undoc-members:
     :show-inheritance:
-
