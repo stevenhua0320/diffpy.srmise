@@ -50,3 +50,4 @@ diffpy.srmise.baselines.base module
     :members:
     :undoc-members:
     :show-inheritance:
+

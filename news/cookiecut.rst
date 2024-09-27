@@ -1,6 +1,7 @@
 **Added:**
 
-* <news item>
+* Add api workflow to doc
+
 
 **Changed:**
 
@@ -16,7 +17,7 @@
 
 **Fixed:**
 
-* Cookiecuttered diffpy.srmise to new Billingegroup standard.
+* Recookiecuttered diffpy.srmise to new Billingegroup standard.
 
 **Security:**
 

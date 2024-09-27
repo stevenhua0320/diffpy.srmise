@@ -26,3 +26,4 @@ diffpy.srmise.applications.extract module
     :members:
     :undoc-members:
     :show-inheritance:
+
